@@ -284,19 +284,19 @@
             /* The wrapper has no gap and overflow:hidden clips both buttons
                to the same rounded rect — no seam or divider possible */
         }
-        #btn-practice {
+       #btn-practice {
             flex: 1; padding: 12px 10px; font-size: 16px; border: none;
             background: var(--l-color); color: #000; cursor: pointer;
             font-weight: 900; font-family: var(--font-main);
-            border-radius: 0; transition: filter 0.1s;
-            /* border-radius handled by parent overflow:hidden */
+            border-radius: 40px 0 0 40px; transition: filter 0.1s;
+            margin: 0;
         }
         #btn-challenge {
             flex: 1; padding: 12px 10px; font-size: 15px; border: none;
             background: var(--accent); color: #000; cursor: pointer;
             font-weight: 900; font-family: var(--font-main);
-            border-radius: 0; transition: filter 0.1s;
-            /* no border-left — completely seamless join */
+            border-radius: 0 40px 40px 0; transition: filter 0.1s;
+            margin: 0;
         }
         #btn-practice:active, #btn-challenge:active { filter: brightness(0.85); }
         #btn-start-single {
