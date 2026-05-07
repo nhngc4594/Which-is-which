@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v3.2.0</title>
+    <title>Phonetic Flow v3.5.0</title>
     <style>
         :root {
             --bg-color: #0f0f0f;
@@ -120,6 +120,15 @@
         }
         #gender-panel .gender-row { display: flex; gap: 8px; justify-content: center; }
         #gender-panel button { width: 120px; background: #444; margin: 0; }
+
+        /* ── VOICE BUTTON ICONS ─────────────────────────────────────────── */
+        /* Mike = blue mic, Jenny = pink mic — a bit more visual than plain text */
+        #btn-mike  { background: #2980b9; color: #fff; }
+        #btn-jenny { background: #c0392b; color: #fff; }
+        #btn-mike.active-yellow, #btn-jenny.active-yellow {
+            background: var(--accent) !important; color: #000 !important;
+        }
+
         .tower-item {
             background: #222; width: 85%; margin: 6px; padding: 15px;
             border-radius: 12px; border: 2px solid #444; transition: 0.3s;
@@ -259,13 +268,143 @@
             letter-spacing: 2px; border-radius: 6px !important;
             padding: 14px 40px; font-size: 15px; width: 100%;
         }
+        /* HEART PULSE */
+        @keyframes heartAppear {
+            0%   { transform: scale(0.5); filter: drop-shadow(0 0 0px #f1c40f); opacity:0; }
+            50%  { transform: scale(1.4); filter: drop-shadow(0 0 16px #f1c40f); opacity:1; }
+            75%  { transform: scale(0.9); filter: drop-shadow(0 0 8px #f1c40f); }
+            100% { transform: scale(1);   filter: drop-shadow(0 0 4px #f1c40f); opacity:1; }
+        }
+        .heart-new { animation: heartAppear 0.6s ease-out forwards; }
+
+        /* SPLIT START BUTTON — seamless, no divider */
+        #start-btn-group {
+            display: flex; gap: 0; width: 220px; margin-top: 14px;
+            border-radius: 40px; overflow: hidden;
+            /* The wrapper has no gap and overflow:hidden clips both buttons
+               to the same rounded rect — no seam or divider possible */
+        }
+       #btn-practice {
+            flex: 1; padding: 12px 10px; font-size: 16px; border: none;
+            background: var(--l-color); color: #000; cursor: pointer;
+            font-weight: 900; font-family: var(--font-main);
+            border-radius: 40px 0 0 40px; transition: filter 0.1s;
+            margin: 0;
+        }
+        #btn-challenge {
+            flex: 1; padding: 12px 10px; font-size: 15px; border: none;
+            background: var(--accent); color: #000; cursor: pointer;
+            font-weight: 900; font-family: var(--font-main);
+            border-radius: 0 40px 40px 0; transition: filter 0.1s;
+            margin: 0;
+        }
+        #btn-practice:active, #btn-challenge:active { filter: brightness(0.85); }
+        #btn-start-single {
+            background: var(--l-color); width: 220px; font-size: 20px; margin-top: 14px;
+        }
+
+        /* LIGHTNING COUNTDOWN */
+        #lightning-countdown {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: #000; display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            z-index: 920; font-family: var(--font-retro); color: var(--accent);
+        }
+        #lightning-countdown .lcd-number {
+            font-size: 140px; font-weight: 900; letter-spacing: -4px;
+            animation: countPop 0.4s ease-out;
+            text-shadow: 0 0 40px var(--accent);
+        }
+        #lightning-countdown .lcd-label {
+            font-size: 14px; letter-spacing: 4px; text-transform: uppercase;
+            opacity: 0.6; margin-top: 10px;
+        }
+        #lightning-countdown .lcd-bolt {
+            font-size: 100px;
+            animation: boltFlash 0.3s ease-out;
+        }
+        @keyframes countPop {
+            0%   { transform: scale(1.6); opacity:0; }
+            100% { transform: scale(1);   opacity:1; }
+        }
+        @keyframes boltFlash {
+            0%   { transform: scale(0.5) rotate(-20deg); opacity:0; }
+            60%  { transform: scale(1.3) rotate(5deg);  opacity:1; }
+            100% { transform: scale(1)   rotate(0deg);  opacity:1; }
+        }
+
+        /* LIGHTNING CLEAR */
+        #lightning-clear {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.92); display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            z-index: 925; font-family: var(--font-retro); cursor:pointer;
+        }
+        #lightning-clear .lc-inner {
+            border: 4px solid var(--accent); padding: 40px 30px; border-radius: 12px;
+            display:flex; flex-direction:column; align-items:center;
+            animation: fadeIn 0.3s ease-out;
+        }
+        #lightning-clear .lc-bolt { font-size: 80px; animation: boltFlash 0.5s ease-out; }
+        #lightning-clear h1 {
+            color: var(--accent); font-size: 22px; letter-spacing: 3px;
+            text-transform: uppercase; margin: 16px 0 8px;
+            text-shadow: 0 0 20px var(--accent);
+        }
+        #lightning-clear .lc-sub {
+            font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 2px;
+            text-transform: uppercase; margin-top: 24px;
+        }
+
+        /* LIGHTNING HUD */
+        #lightning-hud {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 50; font-family: var(--font-retro); font-size: 13px;
+            color: var(--accent); background: rgba(0,0,0,0.7);
+            padding: 6px 16px; border-radius: 20px;
+            border: 1px solid var(--accent); letter-spacing: 2px;
+            pointer-events: none;
+        }
+
+        /* ROUND WIN — coin tally */
+        #round-win-coins {
+            font-size: 22px; color: var(--accent); font-weight: 900;
+            font-family: var(--font-retro); margin: 4px 0 16px;
+            letter-spacing: 1px;
+        }
+
+        /* DEV MODE */
+        #dev-panel {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(0,0,0,0.92); border-top: 2px solid #e74c3c;
+            padding: 8px 12px; display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap; font-family: var(--font-retro); font-size: 11px;
+        }
+        #dev-panel span { color: #e74c3c; font-weight: 900; letter-spacing: 1px; flex-shrink:0; }
+        #dev-panel button {
+            padding: 4px 10px; font-size: 11px; border-radius: 4px; margin: 2px;
+            background: #222; border: 1px solid #e74c3c; color: #e74c3c;
+            font-family: var(--font-retro);
+        }
+        #dev-panel button.dev-active { background: #e74c3c; color: #000; }
+        #dev-panel .dev-actions { display: flex; gap: 4px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
 
-<button id="help-btn" onclick="showHelp()">?</button>
-<div id="currency-display">💰 0</div>
+<button id="help-btn" onpointerdown="event.stopPropagation()" onclick="showHelp()" title="How to play">🧑</button>
+<div id="currency-display">⭐ 0</div>
 <div id="lives-display">❤️❤️❤️</div>
+
+<!-- DEV PANEL — triple-tap the version label to reveal -->
+<div id="dev-panel" class="hidden">
+    <span>⚠️ DEV</span>
+    <div class="dev-actions" id="dev-level-btns"></div>
+    <button onclick="devUnlockAll()" style="border-color:#f1c40f;color:#f1c40f;">UNLOCK ALL</button>
+    <button onclick="devAddCoins()" style="border-color:#2ecc71;color:#2ecc71;">+500 ⭐</button>
+    <button onclick="devResetSave()" style="border-color:#e74c3c;color:#e74c3c;">RESET SAVE</button>
+    <button onclick="document.getElementById('dev-panel').classList.add('hidden')" style="margin-left:auto;">✕</button>
+</div>
 
 <div id="game-container">
     <div id="l-bg" class="bg-half"></div>
@@ -278,19 +417,28 @@
 
 <!-- MAIN MENU -->
 <div id="main-menu" class="overlay">
-    <h1 style="color: var(--accent); font-size: 42px; margin-bottom: 4px;">PHONETIC FLOW</h1>
+    <h1 onclick="devTitleTap()" style="color: var(--accent); font-size: 42px; margin-bottom: 4px; cursor:default;">PHONETIC FLOW</h1>
     <p id="level-display-name" style="color: #aaa; margin-bottom: 16px; font-weight: bold;"></p>
     <div id="gender-panel">
         <label>🎙️ Voice</label>
         <div class="gender-row">
-            <button id="btn-mike" onclick="setGender('male')" class="active-yellow">🎙️ Mike</button>
-            <button id="btn-jenny" onclick="setGender('female')">🎙️ Jenny</button>
+            <button id="btn-mike" onclick="setGender('male')" class="active-yellow">🎤 Mike</button>
+            <button id="btn-jenny" onclick="setGender('female')">🎀 Jenny</button>
         </div>
     </div>
-    <button onclick="startGame()" style="background: var(--l-color); width: 220px; font-size: 20px; margin-top: 14px;">START</button>
-    <button id="btn-world-map" onclick="showMenu('level-select')" style="width: 220px;" class="hidden">WORLD MAP</button>
-    <button onclick="showMenu('shop-menu')" style="width: 220px;">STICKER SHOP</button>
-    <button onclick="showMenu('sticker-book')" style="width: 220px;">MY BOOK</button>
+
+    <!-- Single start button — shown when challenge not yet unlocked -->
+    <button id="btn-start-single" class="btn-start-single" onclick="startGame()">▶ START</button>
+
+    <!-- Split button — shown once challenge is unlocked for this floor -->
+    <div id="start-btn-group" class="hidden">
+        <button id="btn-practice" onclick="startGame()">▶ PRACTICE</button>
+        <button id="btn-challenge" onclick="startChallenge()">⚡ ROUND</button>
+    </div>
+
+    <button id="btn-world-map" onclick="showMenu('level-select')" style="width:220px; background:#8e44ad;" class="hidden">🗺 WORLD MAP</button>
+    <button onclick="showMenu('shop-menu')" style="width:220px; background:#e67e22;">🛍 STICKER SHOP</button>
+    <button onclick="showMenu('sticker-book')" style="width:220px; background:#2980b9;">📖 MY BOOK</button>
 </div>
 
 <!-- LEVEL SELECT -->
@@ -307,9 +455,6 @@
         <div id="shopkeeper-text"></div>
     </div>
     <div id="shop-items-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; overflow-y:auto;"></div>
-    <div id="trade-ui" class="hidden">
-        <div id="trade-options" style="display:flex; flex-wrap:wrap; justify-content:center;"></div>
-    </div>
     <button onclick="showMenu('main-menu')" style="background:#2980b9; width:100%; margin-top:15px;">BACK</button>
 </div>
 
@@ -326,12 +471,12 @@
         <h2 style="color:var(--accent);">PAUSED</h2>
         <div style="background:rgba(255,255,255,0.1); padding:15px; border-radius:15px; margin-bottom:20px;">
             <p style="margin:0 0 10px 0; font-weight:bold;">NEED A LIFE?</p>
-            <button onclick="buyHeart()" style="background:#e74c3c; width:150px;">❤️ BUY (💰75)</button>
+            <button onclick="buyHeart()" style="background:#e74c3c; width:150px;">❤️ BUY (⭐75)</button>
         </div>
         <div style="display:flex; justify-content:space-around; margin-bottom:25px;">
-            <button id="speed-0.7" onclick="setSpeed(0.7)" style="font-size:25px; background:#444;">🐢</button>
+            <button id="speed-0.5" onclick="setSpeed(0.5)" style="font-size:25px; background:#444;">🐢</button>
             <button id="speed-1.0" onclick="setSpeed(1.0)" style="font-size:25px; background:#444;">🧑</button>
-            <button id="speed-1.3" onclick="setSpeed(1.3)" style="font-size:25px; background:#444;">⚡</button>
+            <button id="speed-1.6" onclick="setSpeed(1.6)" style="font-size:25px; background:#444;">⚡</button>
         </div>
         <button onclick="closeMenus()" style="background:var(--l-color); width:100%; margin-bottom:10px;">RESUME</button>
         <button onclick="showMenu('main-menu')" style="background:#444; width:100%;">EXIT TO MENU</button>
@@ -341,7 +486,7 @@
 <!-- ROUND WIN -->
 <div id="round-win" class="overlay hidden">
     <h1 style="color:var(--l-color);">CLEAR!</h1>
-    <p>Floor Bonus: 💰 +50</p>
+    <div id="round-win-coins"></div>
     <button onclick="showMenu('main-menu')">CONTINUE</button>
 </div>
 
@@ -352,14 +497,35 @@
     <button onclick="showMenu('main-menu')" style="background:#444;">EXIT</button>
 </div>
 
-<!-- KEY CEREMONY -->
-<div id="key-ceremony" class="hidden">
-    <div class="ceremony-border">
+<!-- LIGHTNING HUD — shown during challenge round -->
+<div id="lightning-hud" class="hidden">⚡ BLOCK <span id="lhud-block">1</span>/15 &nbsp;|&nbsp; SPEED <span id="lhud-speed">1.0</span>x</div>
+
+<!-- LIGHTNING COUNTDOWN -->
+<div id="lightning-countdown" class="hidden">
+    <div id="lcd-content"></div>
+    <div class="lcd-label">GET READY</div>
+</div>
+
+<!-- LIGHTNING CLEAR -->
+<div id="lightning-clear" class="hidden" onclick="dismissLightningClear()">
+    <div class="lc-inner">
+        <div class="lc-bolt">⚡</div>
+        <h1>LIGHTNING CLEARED!</h1>
+        <div style="font-size:40px; margin: 10px 0;">🗝️</div>
+        <div style="font-size:13px; color:rgba(255,255,255,0.7); letter-spacing:1px;">KEY UNLOCKED!</div>
+        <div class="lc-sub">TAP TO CONTINUE</div>
+    </div>
+</div>
+
+<!-- KEY CEREMONY — click anywhere inside box to dismiss -->
+<div id="key-ceremony" class="hidden" onclick="dismissKeyCeremony()">
+    <div class="ceremony-border" style="cursor:pointer;">
         <div style="display:flex; align-items:flex-start;">
             <div class="ceremony-sprite">🧍</div>
             <div class="ceremony-key">🗝️</div>
         </div>
         <div class="ceremony-text" id="ceremony-text"></div>
+        <div style="font-size:11px; opacity:0.4; margin-top:16px; font-family:var(--font-retro); letter-spacing:1px;">TAP TO CONTINUE</div>
     </div>
 </div>
 
@@ -400,8 +566,8 @@
                     <span class="en">Tap LEFT or RIGHT to select the correct sound</span>
                 </div>
                 <div class="help-row">
-                    <span class="jp">✅ 15問正解でフロアクリア！</span>
-                    <span class="en">15 correct = floor clear</span>
+                    <span class="jp">✅ 10問正解でフロアクリア！</span>
+                    <span class="en">10 correct = floor clear</span>
                 </div>
                 <div class="help-row">
                     <span class="jp">❌ 間違えるとハートを失います</span>
@@ -424,16 +590,6 @@
 
 <script>
     // ─── LEVEL DATA ───────────────────────────────────────────────────────────
-    // Floor order: 1=L/R, 2=S/TH, 3=F/P, 4=S/SH, 5=Z/TH, 6=CH/TS, 7=N/NG, 8=V/B, 9=Blends
-    // (V vs B moved from old floor 2 to new floor 8; others shifted down)
-    //
-    // FIX — sound attribution: levels where sounds[0] is a prefix of sounds[1]
-    // (S/SH and N/NG) used startsWith(sounds[0]) which misclassified the longer
-    // sound.  We now use strict equality: w.sound === lvl.sounds[0].
-    //
-    // FIX — blends lane labels: sounds array kept for folder/file logic but a
-    // separate `labels` array drives what appears on screen for level 9.
-
     const levels = {
         1: { name:"L vs R", folder:"L_vs_R", sounds:["L","R"],
              words:[
@@ -445,7 +601,6 @@
                 {sound:"R",position:"final",word:"star"},{sound:"R",position:"final",word:"door"},{sound:"R",position:"final",word:"far"}],
              stickers:[{emoji:"☁️",price:50},{emoji:"🌱",price:100},{emoji:"🌲",price:200},{emoji:"🦅",price:300},{emoji:"💎",price:500}]},
 
-        // OLD floor 3 → new floor 2
         2: { name:"S vs TH", folder:"S_vs_TH_voiceless", sounds:["S","TH"],
              words:[
                 {sound:"S",position:"initial",word:"sea"},{sound:"S",position:"initial",word:"sin"},{sound:"S",position:"initial",word:"soap"},
@@ -456,7 +611,6 @@
                 {sound:"TH",position:"final",word:"bath"},{sound:"TH",position:"final",word:"math"},{sound:"TH",position:"final",word:"teeth"}],
              stickers:[{emoji:"🌬️",price:50},{emoji:"🍃",price:100},{emoji:"🌀",price:200},{emoji:"⚡",price:300},{emoji:"🌊",price:500}]},
 
-        // OLD floor 4 → new floor 3
         3: { name:"F vs P", folder:"F_vs_P", sounds:["F","P"],
              words:[
                 {sound:"F",position:"initial",word:"fan"},{sound:"F",position:"initial",word:"feel"},{sound:"F",position:"initial",word:"photo"},
@@ -467,7 +621,6 @@
                 {sound:"P",position:"final",word:"leap"},{sound:"P",position:"final",word:"rope"},{sound:"P",position:"final",word:"tape"}],
              stickers:[{emoji:"🍂",price:50},{emoji:"🦊",price:100},{emoji:"🍁",price:200},{emoji:"🦋",price:300},{emoji:"🌸",price:500}]},
 
-        // OLD floor 5 → new floor 4  (BUG FIX: sounds[0]="S" was prefix of "SH" — fixed in resolve())
         4: { name:"S vs SH", folder:"S_vs_SH", sounds:["S","SH"],
              words:[
                 {sound:"S",position:"initial",word:"sea"},{sound:"S",position:"initial",word:"sail"},{sound:"S",position:"initial",word:"song"},
@@ -478,7 +631,6 @@
                 {sound:"SH",position:"final",word:"bush"},{sound:"SH",position:"final",word:"fish"},{sound:"SH",position:"final",word:"rush"}],
              stickers:[{emoji:"🌙",price:50},{emoji:"⭐",price:100},{emoji:"🌟",price:200},{emoji:"🌠",price:300},{emoji:"🌌",price:500}]},
 
-        // OLD floor 6 → new floor 5
         5: { name:"Z vs TH (voiced)", folder:"Z_vs_TH_voiced", sounds:["Z","TH"],
              words:[
                 {sound:"Z",position:"initial",word:"zoo"},{sound:"Z",position:"initial",word:"zone"},{sound:"Z",position:"initial",word:"zero"},
@@ -489,7 +641,6 @@
                 {sound:"TH",position:"final",word:"bathe"},{sound:"TH",position:"final",word:"breathe"},{sound:"TH",position:"final",word:"soothe"}],
              stickers:[{emoji:"🐝",price:50},{emoji:"🦎",price:100},{emoji:"🐍",price:200},{emoji:"🦁",price:300},{emoji:"🔥",price:500}]},
 
-        // OLD floor 7 → new floor 6
         6: { name:"CH vs TS", folder:"CH_vs_TS", sounds:["CH","TS"],
              words:[
                 {sound:"CH",position:"initial",word:"chain"},{sound:"CH",position:"initial",word:"chip"},{sound:"CH",position:"initial",word:"choose"},
@@ -498,7 +649,6 @@
                 {sound:"TS",position:"final",word:"boats"},{sound:"TS",position:"final",word:"cats"},{sound:"TS",position:"final",word:"roots"}],
              stickers:[{emoji:"🎵",price:50},{emoji:"🎸",price:100},{emoji:"🎺",price:200},{emoji:"🎻",price:300},{emoji:"🎹",price:500}]},
 
-        // OLD floor 8 → new floor 7  (BUG FIX: sounds[0]="N" was prefix of "NG" — fixed in resolve())
         7: { name:"N vs NG", folder:"N_vs_NG", sounds:["N","NG"],
              words:[
                 {sound:"N",position:"initial",word:"nail"},{sound:"N",position:"initial",word:"night"},{sound:"N",position:"initial",word:"nose"},
@@ -508,7 +658,6 @@
                 {sound:"NG",position:"final",word:"king"},{sound:"NG",position:"final",word:"long"},{sound:"NG",position:"final",word:"song"}],
              stickers:[{emoji:"🌿",price:50},{emoji:"🍀",price:100},{emoji:"🌺",price:200},{emoji:"🦚",price:300},{emoji:"🌈",price:500}]},
 
-        // OLD floor 2 → new floor 8
         8: { name:"V vs B", folder:"V_vs_B", sounds:["V","B"],
              words:[
                 {sound:"V",position:"initial",word:"van"},{sound:"V",position:"initial",word:"vine"},{sound:"V",position:"initial",word:"vote"},
@@ -519,9 +668,8 @@
                 {sound:"B",position:"final",word:"cab"},{sound:"B",position:"final",word:"robe"},{sound:"B",position:"final",word:"tube"}],
              stickers:[{emoji:"💧",price:50},{emoji:"🐚",price:100},{emoji:"🦀",price:200},{emoji:"🦈",price:300},{emoji:"🔱",price:500}]},
 
-        // OLD floor 9 → stays floor 9  (BUG FIX: labels:["L","R"] drives screen display, sounds kept for file paths)
         9: { name:"L vs R Blends", folder:"L_blends_vs_R_blends", sounds:["L_blend","R_blend"],
-             labels:["L","R"],   // <-- what actually shows on the lane labels
+             labels:["L","R"],
              words:[
                 {sound:"L_blend_bl",position:"initial",word:"blade"},{sound:"L_blend_bl",position:"initial",word:"blow"},{sound:"L_blend_bl",position:"initial",word:"blue"},
                 {sound:"L_blend_cl",position:"initial",word:"clay"},{sound:"L_blend_cl",position:"initial",word:"clean"},{sound:"L_blend_cl",position:"initial",word:"climb"},
@@ -539,14 +687,9 @@
     const FINAL_LEVEL = 9;
 
     // ─── STATE ────────────────────────────────────────────────────────────────
-    // FIX — coin null bug:
-    //   curLevel is always stored/used as a Number internally.
-    //   Coins are accessed via coins[state.curLevel] — no string/number mismatch.
-    //   On load we always Number() coerce curLevel and rebuild the coins map
-    //   with guaranteed numeric keys so old saves with string keys are healed.
-
     let state = {
-        curLevel:1, maxLevel:1, speed:1.0, lives:3,
+        curLevel:1, maxLevel:1, audioRate:1.0, lives:3,
+        bonusHearts:0,
         coins:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0},
         invest:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0},
         inventory:[], roundHits:0, isPaused:true,
@@ -556,11 +699,15 @@
     let currentBlock=null, animationId=null, currentAudio=null, typeInterval=null;
     let confettiParticles=[], confettiRaf=null;
 
-    // ─── HELPERS ──────────────────────────────────────────────────────────────
+    // Challenge round state (runtime only — not saved)
+    let inChallenge=false, challengeBlock=0, challengeRate=1.0;
 
-    // Coin accessor — always uses numeric key, falls back to 0 on any miss
+    // Track coins earned this round for the round-win display
+    let roundCoinsEarned = 0;
+
+    // ─── HELPERS ──────────────────────────────────────────────────────────────
     function coins() { return state.coins[state.curLevel] ?? 0; }
-    function addCoins(n) { state.coins[state.curLevel] = (state.coins[state.curLevel] ?? 0) + n; }
+    function addCoins(n) { state.coins[state.curLevel] = (state.coins[state.curLevel] ?? 0) + n; roundCoinsEarned += n; }
     function spendCoins(n) { state.coins[state.curLevel] = (state.coins[state.curLevel] ?? 0) - n; }
 
     function buildAudioPath(w) {
@@ -570,39 +717,19 @@
 
     function preloadAudio() {
         const g = state.gender==='male'?'male':'female';
-        const words = levels[state.curLevel].words;
-        words.forEach(w => {
+        levels[state.curLevel].words.forEach(w => {
             const a = new Audio();
             a.preload = 'auto';
             a.src = `audio/${levels[state.curLevel].folder}/${w.sound}_${w.position}_${w.word}_${g}.mp3`;
         });
     }
 
-    function playAudio(w, cb) {
-        if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
-        const a = new Audio(buildAudioPath(w));
-        currentAudio=a;
-        a.onended=()=>{ if(cb) cb(); };
-        a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); if(cb) cb(); };
-        a.play().catch(e=>console.warn(e));
-    }
-
-    // ─── SOUND ATTRIBUTION (the core fix) ────────────────────────────────────
-    // Old code: w.sound.startsWith(lvl.sounds[0])
-    //   Bug: For S/SH, "SH".startsWith("S") === true → SH wrongly treated as S-side
-    //   Bug: For N/NG, "NG".startsWith("N") === true → NG wrongly treated as N-side
-    //
-    // Fix: w.sound === lvl.sounds[0]  (exact match for simple levels)
-    //   For blends (level 9): sounds are "L_blend_XX" / "R_blend_XX";
-    //   sounds[0]="L_blend", so startsWith still works correctly there.
-
+    // ─── SOUND ATTRIBUTION ────────────────────────────────────────────────────
     function isLeftSound(w) {
         const lvl = levels[state.curLevel];
-        // Blends level uses startsWith because sound values are "L_blend_bl" etc.
         if(lvl.sounds[0].includes('_blend')) {
             return w.sound.startsWith(lvl.sounds[0].split('_')[0] + '_blend');
         }
-        // All other levels: strict equality
         return w.sound === lvl.sounds[0];
     }
 
@@ -615,12 +742,12 @@
             const saved = JSON.parse(s);
             state = {...state, ...saved};
         }
-
-        // FIX — always coerce curLevel to a Number so coins[curLevel] is never null
         state.curLevel  = Number(state.curLevel)  || 1;
         state.maxLevel  = Number(state.maxLevel)   || 1;
+        if(!state.audioRate && state.speed) state.audioRate = 1.0;
+        state.audioRate = state.audioRate || 1.0;
+        state.bonusHearts = state.bonusHearts || 0;
 
-        // Rebuild coins and invest with numeric keys, healing any old string-key saves
         const freshCoins  = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
         const freshInvest = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
         for(let k=1; k<=9; k++){
@@ -656,13 +783,26 @@
     }
 
     function updateUI() {
-        document.getElementById('currency-display').innerText=`💰 ${coins()}`;
-        document.getElementById('lives-display').innerText="❤️".repeat(Math.max(0,state.lives));
+        document.getElementById('currency-display').innerText=`⭐ ${coins()}`;
+
+        const livesEl = document.getElementById('lives-display');
+        livesEl.innerHTML = '❤️'.repeat(Math.max(0, state.lives));
+
         document.getElementById('level-display-name').innerText=levels[state.curLevel].name;
         if(state.maxLevel>=2) document.getElementById('btn-world-map').classList.remove('hidden');
-        document.querySelectorAll('#pause-menu button').forEach(b=>b.classList.remove('active-yellow'));
-        const btn=document.getElementById(`speed-${state.speed.toFixed(1)}`);
+
+        document.querySelectorAll('#pause-menu button[id^="speed-"]').forEach(b=>b.classList.remove('active-yellow'));
+        const rateKey = state.audioRate === 0.5 ? 'speed-0.5' : state.audioRate === 1.6 ? 'speed-1.6' : 'speed-1.0';
+        const btn = document.getElementById(rateKey);
         if(btn) btn.classList.add('active-yellow');
+
+        const challengeUnlocked = (state.invest[state.curLevel] ?? 0) >= 400;
+        document.getElementById('btn-start-single').classList.toggle('hidden', challengeUnlocked);
+        document.getElementById('start-btn-group').classList.toggle('hidden', !challengeUnlocked);
+
+        document.querySelectorAll('#dev-level-btns button').forEach(b=>{
+            b.classList.toggle('dev-active', Number(b.dataset.lvl)===state.curLevel);
+        });
         saveGame();
     }
 
@@ -670,6 +810,18 @@
         state.gender=g;
         document.getElementById('btn-mike').classList.toggle('active-yellow',g==='male');
         document.getElementById('btn-jenny').classList.toggle('active-yellow',g==='female');
+        if(window.speechSynthesis){
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance('Hello!');
+            u.lang = 'en-US';
+            const voices = window.speechSynthesis.getVoices();
+            const match = voices.find(v => g==='female'
+                ? /female|woman|girl|zira|samantha|karen|victoria/i.test(v.name)
+                : /male|man|david|alex|daniel/i.test(v.name));
+            if(match) u.voice = match;
+            u.pitch = g==='female' ? 1.2 : 0.9;
+            window.speechSynthesis.speak(u);
+        }
         saveGame();
     }
 
@@ -683,22 +835,28 @@
     function dismissHelp() {
         document.getElementById('help-screen').classList.add('hidden');
         state.seenHelp=true; saveGame();
-        // If all overlays are already hidden (help was opened mid-game), resume properly
         const anyOverlayVisible = [...document.querySelectorAll('.overlay')]
             .some(el => !el.classList.contains('hidden'));
         if(!anyOverlayVisible) {
-            state.isPaused=false;
-            if(currentBlock){ playAudio(currentBlock.data); animate(); }
-            else if(state.roundHits<15){ spawnBlock(); }
+            // Re-use closeMenus which handles audio replay + animation resume correctly
+            closeMenus();
         }
     }
 
     // ─── SHOP ─────────────────────────────────────────────────────────────────
     function buyHeart() {
         if(coins()>=75){
-            spendCoins(75); state.lives++; updateUI();
-            typeWriter("A FRESH HEART! STAY STRONG.",false);
-        } else { typeWriter("NOT ENOUGH COINS FOR A HEART!",false); }
+            spendCoins(75);
+            state.lives++;
+            state.bonusHearts++;
+            updateUI();
+            const livesEl = document.getElementById('lives-display');
+            const count = Math.max(0, state.lives);
+            let html = '❤️'.repeat(Math.max(0, count-1));
+            html += `<span class="heart-new">❤️</span>`;
+            livesEl.innerHTML = html;
+            typeWriter("THIS WILL HELP YOU STAY STRONG.",false);
+        } else { typeWriter("NOT ENOUGH COINS.",false); }
     }
 
     function buyItem(emoji,price,idx) {
@@ -708,61 +866,74 @@
             spendCoins(price);
             state.invest[state.curLevel] = (state.invest[state.curLevel] ?? 0) + price;
             state.inventory.push({emoji,level:state.curLevel});
+            const lines = ["NICE ONE!","GREAT CHOICE!","GOOD TASTE!","EXCELLENT!","WISE PICK!"];
+            typeWriter(lines[Math.floor(Math.random()*lines.length)],false);
             setTimeout(()=>{ renderShop(); updateUI(); },600);
-        } else { typeWriter("NOT ENOUGH COINS! PLAY MORE!",false); }
+        } else { typeWriter("NOT ENOUGH COINS.",false); }
     }
 
     function renderShop() {
-        const inv=state.invest[state.curLevel] ?? 0;
-        const grid=document.getElementById('shop-items-grid');
-        const trade=document.getElementById('trade-ui');
-        grid.innerHTML=""; grid.classList.remove('hidden'); trade.classList.add('hidden');
-        if(inv>=500 && !hasKey(state.curLevel)){
-            typeWriter("YOU HAVE PROVEN YOURSELF. OFFER A RARE STICKER TO RECEIVE THE KEY!",true);
-            grid.classList.add('hidden'); trade.classList.remove('hidden');
-            const opts=document.getElementById('trade-options'); opts.innerHTML="";
-            const unique=[...new Set(state.inventory.filter(i=>i.level===state.curLevel).map(i=>i.emoji))];
-            unique.forEach(emo=>{ const b=document.createElement('button'); b.innerText=emo; b.style.fontSize="30px"; b.onclick=()=>processTrade(emo); opts.appendChild(b); });
+        const inv = state.invest[state.curLevel] ?? 0;
+        const grid = document.getElementById('shop-items-grid');
+        grid.innerHTML="";
+        // Show the lightning unlock message whenever the floor is eligible
+        // (invest >= 400 OR key already earned) but key not yet in inventory.
+        // This fixes floors 2+ where devUnlockAll grants the key directly
+        // without going through the invest path.
+        const lightningEligible = (inv >= 400) || hasKey(state.curLevel);
+        if(lightningEligible && !hasKey(state.curLevel)){
+            typeWriter("⚡ YOU'VE UNLOCKED THE LIGHTNING ROUND!",true);
+        } else if(lightningEligible && hasKey(state.curLevel)){
+            typeWriter("⚡ LIGHTNING ROUND AVAILABLE!",true);
         } else {
-            typeWriter("WELCOME! FLOOR "+state.curLevel+" SHOP. BUY STICKERS!",false);
-            const hc=document.createElement('div'); hc.className="item-card";
-            hc.innerHTML=`<div>❤️</div><button onclick="buyHeart()">💰75</button>`; grid.appendChild(hc);
-            levels[state.curLevel].stickers.forEach((item,idx)=>{
-                const count=state.inventory.filter(i=>i.emoji===item.emoji).length;
-                const stock=count===0?"2X":(count===1?"1X":"SOLD");
-                const card=document.createElement('div'); card.className="item-card"; card.id=`shop-item-${idx}`;
-                card.innerHTML=`<div>${item.emoji}</div><button onclick="buyItem('${item.emoji}',${item.price},${idx})" ${count>=2?'disabled':''}>${stock}: 💰${item.price}</button>`;
-                grid.appendChild(card);
-            });
+            typeWriter("FLOOR "+state.curLevel+" SHOP!",false);
         }
-    }
-
-    function processTrade(emoji) {
-        const ref=levels[state.curLevel].stickers.find(s=>s.emoji===emoji);
-        if(!ref||ref.price<=200){ typeWriter("NO. THAT IS TOO COMMON. I NEED SOMETHING RARER.",false); return; }
-        const idx=state.inventory.findIndex(i=>i.emoji===emoji&&i.level===state.curLevel);
-        state.inventory.splice(idx,1);
-        state.inventory.push({emoji:"🗝️",level:state.curLevel,isKey:true});
-        state.maxLevel=Math.max(state.maxLevel,state.curLevel+1);
-        saveGame(); showMenu('main-menu'); showKeyCeremony(state.curLevel-1);
+        const hc=document.createElement('div'); hc.className="item-card";
+        hc.innerHTML=`<div>❤️</div><button onclick="buyHeart()">⭐75</button>`; grid.appendChild(hc);
+        levels[state.curLevel].stickers.forEach((item,idx)=>{
+            const count=state.inventory.filter(i=>i.emoji===item.emoji).length;
+            const stock=count===0?"2X":(count===1?"1X":"SOLD");
+            const card=document.createElement('div'); card.className="item-card"; card.id=`shop-item-${idx}`;
+            card.innerHTML=`<div>${item.emoji}</div><button onclick="buyItem('${item.emoji}',${item.price},${idx})" ${count>=2?'disabled':''}>${stock}: ⭐${item.price}</button>`;
+            grid.appendChild(card);
+        });
     }
 
     function hasKey(lvl){ return state.inventory.some(i=>i.level===lvl&&i.isKey); }
 
+    let keyCeremonyTimer = null;
     function showKeyCeremony(lvl) {
         const c=document.getElementById('key-ceremony');
         document.getElementById('ceremony-text').innerHTML=`YOU GOT THE KEY!<br>Floor ${lvl+1} is now open.`;
         c.classList.remove('hidden');
-        setTimeout(()=>c.classList.add('hidden'),4000);
+        if(keyCeremonyTimer) clearTimeout(keyCeremonyTimer);
+        keyCeremonyTimer = setTimeout(dismissKeyCeremony, 8000);
+    }
+    function dismissKeyCeremony() {
+        if(keyCeremonyTimer){ clearTimeout(keyCeremonyTimer); keyCeremonyTimer=null; }
+        document.getElementById('key-ceremony').classList.add('hidden');
     }
 
     // ─── GAME FLOW ────────────────────────────────────────────────────────────
+    const ROUND_LENGTH = 10;
+    const CHALLENGE_LENGTH = 15;
+
+    // Base fall speed (pixels per frame) for practice mode
+    const BASE_FALL_SPEED = 2.2;
+
+    function livesForRoundStart() {
+        state.lives = Math.max(state.lives, 3);
+    }
+
     function startGame() {
-        cleanup(); state.lives=3; state.roundHits=0;
+        inChallenge = false;
+        challengeBlock = 0; challengeRate = 1.0;
+        roundCoinsEarned = 0;
+        document.getElementById('lightning-hud').classList.add('hidden');
+        cleanup(); livesForRoundStart(); state.roundHits=0;
         document.getElementById('left-stack').innerHTML="";
         document.getElementById('right-stack').innerHTML="";
         const lvl=levels[state.curLevel];
-        // FIX — blends lane labels: use lvl.labels if present, otherwise lvl.sounds
         const labels = lvl.labels || lvl.sounds;
         document.getElementById('l-label').innerText=labels[0];
         document.getElementById('r-label').innerText=labels[1];
@@ -770,79 +941,236 @@
         closeMenus();
     }
 
+    function startChallenge() {
+        inChallenge = true;
+        challengeBlock = 0; challengeRate = 1.0;
+        roundCoinsEarned = 0;
+        cleanup(); livesForRoundStart(); state.roundHits=0;
+        document.getElementById('left-stack').innerHTML="";
+        document.getElementById('right-stack').innerHTML="";
+        const lvl=levels[state.curLevel];
+        const labels = lvl.labels || lvl.sounds;
+        document.getElementById('l-label').innerText=labels[0];
+        document.getElementById('r-label').innerText=labels[1];
+        preloadAudio();
+        updateUI();
+        document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
+        runCountdown(3, ()=>{
+            state.isPaused=false;
+            document.getElementById('lightning-hud').classList.remove('hidden');
+            spawnBlock();
+        });
+    }
+
+    // ─── LIGHTNING COUNTDOWN ──────────────────────────────────────────────────
+    function runCountdown(n, onDone) {
+        const screen = document.getElementById('lightning-countdown');
+        const content = document.getElementById('lcd-content');
+        screen.classList.remove('hidden');
+
+        function showStep(val) {
+            if(val === 0) {
+                content.innerHTML = `<div class="lcd-bolt">⚡</div>`;
+                setTimeout(()=>{
+                    screen.classList.add('hidden');
+                    onDone();
+                }, 600);
+                return;
+            }
+            content.innerHTML = `<div class="lcd-number">${val}</div>`;
+            setTimeout(()=> showStep(val-1), 800);
+        }
+        showStep(n);
+    }
+
+    // ─── CHALLENGE SPEED CURVES ───────────────────────────────────────────────
+    // Audio rate curve: blocks 1–3 ramp, 4–6 plateau, 7–15 exponential
+    function getChallengeAudioRate(blockNum) {
+        if(blockNum <= 3) return 1.0 + (blockNum * 0.15);
+        if(blockNum <= 6) return 1.45;
+        const t = (blockNum - 7) / 8;
+        return 1.45 * Math.pow(2.65 / 1.45, t);
+    }
+
+    // Fall speed curve: same shape as audio curve, scaled from BASE_FALL_SPEED to ~5.5px/frame
+    // Practice mode always uses BASE_FALL_SPEED — this only applies during ⚡ ROUND
+    const MAX_FALL_SPEED = 5.5;
+    function getChallengeFallSpeed(blockNum) {
+        if(blockNum <= 3) return BASE_FALL_SPEED + (blockNum * 0.4);
+        if(blockNum <= 6) return BASE_FALL_SPEED + 1.2; // ~3.4
+        const t = (blockNum - 7) / 8;
+        return (BASE_FALL_SPEED + 1.2) + ((MAX_FALL_SPEED - (BASE_FALL_SPEED + 1.2)) * Math.pow(t, 0.7));
+    }
+
+    function updateLightningHud() {
+        document.getElementById('lhud-block').innerText = challengeBlock;
+        document.getElementById('lhud-speed').innerText = challengeRate.toFixed(2);
+    }
+
+    // ─── BLOCK SPAWN & ANIMATION ──────────────────────────────────────────────
     function spawnBlock() {
-        if(state.isPaused||state.lives<=0||state.roundHits>=15) return;
-        const pool=levels[state.curLevel].words;
-        const w=pool[Math.floor(Math.random()*pool.length)];
+        const limit = inChallenge ? CHALLENGE_LENGTH : ROUND_LENGTH;
+        if(state.isPaused || state.lives<=0 || state.roundHits>=limit) return;
         if(currentBlock) return;
-        const el=document.createElement('div');
-        el.className='block'; el.innerText="🔊";
-        el.style.left="calc(50% - 60px)"; el.style.top="0px";
-        el.addEventListener('pointerdown',e=>{ e.stopPropagation(); showMenu('pause-menu'); });
+
+        const pool = levels[state.curLevel].words;
+        const w = pool[Math.floor(Math.random()*pool.length)];
+
+        // Update challenge counters before spawning
+        if(inChallenge) {
+            challengeBlock++;
+            challengeRate = getChallengeAudioRate(challengeBlock);
+            updateLightningHud();
+        }
+
+        const el = document.createElement('div');
+        el.className = 'block';
+        el.innerText = "🔊";
+        el.style.left = "calc(50% - 60px)";
+        el.style.top = "0px";
+        el.addEventListener('pointerdown', e=>{ e.stopPropagation(); showMenu('pause-menu'); });
         document.getElementById('game-container').appendChild(el);
-        currentBlock={element:el,data:w,top:0};
-        playAudio(w, ()=>{});
-        const a = currentAudio;
-        if(a) { a.oncanplaythrough = ()=>{ a.oncanplaythrough=null; animate(); }; }
-        else { animate(); }
+        currentBlock = { element:el, data:w, top:0 };
+
+        // ── AUDIO + ANIMATION SYNC (the core fix) ────────────────────────────
+        // We create the Audio element and call play(). The .then() callback fires
+        // the instant the browser starts actual audio playback — so animate() is
+        // called at the exact same moment the sound begins. This replaces the old
+        // oncanplaythrough / readyState approach which was unreliable on mobile
+        // and caused both the hang and the timing delay.
+        const rate = inChallenge ? challengeRate : (state.audioRate ?? 1.0);
+        if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+        const a = new Audio(buildAudioPath(w));
+        a.playbackRate = rate;
+        currentAudio = a;
+        a.onerror = ()=>{ console.warn('Missing audio:', buildAudioPath(w)); animate(); };
+        a.play()
+            .then(()=>{ animate(); })
+            .catch(e=>{ console.warn('Audio play error:', e); animate(); });
     }
 
     function animate() {
-        if(state.isPaused||!currentBlock) return;
-        currentBlock.top+=(2.2*state.speed);
-        currentBlock.element.style.top=currentBlock.top+"px";
-        if(currentBlock.top>window.innerHeight-120) resolve(null);
-        else animationId=requestAnimationFrame(animate);
+        if(state.isPaused || !currentBlock) return;
+
+        // Use challenge fall speed curve during ⚡ ROUND, constant speed in practice
+        const speed = inChallenge ? getChallengeFallSpeed(challengeBlock) : BASE_FALL_SPEED;
+
+        currentBlock.top += speed;
+        currentBlock.element.style.top = currentBlock.top + "px";
+        if(currentBlock.top > window.innerHeight - 120) resolve(null);
+        else animationId = requestAnimationFrame(animate);
     }
 
-    window.addEventListener('pointerdown',e=>{
-        if(state.isPaused||!currentBlock||e.target.closest('.block')) return;
-        resolve(e.clientX<window.innerWidth/2?"L":"R");
+    window.addEventListener('pointerdown', e=>{
+        // Ignore taps on any overlay, fixed UI button, or the block itself
+        if(state.isPaused || !currentBlock) return;
+        if(e.target.closest('.block')) return;
+        if(e.target.closest('.overlay')) return;
+        if(e.target.closest('#help-btn')) return;
+        if(e.target.closest('#currency-display')) return;
+        if(e.target.closest('#lives-display')) return;
+        if(e.target.closest('#lightning-hud')) return;
+        if(e.target.closest('#dev-panel')) return;
+        resolve(e.clientX < window.innerWidth/2 ? "L" : "R");
     });
 
     function resolve(choice) {
         if(!currentBlock) return;
-        const lvl=levels[state.curLevel];
-        const w=currentBlock.data;
-        // FIX — use isLeftSound() instead of startsWith() to avoid S⊆SH / N⊆NG bugs
+        const w = currentBlock.data;
         const leftSide = isLeftSound(w);
         const correct = leftSide ? "L" : "R";
         const missed = choice===null;
         const ok = !missed && choice===correct;
 
-        const brick=document.createElement('div');
-        brick.className='brick'; brick.innerText=w.word;
-        brick.style.background=ok?'var(--l-color)':'var(--r-color)';
-        const side=missed?correct:choice;
-        document.getElementById(side==='L'?'left-stack':'right-stack').appendChild(brick);
+        const brick = document.createElement('div');
+        brick.className = 'brick';
+        brick.innerText = w.word;
+        brick.style.background = ok ? 'var(--l-color)' : 'var(--r-color)';
+        const side = missed ? correct : choice;
+        document.getElementById(side==='L' ? 'left-stack' : 'right-stack').appendChild(brick);
 
         if(ok){ state.roundHits++; addCoins(10); }
-        else{ state.lives--; if(state.lives<=0){ cleanup(); updateUI(); return showMenu('game-over'); } }
+        else {
+            state.lives--;
+            if(state.lives<=0){
+                cleanup();
+                document.getElementById('lightning-hud').classList.add('hidden');
+                inChallenge=false;
+                updateUI();
+                return showMenu('game-over');
+            }
+        }
         cleanup(); updateUI();
 
-        if(state.roundHits>=15){
-            addCoins(50);
-            // FIX — show congratulations on final level clear, round-win otherwise
-            if(state.curLevel===FINAL_LEVEL){
-                setTimeout(()=>showCongrats(),500);
+        const limit = inChallenge ? CHALLENGE_LENGTH : ROUND_LENGTH;
+        if(state.roundHits >= limit){
+            addCoins(50); // floor bonus
+            if(inChallenge){
+                document.getElementById('lightning-hud').classList.add('hidden');
+                inChallenge=false;
+                setTimeout(()=> showLightningClear(), 400);
+            } else if(state.curLevel === FINAL_LEVEL){
+                setTimeout(()=>showCongrats(), 500);
             } else {
-                setTimeout(()=>showMenu('round-win'),500);
+                setTimeout(()=> showRoundWin(), 500);
             }
         } else {
-            setTimeout(spawnBlock,400);
+            setTimeout(spawnBlock, 400);
         }
     }
 
-    function cleanup(){ if(currentBlock) currentBlock.element.remove(); currentBlock=null; cancelAnimationFrame(animationId); }
+    function cleanup(){
+        if(currentBlock) currentBlock.element.remove();
+        currentBlock=null;
+        cancelAnimationFrame(animationId);
+    }
 
     function closeMenus() {
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         state.isPaused=false;
-        if(!currentBlock&&state.roundHits<15) spawnBlock();
-        else if(currentBlock){ playAudio(currentBlock.data); animate(); }
+        const limit = inChallenge ? CHALLENGE_LENGTH : ROUND_LENGTH;
+        if(!currentBlock && state.roundHits<limit) {
+            spawnBlock();
+        } else if(currentBlock) {
+            // Replay the word so the player can hear it again before tapping,
+            // then resume falling animation the moment audio starts
+            const rate = inChallenge ? challengeRate : (state.audioRate ?? 1.0);
+            if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+            const a = new Audio(buildAudioPath(currentBlock.data));
+            a.playbackRate = rate;
+            currentAudio = a;
+            a.onerror = ()=>{ console.warn('Missing audio:', buildAudioPath(currentBlock.data)); animate(); };
+            a.play()
+                .then(()=>{ animate(); })
+                .catch(e=>{ console.warn('Audio play error:', e); animate(); });
+        }
     }
 
-    function setSpeed(s){ state.speed=s; updateUI(); }
+    function setSpeed(s){ state.audioRate=s; updateUI(); }
+
+    // ─── ROUND WIN ────────────────────────────────────────────────────────────
+    function showRoundWin() {
+        // roundCoinsEarned includes per-answer coins + the 50 floor bonus already added
+        document.getElementById('round-win-coins').innerText = `💰 +${roundCoinsEarned} coins earned!`;
+        showMenu('round-win');
+    }
+
+    // ─── LIGHTNING CLEAR ──────────────────────────────────────────────────────
+    function showLightningClear() {
+        if(!hasKey(state.curLevel)){
+            state.inventory.push({emoji:"🗝️", level:state.curLevel, isKey:true});
+            state.maxLevel = Math.max(state.maxLevel, state.curLevel+1);
+            saveGame();
+        }
+        document.getElementById('lightning-clear').classList.remove('hidden');
+    }
+
+    function dismissLightningClear() {
+        document.getElementById('lightning-clear').classList.add('hidden');
+        const lvl = state.curLevel;
+        showMenu('main-menu');
+        setTimeout(()=> showKeyCeremony(lvl), 200);
+    }
 
     // ─── TOWER & BOOK ─────────────────────────────────────────────────────────
     function renderTower() {
@@ -874,8 +1202,7 @@
     // ─── CONGRATULATIONS ──────────────────────────────────────────────────────
     function showCongrats() {
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
-        const screen = document.getElementById('congrats-screen');
-        screen.classList.remove('hidden');
+        document.getElementById('congrats-screen').classList.remove('hidden');
         startConfetti();
     }
 
@@ -885,7 +1212,6 @@
         showMenu('main-menu');
     }
 
-    // Canvas confetti
     function startConfetti() {
         const canvas = document.getElementById('confetti-canvas');
         const ctx = canvas.getContext('2d');
@@ -895,29 +1221,18 @@
         confettiParticles = Array.from({length:120}, ()=>({
             x: Math.random()*canvas.width,
             y: Math.random()*canvas.height - canvas.height,
-            r: 6+Math.random()*8,
-            d: Math.random()*120,
+            r: 6+Math.random()*8, d: Math.random()*120,
             color: colors[Math.floor(Math.random()*colors.length)],
-            tilt: Math.random()*10-10,
-            tiltSpeed: 0.1+Math.random()*0.3,
-            speed: 1.5+Math.random()*2.5,
-            angle: 0,
+            tilt: Math.random()*10-10, tiltSpeed: 0.1+Math.random()*0.3,
+            speed: 1.5+Math.random()*2.5, angle: 0,
         }));
-
         function drawConfetti() {
             ctx.clearRect(0,0,canvas.width,canvas.height);
             confettiParticles.forEach(p=>{
-                ctx.beginPath();
-                ctx.lineWidth=p.r/2;
-                ctx.strokeStyle=p.color;
-                ctx.moveTo(p.x+p.tilt+p.r/4, p.y);
-                ctx.lineTo(p.x+p.tilt, p.y+p.tilt+p.r/4);
-                ctx.stroke();
-
-                p.angle+=0.02;
-                p.tilt = Math.sin(p.angle+p.d)*12;
-                p.y+=p.speed;
-                p.x+=Math.sin(p.angle)*1.5;
+                ctx.beginPath(); ctx.lineWidth=p.r/2; ctx.strokeStyle=p.color;
+                ctx.moveTo(p.x+p.tilt+p.r/4, p.y); ctx.lineTo(p.x+p.tilt, p.y+p.tilt+p.r/4); ctx.stroke();
+                p.angle+=0.02; p.tilt=Math.sin(p.angle+p.d)*12;
+                p.y+=p.speed; p.x+=Math.sin(p.angle)*1.5;
                 if(p.y>canvas.height){ p.y=-10; p.x=Math.random()*canvas.width; }
             });
             confettiRaf=requestAnimationFrame(drawConfetti);
@@ -926,12 +1241,54 @@
     }
 
     function stopConfetti() {
-        cancelAnimationFrame(confettiRaf);
-        confettiRaf=null;
+        cancelAnimationFrame(confettiRaf); confettiRaf=null;
         const canvas=document.getElementById('confetti-canvas');
-        const ctx=canvas.getContext('2d');
-        ctx.clearRect(0,0,canvas.width,canvas.height);
+        canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
         confettiParticles=[];
+    }
+
+    // ─── DEV BACKDOOR ─────────────────────────────────────────────────────────
+    let devTapCount=0, devTapTimer=null;
+    function devTitleTap() {
+        devTapCount++;
+        if(devTapTimer) clearTimeout(devTapTimer);
+        devTapTimer = setTimeout(()=>{ devTapCount=0; },600);
+        if(devTapCount>=3){
+            devTapCount=0;
+            buildDevPanel();
+            document.getElementById('dev-panel').classList.remove('hidden');
+        }
+    }
+    function buildDevPanel() {
+        const container = document.getElementById('dev-level-btns');
+        container.innerHTML='';
+        for(let i=1;i<=9;i++){
+            if(!levels[i]) continue;
+            const b=document.createElement('button');
+            b.textContent=`F${i}`; b.dataset.lvl=i;
+            b.classList.toggle('dev-active', i===state.curLevel);
+            b.onclick=()=>{ state.curLevel=i; preloadAudio(); updateUI(); showMenu('main-menu'); };
+            container.appendChild(b);
+        }
+    }
+    function devUnlockAll() {
+        state.maxLevel=9;
+        for(let i=1;i<=9;i++){
+            if(!state.inventory.some(x=>x.level===i&&x.isKey)){
+                state.inventory.push({emoji:"🗝️",level:i,isKey:true});
+            }
+            // Set invest to 400 so the split Practice/⚡ROUND button shows on all floors
+            state.invest[i] = Math.max(state.invest[i] ?? 0, 400);
+        }
+        updateUI();
+        document.getElementById('btn-world-map').classList.remove('hidden');
+    }
+    function devAddCoins() { addCoins(500); updateUI(); }
+    function devResetSave() {
+        if(confirm('Reset ALL save data? This cannot be undone.')) {
+            localStorage.removeItem('phoneticFlowSave');
+            location.reload();
+        }
     }
 
     // ─── BOOT ─────────────────────────────────────────────────────────────────
