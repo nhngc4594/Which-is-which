@@ -277,21 +277,26 @@
         }
         .heart-new { animation: heartAppear 0.6s ease-out forwards; }
 
-        /* SPLIT START BUTTON — no divider between Practice and Round */
-        #start-btn-group { display: flex; gap: 0; width: 220px; margin-top: 14px; border-radius: 40px; overflow: hidden; }
+        /* SPLIT START BUTTON — seamless, no divider */
+        #start-btn-group {
+            display: flex; gap: 0; width: 220px; margin-top: 14px;
+            border-radius: 40px; overflow: hidden;
+            /* The wrapper has no gap and overflow:hidden clips both buttons
+               to the same rounded rect — no seam or divider possible */
+        }
         #btn-practice {
             flex: 1; padding: 12px 10px; font-size: 16px; border: none;
             background: var(--l-color); color: #000; cursor: pointer;
             font-weight: 900; font-family: var(--font-main);
-            border-radius: 40px 0 0 40px; transition: filter 0.1s;
-            /* no border-right — divider removed */
+            border-radius: 0; transition: filter 0.1s;
+            /* border-radius handled by parent overflow:hidden */
         }
         #btn-challenge {
             flex: 1; padding: 12px 10px; font-size: 15px; border: none;
             background: var(--accent); color: #000; cursor: pointer;
             font-weight: 900; font-family: var(--font-main);
-            border-radius: 0 40px 40px 0; transition: filter 0.1s;
-            /* border-left removed — divider gone */
+            border-radius: 0; transition: filter 0.1s;
+            /* no border-left — completely seamless join */
         }
         #btn-practice:active, #btn-challenge:active { filter: brightness(0.85); }
         #btn-start-single {
@@ -387,7 +392,7 @@
 </head>
 <body>
 
-<button id="help-btn" onclick="showHelp()" title="How to play">🧑</button>
+<button id="help-btn" onpointerdown="event.stopPropagation()" onclick="showHelp()" title="How to play">🧑</button>
 <div id="currency-display">⭐ 0</div>
 <div id="lives-display">❤️❤️❤️</div>
 
@@ -833,10 +838,8 @@
         const anyOverlayVisible = [...document.querySelectorAll('.overlay')]
             .some(el => !el.classList.contains('hidden'));
         if(!anyOverlayVisible) {
-            state.isPaused=false;
-            const limit = inChallenge ? CHALLENGE_LENGTH : ROUND_LENGTH;
-            if(currentBlock){ playBlockAudio(currentBlock.data, ()=>{}); animate(); }
-            else if(state.roundHits<limit){ spawnBlock(); }
+            // Re-use closeMenus which handles audio replay + animation resume correctly
+            closeMenus();
         }
     }
 
@@ -873,8 +876,15 @@
         const inv = state.invest[state.curLevel] ?? 0;
         const grid = document.getElementById('shop-items-grid');
         grid.innerHTML="";
-        if(inv >= 400 && !hasKey(state.curLevel)){
+        // Show the lightning unlock message whenever the floor is eligible
+        // (invest >= 400 OR key already earned) but key not yet in inventory.
+        // This fixes floors 2+ where devUnlockAll grants the key directly
+        // without going through the invest path.
+        const lightningEligible = (inv >= 400) || hasKey(state.curLevel);
+        if(lightningEligible && !hasKey(state.curLevel)){
             typeWriter("⚡ YOU'VE UNLOCKED THE LIGHTNING ROUND!",true);
+        } else if(lightningEligible && hasKey(state.curLevel)){
+            typeWriter("⚡ LIGHTNING ROUND AVAILABLE!",true);
         } else {
             typeWriter("FLOOR "+state.curLevel+" SHOP!",false);
         }
@@ -1052,7 +1062,15 @@
     }
 
     window.addEventListener('pointerdown', e=>{
-        if(state.isPaused || !currentBlock || e.target.closest('.block')) return;
+        // Ignore taps on any overlay, fixed UI button, or the block itself
+        if(state.isPaused || !currentBlock) return;
+        if(e.target.closest('.block')) return;
+        if(e.target.closest('.overlay')) return;
+        if(e.target.closest('#help-btn')) return;
+        if(e.target.closest('#currency-display')) return;
+        if(e.target.closest('#lives-display')) return;
+        if(e.target.closest('#lightning-hud')) return;
+        if(e.target.closest('#dev-panel')) return;
         resolve(e.clientX < window.innerWidth/2 ? "L" : "R");
     });
 
@@ -1111,8 +1129,21 @@
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         state.isPaused=false;
         const limit = inChallenge ? CHALLENGE_LENGTH : ROUND_LENGTH;
-        if(!currentBlock && state.roundHits<limit) spawnBlock();
-        else if(currentBlock){ animate(); }
+        if(!currentBlock && state.roundHits<limit) {
+            spawnBlock();
+        } else if(currentBlock) {
+            // Replay the word so the player can hear it again before tapping,
+            // then resume falling animation the moment audio starts
+            const rate = inChallenge ? challengeRate : (state.audioRate ?? 1.0);
+            if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+            const a = new Audio(buildAudioPath(currentBlock.data));
+            a.playbackRate = rate;
+            currentAudio = a;
+            a.onerror = ()=>{ console.warn('Missing audio:', buildAudioPath(currentBlock.data)); animate(); };
+            a.play()
+                .then(()=>{ animate(); })
+                .catch(e=>{ console.warn('Audio play error:', e); animate(); });
+        }
     }
 
     function setSpeed(s){ state.audioRate=s; updateUI(); }
@@ -1246,6 +1277,8 @@
             if(!state.inventory.some(x=>x.level===i&&x.isKey)){
                 state.inventory.push({emoji:"🗝️",level:i,isKey:true});
             }
+            // Set invest to 400 so the split Practice/⚡ROUND button shows on all floors
+            state.invest[i] = Math.max(state.invest[i] ?? 0, 400);
         }
         updateUI();
         document.getElementById('btn-world-map').classList.remove('hidden');
