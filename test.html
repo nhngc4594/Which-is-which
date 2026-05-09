@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v4.0.0</title>
+    <title>Phonetic Flow v4.1.0</title>
     <style>
         :root {
             --bg-color: #0a0a1a;
@@ -59,11 +59,13 @@
         #stall-header {
             background: #6b0f0f; border-bottom: 3px solid var(--accent);
             display: flex; justify-content: center; gap: 6px;
-            padding: 4px 0 2px; flex-shrink: 0; z-index: 10; flex-wrap: wrap;
+            padding: 8px 0 6px; flex-shrink: 0; z-index: 10; flex-wrap: wrap;
+            overflow: visible;
         }
-        .lantern { font-size: 22px; animation: sway 2.5s ease-in-out infinite; display: inline-block; }
-        .lantern:nth-child(even) { animation-delay: 0.6s; }
-        @keyframes sway { 0%,100%{transform:rotate(-10deg)} 50%{transform:rotate(10deg)} }
+        .lantern { font-size: 22px; animation: sway 2.5s ease-in-out infinite; display: inline-block; transform-origin: top center; }
+        .lantern:nth-child(even) { animation-delay: 0.7s; }
+        .lantern:nth-child(3n) { animation-delay: 0.35s; }
+        @keyframes sway { 0%,100%{transform:rotate(-12deg)} 50%{transform:rotate(12deg)} }
 
         #speaker-row {
             background: rgba(0,0,0,0.7); border-bottom: 2px solid rgba(241,196,15,0.3);
@@ -71,16 +73,22 @@
             padding: 6px 14px; flex-shrink: 0; z-index: 10;
         }
         #speaker-btn {
-            font-size: 30px; cursor: pointer; transition: transform 0.1s;
+            font-size: 26px; cursor: pointer; transition: transform 0.1s;
             flex-shrink: 0; background: none; border: none; padding: 0; margin: 0; line-height: 1;
         }
         #speaker-btn:active { transform: scale(0.82); }
+        #pause-btn {
+            font-size: 20px; cursor: pointer; transition: transform 0.1s;
+            flex-shrink: 0; background: none; border: none; padding: 0; margin: 0; line-height: 1;
+            color: rgba(255,255,255,0.7);
+        }
+        #pause-btn:active { transform: scale(0.82); }
         #timer-wrap { flex: 1; height: 8px; background: #222; border-radius: 4px; overflow: hidden; }
         #timer-bar { height: 100%; width: 100%; background: var(--accent); border-radius: 4px; transition: background 0.3s; }
         #block-counter { font-size: 11px; color: var(--accent); font-family: var(--font-retro); letter-spacing: 2px; flex-shrink: 0; }
 
         #play-field { flex: 1; position: relative; display: flex; overflow: hidden; }
-        .lane-half { flex: 1; height: 100%; position: relative; }
+        .lane-half { flex: 1; height: 100%; position: relative; overflow: hidden; }
         #lane-l { border-right: 1px solid rgba(255,255,255,0.06); }
         #lane-l::before { content:''; position:absolute; inset:0; background:var(--l-color); opacity:0.06; pointer-events:none; }
         #lane-r::before { content:''; position:absolute; inset:0; background:var(--r-color); opacity:0.06; pointer-events:none; }
@@ -109,41 +117,74 @@
             pointer-events: none; top: -200px;
         }
 
+        /* Stacks live inside each lane-half so they're naturally clipped and positioned */
         .side-stack {
-            position: absolute; bottom: 10px; width: 140px;
+            position: absolute; bottom: 8px; width: 100%;
             display: flex; flex-direction: column-reverse; z-index: 10;
-            padding: 6px; box-sizing: border-box; pointer-events: none;
+            padding: 4px; box-sizing: border-box; pointer-events: none;
+            max-height: 50%; overflow: hidden;
         }
         #left-stack  { left: 0; align-items: flex-start; }
         #right-stack { right: 0; align-items: flex-end; }
         .brick {
-            width: 124px; height: 30px; margin-bottom: 3px; border-radius: 5px;
+            width: 118px; height: 28px; margin-bottom: 3px; border-radius: 5px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: bold; color: white;
+            font-size: 11px; font-weight: bold; color: white;
             animation: slideIn 0.18s ease-out; flex-shrink: 0;
         }
         @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
 
-        .coin-pop {
-            position: absolute; font-size: 20px; z-index: 30;
-            pointer-events: none; animation: coinFly 0.7s ease-out forwards;
+        /* ── FOX MASCOT INTRO ───────────────────────────────────────────── */
+        #fox-intro {
+            position: absolute; inset: 0; z-index: 40;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            pointer-events: none; background: rgba(0,0,0,0.45);
         }
-        @keyframes coinFly { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-80px) scale(0.5)} }
+        #fox-intro .fox-emoji {
+            font-size: 100px; line-height: 1;
+            animation: foxDrop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        #fox-intro .fox-msg {
+            font-size: 17px; color: #fff; margin-top: 14px;
+            font-family: var(--font-retro); text-align: center;
+            padding: 0 20px; line-height: 1.6;
+            text-shadow: 0 0 12px rgba(0,0,0,0.9);
+            animation: foxDrop 0.5s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        #fox-intro.fox-out {
+            animation: foxFade 0.4s ease-out forwards;
+        }
+        @keyframes foxDrop {
+            0%  { opacity:0; transform: translateY(-40px) scale(0.6); }
+            100%{ opacity:1; transform: translateY(0)     scale(1);   }
+        }
+        @keyframes foxFade {
+            0%  { opacity:1; }
+            100%{ opacity:0; }
+        }
+
+        /* ── COMBO & COIN ───────────────────────────────────────────────── */
+        .coin-pop {
+            position: absolute; font-size: 22px; z-index: 35;
+            pointer-events: none; animation: coinFly 0.8s ease-out forwards;
+        }
+        @keyframes coinFly { 0%{opacity:1;transform:translateY(0) scale(1.2)} 100%{opacity:0;transform:translateY(-90px) scale(0.4)} }
 
         #combo-banner {
-            position: absolute; top: 50%; left: 50%;
+            position: absolute; top: 38%; left: 50%;
             transform: translate(-50%,-50%);
             font-family: var(--font-retro); font-weight: 900;
             color: var(--accent); text-align: center;
-            pointer-events: none; z-index: 25; white-space: nowrap;
-            text-shadow: 0 0 20px var(--accent);
+            pointer-events: none; z-index: 38; white-space: nowrap;
+            text-shadow: 0 0 24px var(--accent), 0 2px 8px rgba(0,0,0,0.8);
             animation: comboPop 0.5s ease-out forwards;
         }
         @keyframes comboPop {
-            0%{opacity:0;transform:translate(-50%,-50%) scale(0.4)}
-            40%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}
-            70%{transform:translate(-50%,-50%) scale(0.95)}
-            100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+            0%  {opacity:0;transform:translate(-50%,-50%) scale(0.3);}
+            45% {opacity:1;transform:translate(-50%,-50%) scale(1.2);}
+            70% {transform:translate(-50%,-50%) scale(0.92);}
+            100%{opacity:1;transform:translate(-50%,-50%) scale(1);}
         }
 
         #lightning-hud {
@@ -241,6 +282,8 @@
 
         @keyframes heartAppear { 0%{transform:scale(0.5);filter:drop-shadow(0 0 0px #f1c40f);opacity:0} 50%{transform:scale(1.4);filter:drop-shadow(0 0 16px #f1c40f);opacity:1} 75%{transform:scale(0.9);filter:drop-shadow(0 0 8px #f1c40f)} 100%{transform:scale(1);filter:drop-shadow(0 0 4px #f1c40f);opacity:1} }
         .heart-new { animation: heartAppear 0.6s ease-out forwards; }
+        @keyframes heartBreakAnim { 0%{transform:scale(1.4);opacity:1} 100%{transform:scale(0.6);opacity:0} }
+        .heart-break { font-size:22px; display:inline-block; animation: heartBreakAnim 0.6s ease-out forwards; }
 
         /* ── LIGHTNING COUNTDOWN ────────────────────────────────────────── */
         #lightning-countdown { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:920; font-family:var(--font-retro); color:var(--accent); }
@@ -290,6 +333,7 @@
         <button id="speaker-btn" onpointerdown="event.stopPropagation()" onclick="replayCurrent()">🔊</button>
         <div id="timer-wrap"><div id="timer-bar"></div></div>
         <div id="block-counter">— / —</div>
+        <button id="pause-btn" onpointerdown="event.stopPropagation()" onclick="showMenu('pause-menu')">⏸</button>
     </div>
     <div id="play-field">
         <div class="lane-half" id="lane-l">
@@ -304,6 +348,10 @@
             <div id="right-stack" class="side-stack"></div>
         </div>
         <div id="lightning-hud" class="hidden">⚡ <span id="lhud-block">1</span>/15 &nbsp;|&nbsp; <span id="lhud-speed">1.0</span>x</div>
+        <div id="fox-intro" class="hidden">
+            <div class="fox-emoji">🦊</div>
+            <div class="fox-msg" id="fox-msg"></div>
+        </div>
     </div>
 </div>
 
@@ -489,7 +537,7 @@
                 {sound:"S",position:"final",word:"base"},{sound:"S",position:"final",word:"peace"},{sound:"S",position:"final",word:"bus"},
                 {sound:"TH",position:"final",word:"bath"},{sound:"TH",position:"final",word:"math"},{sound:"TH",position:"final",word:"teeth"}],
              stickers:[{emoji:"🌬️",price:50},{emoji:"🍃",price:100},{emoji:"🌀",price:200},{emoji:"⚡",price:300},{emoji:"🌊",price:500}]},
-        3: { name:"F vs P", folder:"F_vs_P", sounds:["F","P"], targets:["🦊","🦆","🪆"],
+        3: { name:"F vs P", folder:"F_vs_P", sounds:["F","P"], targets:["🗼","🦆","🪆"],
              words:[
                 {sound:"F",position:"initial",word:"fan"},{sound:"F",position:"initial",word:"feel"},{sound:"F",position:"initial",word:"photo"},
                 {sound:"P",position:"initial",word:"pan"},{sound:"P",position:"initial",word:"peel"},{sound:"P",position:"initial",word:"pot"},
@@ -730,8 +778,10 @@
     // ─── HEART BREAK ─────────────────────────────────────────────────────────
     function showHeartBreak(){
         const livesEl=document.getElementById('lives-display');
-        livesEl.innerHTML='❤️'.repeat(Math.max(0,state.lives))+'<span style="font-size:22px;animation:heartAppear 0.5s ease-out forwards;filter:grayscale(1) opacity(0.4);">💔</span>';
-        setTimeout(()=>{ livesEl.innerHTML='❤️'.repeat(Math.max(0,state.lives)); },600);
+        const count=Math.max(0,state.lives);
+        // Show remaining hearts + a breaking heart
+        livesEl.innerHTML='❤️'.repeat(count)+'<span class="heart-break">💔</span>';
+        setTimeout(()=>{ livesEl.innerHTML='❤️'.repeat(count); },700);
     }
 
     // ─── HELP ─────────────────────────────────────────────────────────────────
@@ -822,7 +872,11 @@
         const lvl=levels[state.curLevel], labels=lvl.labels||lvl.sounds;
         document.getElementById('l-label').innerText=labels[0];
         document.getElementById('r-label').innerText=labels[1];
-        preloadAudio(); closeMenus();
+        preloadAudio();
+        // Hide overlays, unpause, show fox, then spawn first block
+        document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
+        state.isPaused=false;
+        showFoxIntro(()=>{ spawnBlock(); });
     }
     function startChallenge(){
         inChallenge=true; challengeBlock=0; challengeRate=1.0;
@@ -860,6 +914,33 @@
     function getChallengeFallSpeed(b){ if(b<=3) return BASE_FALL_SPEED+(b*0.4); if(b<=6) return BASE_FALL_SPEED+1.2; return (BASE_FALL_SPEED+1.2)+((MAX_FALL_SPEED-(BASE_FALL_SPEED+1.2))*Math.pow((b-7)/8,0.7)); }
     function updateLightningHud(){ document.getElementById('lhud-block').innerText=challengeBlock; document.getElementById('lhud-speed').innerText=challengeRate.toFixed(2); }
 
+    // ─── FOX MASCOT ───────────────────────────────────────────────────────────
+    const FOX_MESSAGES = [
+        "Are you ready?٩(◕‿◕｡)۶",
+        "You can do it!!(°◡°♡)",
+        "Hey, Let's go!! 。.:☆*:･'(*⌒―⌒*)))",
+        "Don't think, Feel!! (๑˃ᴗ˂)ﻭ"
+    ];
+    let foxMsgIndex = 0;
+
+    function showFoxIntro(onDone) {
+        const el = document.getElementById('fox-intro');
+        const msg = document.getElementById('fox-msg');
+        // Pick next message in rotation
+        msg.innerText = FOX_MESSAGES[foxMsgIndex % FOX_MESSAGES.length];
+        foxMsgIndex++;
+        el.classList.remove('hidden', 'fox-out');
+        // After 1.5s fade it out, then call onDone
+        setTimeout(()=>{
+            el.classList.add('fox-out');
+            setTimeout(()=>{
+                el.classList.add('hidden');
+                el.classList.remove('fox-out');
+                onDone();
+            }, 400);
+        }, 1500);
+    }
+
     // ─── SPAWN ────────────────────────────────────────────────────────────────
     function spawnBlock(){
         const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
@@ -873,7 +954,7 @@
 
         document.getElementById('block-counter').innerText=`${state.roundHits+1}/${inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH}`;
 
-        // Place target
+        // Reset and place target
         const targetEl=document.getElementById('falling-target');
         targetEl.style.transition='none';
         targetEl.style.transform='translateX(-50%)';
@@ -885,18 +966,22 @@
 
         currentBlock={data:w, top:-70};
 
-        // Timer duration based on fall speed
-        const speed=inChallenge?getChallengeFallSpeed(challengeBlock):BASE_FALL_SPEED;
-        const arenaH=document.getElementById('play-field').offsetHeight||500;
-        const duration=((arenaH+70)/speed)*(1000/60);
-        startTimer(duration);
-
+        // Pre-create audio so it starts buffering immediately
         const rate=inChallenge?challengeRate:(state.audioRate??1.0);
         if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
         const a=new Audio(buildAudioPath(w));
         a.playbackRate=rate; currentAudio=a;
-        a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); animate(); };
-        a.play().then(()=>{ animate(); }).catch(e=>{ console.warn(e); animate(); });
+
+        // Calculate timer duration based on fall speed
+        const speed=inChallenge?getChallengeFallSpeed(challengeBlock):BASE_FALL_SPEED;
+        const arenaH=document.getElementById('play-field').offsetHeight||500;
+        const duration=((arenaH+70)/speed)*(1000/60);
+
+        // ── SYNC: timer and animation both start the instant audio plays ──
+        a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); startTimer(duration); animate(); };
+        a.play()
+            .then(()=>{ startTimer(duration); animate(); })
+            .catch(e=>{ console.warn(e); startTimer(duration); animate(); });
     }
 
     // ─── ANIMATE ─────────────────────────────────────────────────────────────
@@ -926,6 +1011,7 @@
         if(e.target.closest('#dev-panel')) return;
         if(e.target.closest('#stall-header')) return;
         if(e.target.closest('#speaker-row')) return;
+        if(e.target.closest('#fox-intro')) return;
         resolve(e.clientX<window.innerWidth/2?"L":"R");
     });
 
@@ -939,21 +1025,28 @@
         const ok=!missed&&choice===correct;
         const side=missed?correct:choice;
 
-        // Target fly-off
+        // Target fly-off — clone the target so it animates while the original resets
         const targetEl=document.getElementById('falling-target');
-        const flyX=side==='L'?-160:160;
-        const flyColor=ok?'#2ecc71':'#e74c3c';
-        targetEl.style.transition='transform 0.35s ease-in, opacity 0.35s ease-in, filter 0.2s';
-        targetEl.style.transform=`translateX(calc(-50% + ${flyX}px)) rotate(${side==='L'?-40:40}deg) scale(0.4)`;
-        targetEl.style.opacity='0';
-        targetEl.style.filter=`drop-shadow(0 0 14px ${flyColor})`;
+        const ghost=document.createElement('div');
+        ghost.style.cssText=`position:absolute;font-size:58px;line-height:1;z-index:21;pointer-events:none;top:${targetEl.style.top};left:${targetEl.style.left};transform:translateX(-50%);transition:transform 0.38s ease-in,opacity 0.38s ease-in,filter 0.2s;`;
+        ghost.innerText=targetEl.innerText;
+        document.getElementById('play-field').appendChild(ghost);
+        // Trigger fly animation on next frame
+        requestAnimationFrame(()=>{
+            const flyX=side==='L'?-180:180;
+            const flyColor=ok?'#2ecc71':'#e74c3c';
+            ghost.style.transform=`translateX(calc(-50% + ${flyX}px)) rotate(${side==='L'?-45:45}deg) scale(0.3)`;
+            ghost.style.opacity='0';
+            ghost.style.filter=`drop-shadow(0 0 16px ${flyColor})`;
+        });
+        setTimeout(()=>ghost.remove(), 420);
 
         // Flash
         const flashEl=document.getElementById(side==='L'?'flash-l':'flash-r');
         flashEl.className=''; void flashEl.offsetWidth;
         flashEl.className=ok?'do-flash-green':'do-flash-red';
 
-        // Brick
+        // Brick — placed in the lane-half div for correct positioning
         const brick=document.createElement('div'); brick.className='brick'; brick.innerText=w.word;
         brick.style.background=ok?'var(--l-color)':'var(--r-color)';
         document.getElementById(side==='L'?'left-stack':'right-stack').appendChild(brick);
@@ -986,7 +1079,7 @@
             } else {
                 setTimeout(()=>showRoundWin(),500);
             }
-        } else { setTimeout(spawnBlock,400); }
+        } else { setTimeout(spawnBlock,500); }
     }
 
     function cleanup(){
