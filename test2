@@ -124,13 +124,37 @@
             padding: 4px; box-sizing: border-box; pointer-events: none;
             height: 50%; overflow: hidden;
         }
-        #left-stack  { left: 0; align-items: flex-start; }
-        #right-stack { right: 0; align-items: flex-end; }
+        /* Fix: Stacks now sit at a fixed 'floor' above the lane buttons */
+        #left-stack, #right-stack {
+            position: absolute; 
+            bottom: 120px; /* This keeps them from sliding below the screen */
+            width: 50%;
+            max-height: 65vh;
+            display: flex; 
+            flex-direction: column-reverse; 
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 10;
+        }
+        #left-stack  { left: 0; align-items: flex-start; padding-left: 10px; }
+        #right-stack { right: 0; align-items: flex-end; padding-right: 10px; }
+
         .brick {
             width: 118px; height: 28px; margin-top: 3px; border-radius: 5px;
             display: flex; align-items: center; justify-content: center;
             font-size: 11px; font-weight: bold; color: white;
             animation: slideIn 0.18s ease-out; flex-shrink: 0;
+        }
+
+        /* Juice: The Shake Animation */
+        .screen-shake {
+            animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
         }
         @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
 
@@ -1057,7 +1081,9 @@
             state.roundHits++; addCoins(10); comboCount++;
             spawnCoinPop(side); showCombo(comboCount);
         } else {
-            comboCount=0; state.lives--; showHeartBreak();
+            comboCount=0; state.lives--; showHeartBreak();const gameCont = document.getElementById('game-container');
+            gameCont.classList.add('screen-shake');
+            setTimeout(() => gameCont.classList.remove('screen-shake'), 300);
             if(state.lives<=0){
                 cleanup();
                 document.getElementById('lightning-hud').classList.add('hidden');
