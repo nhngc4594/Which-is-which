@@ -57,116 +57,37 @@
             background: #0a0a1a; transition: background 1.2s ease;
         }
 #stall-header {
-            background: rgba(107, 15, 15, 0.85); 
-            backdrop-filter: blur(8px); 
-            border-bottom: 3px solid var(--accent);
+            background: rgba(107, 15, 15, 0.8); 
+            backdrop-filter: blur(5px);
+            border-bottom: 2px solid var(--accent);
             display: flex; 
-            /* CHANGE: space-between ensures items spread out to the edges */
-            justify-content: space-between; 
+            justify-content: space-between; /* Coins on left, Hearts on right */
             align-items: center;
-            /* Reduced horizontal padding to save room for the coins */
-            padding: 10px 15px; 
-            flex-shrink: 0; 
-            z-index: 500; 
-            /* Prevent wrapping so things don't disappear to a second line */
-            flex-wrap: nowrap; 
-            height: 60px; /* Fixed height for consistency */
+            padding: 5px 15px; 
+            height: 45px; /* Shorter height so it doesn't clip the title */
+            z-index: 500;
         }
 
-        /* This ensures every item inside the header stays visible and sized right */
-        #stall-header > * {
-            font-size: 1.2rem !important;
+        /* Hide the redundant buttons and the timer bar */
+        #btn-pause, #btn-replay, #timer-container, .timer-bar-style {
+            display: none !important;
+        }
+
+        #stall-header span {
+            font-size: 1.1rem !important;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            white-space: nowrap;
+            color: var(--accent);
         }
-
-        /* Give the help and coin buttons a little extra breathing room */
-        #btn-help, #coin-display {
-            margin: 0 5px;
-        }
-
-        /* Makes the Timer, Speaker, and Hearts much bigger and easier to see */
-        #stall-header span, #stall-header button {
-            font-size: 1.4rem !important;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-        }
-
-        /* --- HEART POP ANIMATION --- */
-        .heart-pop {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 3rem;
-            pointer-events: none;
-            z-index: 1000;
-            animation: heartBreakFloat 0.8s ease-out forwards;
-        }
-
-        @keyframes heartBreakFloat {
-            0% { transform: translate(-50%, 0) scale(1); opacity: 1; }
-            100% { transform: translate(-50%, -60px) scale(2); opacity: 0; }
-        }
-        .lantern { font-size: 22px; animation: sway 2.5s ease-in-out infinite; display: inline-block; transform-origin: top center; }
-        .lantern:nth-child(even) { animation-delay: 0.7s; }
-        .lantern:nth-child(3n) { animation-delay: 0.35s; }
-        @keyframes sway { 0%,100%{transform:rotate(-12deg)} 50%{transform:rotate(12deg)} }
-
-        #speaker-row {
-            background: rgba(0,0,0,0.7); border-bottom: 2px solid rgba(241,196,15,0.3);
-            display: flex; align-items: center; gap: 10px;
-            padding: 6px 14px; flex-shrink: 0; z-index: 12; position: relative;
-        }
-        #speaker-btn {
-            font-size: 26px; cursor: pointer; transition: transform 0.1s;
-            flex-shrink: 0; background: none; border: none; padding: 0; margin: 0; line-height: 1;
-        }
-        #speaker-btn:active { transform: scale(0.82); }
-        #pause-btn {
-            font-size: 20px; cursor: pointer; transition: transform 0.1s;
-            flex-shrink: 0; background: none; border: none; padding: 0; margin: 0; line-height: 1;
-            color: rgba(255,255,255,0.7);
-        }
-        #pause-btn:active { transform: scale(0.82); }
-        #timer-wrap { flex: 1; height: 8px; background: #222; border-radius: 4px; overflow: hidden; }
-        #timer-bar { height: 100%; width: 100%; background: var(--accent); border-radius: 4px; transition: background 0.3s; }
-        #block-counter { font-size: 11px; color: var(--accent); font-family: var(--font-retro); letter-spacing: 2px; flex-shrink: 0; }
-
-        #play-field { flex: 1; position: relative; display: flex; overflow: hidden; }
-        .lane-half { flex: 1; height: 100%; position: relative; overflow: hidden; }
-        #lane-l { border-right: 1px solid rgba(255,255,255,0.06); }
-        #lane-l::before { content:''; position:absolute; inset:0; background:var(--l-color); opacity:0.06; pointer-events:none; }
-        #lane-r::before { content:''; position:absolute; inset:0; background:var(--r-color); opacity:0.06; pointer-events:none; }
-
-        .lane-letter {
-            position: absolute; top: 20px; font-size: 72px; font-weight: 900;
-            color: var(--accent); opacity: 0.18; pointer-events: none; font-family: var(--font-retro);
-        }
-        #l-label { left: 14%; }
-        #r-label { right: 14%; }
-
-        #flash-l, #flash-r {
-            position: absolute; top: 0; width: 50%; height: 100%;
-            opacity: 0; pointer-events: none; z-index: 6;
-        }
-        #flash-l { left: 0; }
-        #flash-r { right: 0; }
-        @keyframes flashGreen { 0%{opacity:0.55} 100%{opacity:0} }
-        @keyframes flashRed   { 0%{opacity:0.45} 100%{opacity:0} }
-        .do-flash-green { animation: flashGreen 0.45s ease-out forwards; background: #2ecc71; }
-        .do-flash-red   { animation: flashRed   0.45s ease-out forwards; background: #e74c3c; }
 
         #falling-target {
-            position: absolute; font-size: 44px; z-index: 100;
+            position: absolute; 
+            font-size: 44px; 
+            z-index: 100;
             filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));
             transition: transform 0.1s linear;
-            cursor: pointer; /* Makes it feel like a button */
+            cursor: pointer; /* Makes the emoji feel like a button */
+            -webkit-tap-highlight-color: transparent; /* Removes the grey box on tap for iOS */
         }
-
         /* Stacks live inside each lane-half, anchored to bottom, grow upward */
         .side-stack {
             position: absolute; bottom: 8px; width: 100%;
@@ -1056,26 +977,22 @@
 
         document.getElementById('block-counter').innerText=`${state.roundHits+1}/${inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH}`;
 
-        // Reset and place target
-        const targetEl=document.getElementById('falling-target');
+     // Reset and place target
+        const targetEl = document.getElementById('falling-target');
+        
+        // This makes the emoji the Pause/Replay trigger
         targetEl.onclick = (e) => {
-            e.stopPropagation(); 
-            if (typeof togglePause === "function") {
-                togglePause();
-            } else {
-                // This is a safety backup if the function isn't found
-                state.paused = !state.paused;
-                document.getElementById('pause-menu').classList.toggle('hidden', !state.paused);
-                if (!state.paused) playTargetSound();
-            }
+            e.stopPropagation();
+            togglePause(); 
         };
-        targetEl.style.transition='none';
-        targetEl.style.transform='translateX(-50%)';
-        targetEl.style.opacity='1';
-        targetEl.style.filter='none';
-        targetEl.style.top='-70px';
-        targetEl.style.left='50%';
-        targetEl.innerText=pickTarget();
+
+        targetEl.style.transition = 'none';
+        targetEl.style.transform = 'translateX(-50%)';
+        targetEl.style.opacity = '1';
+        targetEl.style.filter = 'none';
+        targetEl.style.top = '-70px';
+        targetEl.style.left = '50%';
+        targetEl.innerText = pickTarget();
 
         currentBlock={data:w, top:-70};
 
@@ -1336,17 +1253,18 @@
     // ─── BOOT ─────────────────────────────────────────────────────────────────
     loadGame();
     function togglePause() {
-        // If the game is already over, don't do anything
         if (state.gameOver) return;
-
-        // Switch the paused state (True to False, or False to True)
         state.paused = !state.paused;
         
-        // Find the pause menu and show/hide it
+        // Show/Hide the pause menu
         const pauseMenu = document.getElementById('pause-menu');
-        if (pauseMenu) {
-            pauseMenu.classList.toggle('hidden', !state.paused);
+        if (pauseMenu) pauseMenu.classList.toggle('hidden', !state.paused);
+        
+        // If we just unpaused (resumed), replay the word automatically!
+        if (!state.paused) {
+            playTargetSound(); 
         }
+    }
         
         // If we just unpaused, play the word again automatically!
         if (!state.paused) {
