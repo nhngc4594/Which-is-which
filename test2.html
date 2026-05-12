@@ -56,18 +56,35 @@
             display: flex; flex-direction: column; overflow: hidden;
             background: #0a0a1a; transition: background 1.2s ease;
         }
-       #stall-header {
-            background: rgba(107, 15, 15, 0.85); /* Semi-transparent dark red */
-            backdrop-filter: blur(8px); /* Blur effect for the lanterns */
+#stall-header {
+            background: rgba(107, 15, 15, 0.85); 
+            backdrop-filter: blur(8px); 
             border-bottom: 3px solid var(--accent);
             display: flex; 
-            justify-content: center; 
-            gap: 15px; /* More space between items */
-            padding: 12px 0; 
+            /* CHANGE: space-between ensures items spread out to the edges */
+            justify-content: space-between; 
+            align-items: center;
+            /* Reduced horizontal padding to save room for the coins */
+            padding: 10px 15px; 
             flex-shrink: 0; 
-            z-index: 500; /* High z-index to stay on top */
-            flex-wrap: wrap;
-            overflow: visible;
+            z-index: 500; 
+            /* Prevent wrapping so things don't disappear to a second line */
+            flex-wrap: nowrap; 
+            height: 60px; /* Fixed height for consistency */
+        }
+
+        /* This ensures every item inside the header stays visible and sized right */
+        #stall-header > * {
+            font-size: 1.2rem !important;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        /* Give the help and coin buttons a little extra breathing room */
+        #btn-help, #coin-display {
+            margin: 0 5px;
         }
 
         /* Makes the Timer, Speaker, and Hearts much bigger and easier to see */
