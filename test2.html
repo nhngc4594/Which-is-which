@@ -965,25 +965,32 @@
     }
 
     // ─── SPAWN ────────────────────────────────────────────────────────────────
-    function spawnBlock(){
-        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
-        if(state.isPaused||state.lives<=0||state.roundHits>=limit) return;
+   function spawnBlock(){
+        const limit = inChallenge ? CHALLENGE_LENGTH : ROUND_LENGTH;
+        if(state.isPaused || state.lives <= 0 || state.roundHits >= limit) return;
         if(currentBlock) return;
 
-        const pool=levels[state.curLevel].words;
-        const w=pool[Math.floor(Math.random()*pool.length)];
+        const pool = levels[state.curLevel].words;
+        const w = pool[Math.floor(Math.random() * pool.length)];
 
-        if(inChallenge){ challengeBlock++; challengeRate=getChallengeAudioRate(challengeBlock); updateLightningHud(); setArenaBg(challengeBlock); }
+        if(inChallenge){ 
+            challengeBlock++; 
+            challengeRate = getChallengeAudioRate(challengeBlock); 
+            updateLightningHud(); 
+            setArenaBg(challengeBlock); 
+        }
 
-        document.getElementById('block-counter').innerText=`${state.roundHits+1}/${inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH}`;
+        document.getElementById('block-counter').innerText = `${state.roundHits + 1}/${inChallenge ? CHALLENGE_LENGTH : ROUND_LENGTH}`;
 
-     // Reset and place target
         const targetEl = document.getElementById('falling-target');
         
-        // This makes the emoji the Pause/Replay trigger
+        // This is a "Self-Sufficient" clicker. It doesn't need external functions to work.
         targetEl.onclick = (e) => {
             e.stopPropagation();
-            togglePause(); 
+            state.paused = !state.paused;
+            const menu = document.getElementById('pause-menu');
+            if (menu) menu.classList.toggle('hidden', !state.paused);
+            if (!state.paused && typeof playTargetSound === 'function') playTargetSound();
         };
 
         targetEl.style.transition = 'none';
@@ -994,26 +1001,23 @@
         targetEl.style.left = '50%';
         targetEl.innerText = pickTarget();
 
-        currentBlock={data:w, top:-70};
+        currentBlock = {data:w, top:-70};
 
-        // Pre-create audio so it starts buffering immediately
-        const rate=inChallenge?challengeRate:(state.audioRate??1.0);
-        if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
-        const a=new Audio(buildAudioPath(w));
-        a.playbackRate=rate; currentAudio=a;
+        const rate = inChallenge ? challengeRate : (state.audioRate ?? 1.0);
+        if(currentAudio){ currentAudio.pause(); currentAudio.onended = null; currentAudio = null; }
+        const a = new Audio(buildAudioPath(w));
+        a.playbackRate = rate; 
+        currentAudio = a;
 
-        // Calculate timer duration based on fall speed
-        const speed=inChallenge?getChallengeFallSpeed(challengeBlock):BASE_FALL_SPEED;
-        const arenaH=document.getElementById('play-field').offsetHeight||500;
-        const duration=((arenaH+70)/speed)*(1000/60);
+        const speed = inChallenge ? getChallengeFallSpeed(challengeBlock) : BASE_FALL_SPEED;
+        const arenaH = document.getElementById('play-field').offsetHeight || 500;
+        const duration = ((arenaH + 70) / speed) * (1000 / 60);
 
-        // ── SYNC: timer and animation both start the instant audio plays ──
-        a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); startTimer(duration); animate(); };
+        a.onerror = () => { startTimer(duration); animate(); };
         a.play()
-            .then(()=>{ startTimer(duration); animate(); })
-            .catch(e=>{ console.warn(e); startTimer(duration); animate(); });
+            .then(() => { startTimer(duration); animate(); })
+            .catch(() => { startTimer(duration); animate(); });
     }
-
     // ─── ANIMATE ─────────────────────────────────────────────────────────────
     function animate(){
         if(state.isPaused||!currentBlock) return;
@@ -1250,21 +1254,16 @@
     function devAddCoins(){ addCoins(500); updateUI(); }
     function devResetSave(){ if(confirm('Reset ALL save data? This cannot be undone.')){ localStorage.removeItem('phoneticFlowSave'); location.reload(); } }
 
-  // ─── BOOT ─────────────────────────────────────────────────────────────────
+ // ─── BOOT ─────────────────────────────────────────────────────────────────
     loadGame();
 
     function togglePause() {
-        if (state.gameOver) return;
+        if (typeof state === 'undefined' || state.gameOver) return;
         state.paused = !state.paused;
-        
-        // Show/Hide the pause menu
         const pauseMenu = document.getElementById('pause-menu');
-        if (pauseMenu) {
-            pauseMenu.classList.toggle('hidden', !state.paused);
-        }
-        
-        // Replay the word when resuming
-        if (!state.paused) {
-            playTargetSound(); 
-        }
+        if (pauseMenu) pauseMenu.classList.toggle('hidden', !state.paused);
+        if (!state.paused && typeof playTargetSound === 'function') playTargetSound();
     }
+</script>
+</body>
+</html>
