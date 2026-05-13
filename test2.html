@@ -56,38 +56,67 @@
             display: flex; flex-direction: column; overflow: hidden;
             background: #0a0a1a; transition: background 1.2s ease;
         }
-#stall-header {
-            background: rgba(107, 15, 15, 0.8); 
-            backdrop-filter: blur(5px);
-            border-bottom: 2px solid var(--accent);
-            display: flex; 
-            justify-content: space-between; /* Coins on left, Hearts on right */
-            align-items: center;
-            padding: 5px 15px; 
-            height: 45px; /* Shorter height so it doesn't clip the title */
-            z-index: 500;
+        #stall-header {
+            background: #6b0f0f; border-bottom: 3px solid var(--accent);
+            display: flex; justify-content: center; gap: 6px;
+            padding: 8px 0 6px; flex-shrink: 0; z-index: 10; flex-wrap: wrap;
+            overflow: visible;
         }
+        .lantern { font-size: 22px; animation: sway 2.5s ease-in-out infinite; display: inline-block; transform-origin: top center; }
+        .lantern:nth-child(even) { animation-delay: 0.7s; }
+        .lantern:nth-child(3n) { animation-delay: 0.35s; }
+        @keyframes sway { 0%,100%{transform:rotate(-12deg)} 50%{transform:rotate(12deg)} }
 
-        /* Hide the redundant buttons and the timer bar */
-        #btn-pause, #btn-replay, #timer-container, .timer-bar-style {
-            display: none !important;
+        #speaker-row {
+            background: rgba(0,0,0,0.7); border-bottom: 2px solid rgba(241,196,15,0.3);
+            display: flex; align-items: center; gap: 10px;
+            padding: 6px 14px; flex-shrink: 0; z-index: 12; position: relative;
         }
+        #speaker-btn {
+            font-size: 26px; cursor: pointer; transition: transform 0.1s;
+            flex-shrink: 0; background: none; border: none; padding: 0; margin: 0; line-height: 1;
+        }
+        #speaker-btn:active { transform: scale(0.82); }
+        #pause-btn {
+            font-size: 20px; cursor: pointer; transition: transform 0.1s;
+            flex-shrink: 0; background: none; border: none; padding: 0; margin: 0; line-height: 1;
+            color: rgba(255,255,255,0.7);
+        }
+        #pause-btn:active { transform: scale(0.82); }
+        #timer-wrap { flex: 1; height: 8px; background: #222; border-radius: 4px; overflow: hidden; }
+        #timer-bar { height: 100%; width: 100%; background: var(--accent); border-radius: 4px; transition: background 0.3s; }
+        #block-counter { font-size: 11px; color: var(--accent); font-family: var(--font-retro); letter-spacing: 2px; flex-shrink: 0; }
 
-        #stall-header span {
-            font-size: 1.1rem !important;
-            font-weight: bold;
-            color: var(--accent);
+        #play-field { flex: 1; position: relative; display: flex; overflow: hidden; }
+        .lane-half { flex: 1; height: 100%; position: relative; overflow: hidden; }
+        #lane-l { border-right: 1px solid rgba(255,255,255,0.06); }
+        #lane-l::before { content:''; position:absolute; inset:0; background:var(--l-color); opacity:0.06; pointer-events:none; }
+        #lane-r::before { content:''; position:absolute; inset:0; background:var(--r-color); opacity:0.06; pointer-events:none; }
+
+        .lane-letter {
+            position: absolute; top: 20px; font-size: 72px; font-weight: 900;
+            color: var(--accent); opacity: 0.18; pointer-events: none; font-family: var(--font-retro);
         }
+        #l-label { left: 14%; }
+        #r-label { right: 14%; }
+
+        #flash-l, #flash-r {
+            position: absolute; top: 0; width: 50%; height: 100%;
+            opacity: 0; pointer-events: none; z-index: 6;
+        }
+        #flash-l { left: 0; }
+        #flash-r { right: 0; }
+        @keyframes flashGreen { 0%{opacity:0.55} 100%{opacity:0} }
+        @keyframes flashRed   { 0%{opacity:0.45} 100%{opacity:0} }
+        .do-flash-green { animation: flashGreen 0.45s ease-out forwards; background: #2ecc71; }
+        .do-flash-red   { animation: flashRed   0.45s ease-out forwards; background: #e74c3c; }
 
         #falling-target {
-            position: absolute; 
-            font-size: 44px; 
-            z-index: 100;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));
-            transition: transform 0.1s linear;
-            cursor: pointer; /* Makes the emoji feel like a button */
-            -webkit-tap-highlight-color: transparent; /* Removes the grey box on tap for iOS */
+            position: absolute; left: 50%; transform: translateX(-50%);
+            font-size: 58px; line-height: 1; z-index: 20;
+            pointer-events: none; top: -200px;
         }
+
         /* Stacks live inside each lane-half, anchored to bottom, grow upward */
         .side-stack {
             position: absolute; bottom: 8px; width: 100%;
@@ -965,59 +994,48 @@
     }
 
     // ─── SPAWN ────────────────────────────────────────────────────────────────
-   function spawnBlock(){
-        const limit = inChallenge ? CHALLENGE_LENGTH : ROUND_LENGTH;
-        if(state.isPaused || state.lives <= 0 || state.roundHits >= limit) return;
+    function spawnBlock(){
+        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+        if(state.isPaused||state.lives<=0||state.roundHits>=limit) return;
         if(currentBlock) return;
 
-        const pool = levels[state.curLevel].words;
-        const w = pool[Math.floor(Math.random() * pool.length)];
+        const pool=levels[state.curLevel].words;
+        const w=pool[Math.floor(Math.random()*pool.length)];
 
-        if(inChallenge){ 
-            challengeBlock++; 
-            challengeRate = getChallengeAudioRate(challengeBlock); 
-            updateLightningHud(); 
-            setArenaBg(challengeBlock); 
-        }
+        if(inChallenge){ challengeBlock++; challengeRate=getChallengeAudioRate(challengeBlock); updateLightningHud(); setArenaBg(challengeBlock); }
 
-        document.getElementById('block-counter').innerText = `${state.roundHits + 1}/${inChallenge ? CHALLENGE_LENGTH : ROUND_LENGTH}`;
+        document.getElementById('block-counter').innerText=`${state.roundHits+1}/${inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH}`;
 
-        const targetEl = document.getElementById('falling-target');
-        
-        // This is a "Self-Sufficient" clicker. It doesn't need external functions to work.
-        targetEl.onclick = (e) => {
-            e.stopPropagation();
-            state.paused = !state.paused;
-            const menu = document.getElementById('pause-menu');
-            if (menu) menu.classList.toggle('hidden', !state.paused);
-            if (!state.paused && typeof playTargetSound === 'function') playTargetSound();
-        };
+        // Reset and place target
+        const targetEl=document.getElementById('falling-target');
+        targetEl.style.transition='none';
+        targetEl.style.transform='translateX(-50%)';
+        targetEl.style.opacity='1';
+        targetEl.style.filter='none';
+        targetEl.style.top='-70px';
+        targetEl.style.left='50%';
+        targetEl.innerText=pickTarget();
 
-        targetEl.style.transition = 'none';
-        targetEl.style.transform = 'translateX(-50%)';
-        targetEl.style.opacity = '1';
-        targetEl.style.filter = 'none';
-        targetEl.style.top = '-70px';
-        targetEl.style.left = '50%';
-        targetEl.innerText = pickTarget();
+        currentBlock={data:w, top:-70};
 
-        currentBlock = {data:w, top:-70};
+        // Pre-create audio so it starts buffering immediately
+        const rate=inChallenge?challengeRate:(state.audioRate??1.0);
+        if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+        const a=new Audio(buildAudioPath(w));
+        a.playbackRate=rate; currentAudio=a;
 
-        const rate = inChallenge ? challengeRate : (state.audioRate ?? 1.0);
-        if(currentAudio){ currentAudio.pause(); currentAudio.onended = null; currentAudio = null; }
-        const a = new Audio(buildAudioPath(w));
-        a.playbackRate = rate; 
-        currentAudio = a;
+        // Calculate timer duration based on fall speed
+        const speed=inChallenge?getChallengeFallSpeed(challengeBlock):BASE_FALL_SPEED;
+        const arenaH=document.getElementById('play-field').offsetHeight||500;
+        const duration=((arenaH+70)/speed)*(1000/60);
 
-        const speed = inChallenge ? getChallengeFallSpeed(challengeBlock) : BASE_FALL_SPEED;
-        const arenaH = document.getElementById('play-field').offsetHeight || 500;
-        const duration = ((arenaH + 70) / speed) * (1000 / 60);
-
-        a.onerror = () => { startTimer(duration); animate(); };
+        // ── SYNC: timer and animation both start the instant audio plays ──
+        a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); startTimer(duration); animate(); };
         a.play()
-            .then(() => { startTimer(duration); animate(); })
-            .catch(() => { startTimer(duration); animate(); });
+            .then(()=>{ startTimer(duration); animate(); })
+            .catch(e=>{ console.warn(e); startTimer(duration); animate(); });
     }
+
     // ─── ANIMATE ─────────────────────────────────────────────────────────────
     function animate(){
         if(state.isPaused||!currentBlock) return;
@@ -1090,34 +1108,16 @@
         if(ok){
             state.roundHits++; addCoins(10); comboCount++;
             spawnCoinPop(side); showCombo(comboCount);
-       } else {
-            // Reset combo and lose a life
-            comboCount = 0; 
-            state.lives--; 
-
-            // --- FIX: The floating heart animation ---
-            const heart = document.createElement('div');
-            heart.className = 'heart-pop';
-            heart.textContent = '💔';
-            document.body.appendChild(heart);
-            // This removes the heart from the code after the animation finishes
-            setTimeout(() => heart.remove(), 800);
-
-            // The screen shake logic you already have
-            const gameCont = document.getElementById('game-container');
+        } else {
+            comboCount=0; state.lives--; showHeartBreak();const gameCont = document.getElementById('game-container');
             gameCont.classList.add('screen-shake');
             setTimeout(() => gameCont.classList.remove('screen-shake'), 300);
-
-            if(state.lives <= 0){
+            if(state.lives<=0){
                 cleanup();
                 document.getElementById('lightning-hud').classList.add('hidden');
-                inChallenge = false; 
-                setArenaBg(0); 
-                updateUI();
+                inChallenge=false; setArenaBg(0); updateUI();
                 return showMenu('game-over');
             }
-            // Add this line to make sure the life counter updates on screen
-            updateUI(); 
         }
         cleanup(); updateUI();
 
@@ -1254,16 +1254,8 @@
     function devAddCoins(){ addCoins(500); updateUI(); }
     function devResetSave(){ if(confirm('Reset ALL save data? This cannot be undone.')){ localStorage.removeItem('phoneticFlowSave'); location.reload(); } }
 
- // ─── BOOT ─────────────────────────────────────────────────────────────────
+    // ─── BOOT ─────────────────────────────────────────────────────────────────
     loadGame();
-
-    function togglePause() {
-        if (typeof state === 'undefined' || state.gameOver) return;
-        state.paused = !state.paused;
-        const pauseMenu = document.getElementById('pause-menu');
-        if (pauseMenu) pauseMenu.classList.toggle('hidden', !state.paused);
-        if (!state.paused && typeof playTargetSound === 'function') playTargetSound();
-    }
 </script>
 </body>
 </html>
