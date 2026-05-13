@@ -1250,27 +1250,21 @@
     function devAddCoins(){ addCoins(500); updateUI(); }
     function devResetSave(){ if(confirm('Reset ALL save data? This cannot be undone.')){ localStorage.removeItem('phoneticFlowSave'); location.reload(); } }
 
-    // ─── BOOT ─────────────────────────────────────────────────────────────────
+  // ─── BOOT ─────────────────────────────────────────────────────────────────
     loadGame();
+
     function togglePause() {
         if (state.gameOver) return;
         state.paused = !state.paused;
         
         // Show/Hide the pause menu
         const pauseMenu = document.getElementById('pause-menu');
-        if (pauseMenu) pauseMenu.classList.toggle('hidden', !state.paused);
+        if (pauseMenu) {
+            pauseMenu.classList.toggle('hidden', !state.paused);
+        }
         
-        // If we just unpaused (resumed), replay the word automatically!
+        // Replay the word when resuming
         if (!state.paused) {
             playTargetSound(); 
         }
     }
-        
-        // If we just unpaused, play the word again automatically!
-        if (!state.paused) {
-            playTargetSound(); 
-        }
-    }
-</script>
-</body>
-</html>
