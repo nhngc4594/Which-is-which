@@ -347,38 +347,23 @@
 }
 
 .heart-break {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 50px; 
-    pointer-events: none;
-    z-index: 2000;
-    display: block !important;
-    
-    /* Settings for soft pink look */
-    opacity: 0.6; 
-    filter: hue-rotate(310deg) brightness(1.2); 
-    
-    text-shadow: 0 0 20px rgba(255, 105, 180, 0.6); 
-                 
-    /* Matches the name 'breakHeart' above */
-    animation: breakHeart 1.2s ease-out forwards;
-}
+        position: fixed;
+        font-size: 50px; 
+        pointer-events: none;
+        z-index: 2000;
+        display: block !important;
+        opacity: 0.6; 
+        filter: hue-rotate(310deg) brightness(1.2); 
+        text-shadow: 0 0 20px rgba(255, 105, 180, 0.6); 
+        animation: breakHeart 1.2s ease-out forwards;
+    }
 
-@keyframes shakeAnim {
-    0% { transform: translate(0, 0); }
-    25% { transform: translate(5px, 5px); }
-    50% { transform: translate(-5px, -5px); }
-    75% { transform: translate(5px, -5px); }
-    100% { transform: translate(0, 0); }
-}
-@keyframes breakHeart {
-    0% { transform: scale(0.8); opacity: 0; }
-    15% { transform: scale(1.1); opacity: 0.7; }
-    70% { transform: scale(1.15); opacity: 0.6; } 
-    100% { transform: scale(1.3); opacity: 0; }
-}
+    @keyframes breakHeart {
+        0% { transform: scale(0.8); opacity: 0; }
+        15% { transform: scale(1.1); opacity: 0.7; }
+        70% { transform: scale(1.15); opacity: 0.6; } 
+        100% { transform: scale(1.3); opacity: 0; }
+    }
 
         /* ── LIGHTNING COUNTDOWN ────────────────────────────────────────── */
         #lightning-countdown { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:920; font-family:var(--font-retro); color:var(--accent); }
@@ -1118,111 +1103,87 @@
         resolve(e.clientX<window.innerWidth/2?"L":"R");
     });
 
-    // ─── RESOLVE ──────────────────────────────────────────────────────────────
-    function resolve(choice){
-        if(!currentBlock) return;
-        const w=currentBlock.data;
-        const leftSide=isLeftSound(w);
-        const correct=leftSide?"L":"R";
-        const missed=choice===null;
-        const ok=!missed&&choice===correct;
-        const side=missed?correct:choice;
+   // ─── RESOLVE ──────────────────────────────────────────────────────────────
+function resolve(choice){
+    if(!currentBlock) return;
+    const w=currentBlock.data;
+    const leftSide=isLeftSound(w);
+    const correct=leftSide?"L":"R";
+    const missed=choice===null;
+    const ok=!missed&&choice===correct;
+    const side=missed?correct:choice;
 
-        // Target fly-off — clone the target so it animates while the original resets
-        const targetEl=document.getElementById('falling-target');
-        const ghost=document.createElement('div');
-        ghost.style.cssText=`position:absolute;font-size:58px;line-height:1;z-index:21;pointer-events:none;top:${targetEl.style.top};left:${targetEl.style.left};transform:translateX(-50%);transition:transform 0.38s ease-in,opacity 0.38s ease-in,filter 0.2s;`;
-        ghost.innerText=targetEl.innerText;
-        document.getElementById('play-field').appendChild(ghost);
-        // Trigger fly animation on next frame
-        requestAnimationFrame(()=>{
-            const flyX=side==='L'?-180:180;
-            const flyColor=ok?'#2ecc71':'#e74c3c';
-            ghost.style.transform=`translateX(calc(-50% + ${flyX}px)) rotate(${side==='L'?-45:45}deg) scale(0.3)`;
-            ghost.style.opacity='0';
-            ghost.style.filter=`drop-shadow(0 0 16px ${flyColor})`;
-        });
-        setTimeout(()=>ghost.remove(), 420);
+    // Target fly-off — clone the target so it animates while the original resets
+    const targetEl=document.getElementById('falling-target');
+    const ghost=document.createElement('div');
+    ghost.style.cssText=`position:absolute;font-size:58px;line-height:1;z-index:21;pointer-events:none;top:${targetEl.style.top};left:${targetEl.style.left};transform:translateX(-50%);transition:transform 0.38s ease-in,opacity 0.38s ease-in,filter 0.2s;`;
+    ghost.innerText=targetEl.innerText;
+    document.getElementById('play-field').appendChild(ghost);
+    
+    // Trigger fly animation on next frame
+    requestAnimationFrame(()=>{
+        const flyX=side==='L'?-180:180;
+        const flyColor=ok?'#2ecc71':'#e74c3c';
+        ghost.style.transform=`translateX(calc(-50% + ${flyX}px)) rotate(${side==='L'?-45:45}deg) scale(0.3)`;
+        ghost.style.opacity='0';
+        ghost.style.filter=`drop-shadow(0 0 16px ${flyColor})`;
+    });
+    setTimeout(()=>ghost.remove(), 420);
 
-        // Flash
-        const flashEl=document.getElementById(side==='L'?'flash-l':'flash-r');
-        flashEl.className=''; void flashEl.offsetWidth;
-        flashEl.className=ok?'do-flash-green':'do-flash-red';
+    // Flash
+    const flashEl=document.getElementById(side==='L'?'flash-l':'flash-r');
+    flashEl.className=''; void flashEl.offsetWidth;
+    flashEl.className=ok?'do-flash-green':'do-flash-red';
 
-        // Brick — placed in the lane-half div for correct positioning
-        const brick=document.createElement('div'); brick.className='brick'; brick.innerText=w.word;
-        brick.style.background=ok?'var(--l-color)':'var(--r-color)';
-        document.getElementById(side==='L'?'left-stack':'right-stack').appendChild(brick);
+    // Brick — placed in the lane-half div for correct positioning
+    const brick=document.createElement('div'); brick.className='brick'; brick.innerText=w.word;
+    brick.style.background=ok?'var(--l-color)':'var(--r-color)';
+    document.getElementById(side==='L'?'left-stack':'right-stack').appendChild(brick);
 
-        stopTimer();
+    stopTimer();
 
-        if(ok){
-            state.roundHits++; addCoins(10); comboCount++;
-            spawnCoinPop(side); showCombo(comboCount);
+    if(ok){
+        state.roundHits++; addCoins(10); comboCount++;
+        spawnCoinPop(side); showCombo(comboCount);
+    } else {
+        comboCount=0;
+        state.lives--;
+        
+        // Triggers the heart animation on the side of the correct answer
+        triggerHeartBreak(correct); 
+        
+        // Note: 'showHeartBreak()' is removed here because triggerHeartBreak 
+        // now handles the visual part, and updateUI() handles the heart count.
+
+        if(state.lives <= 0){
+            cleanup();
+            document.getElementById('lightning-hud').classList.add('hidden');
+            inChallenge = false; 
+            setArenaBg(0); 
+            updateUI();
+            return showMenu('game-over');
+        }
+    }
+    
+    cleanup(); 
+    updateUI();
+
+    const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+    if(state.roundHits>=limit){
+        addCoins(50);
+        if(inChallenge){
+            document.getElementById('lightning-hud').classList.add('hidden');
+            inChallenge=false; setArenaBg(0);
+            setTimeout(()=>showLightningClear(),400);
+        } else if(state.curLevel===FINAL_LEVEL){
+            setTimeout(()=>showCongrats(),500);
         } else {
-           } else {
-            comboCount=0;
-            state.lives--;
-            // This replaces the shake and the old heart call:
-            triggerHeartBreak(correct); 
-            showHeartBreak(); 
-            
-            // 1. Change this line to match our new function name
-            triggerHeartBreak(); 
-
-            // 2. This triggers the shake on the whole screen
-            document.body.classList.add('screen-shake');
-            setTimeout(() => document.body.classList.remove('screen-shake'), 300);
-
-            if(state.lives <= 0){
-                cleanup();
-                document.getElementById('lightning-hud').classList.add('hidden');
-                inChallenge = false; 
-                setArenaBg(0); 
-                updateUI();
-                return showMenu('game-over');
-            }
+            setTimeout(()=>showRoundWin(),500);
         }
-        cleanup(); updateUI();
-
-        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
-        if(state.roundHits>=limit){
-            addCoins(50);
-            if(inChallenge){
-                document.getElementById('lightning-hud').classList.add('hidden');
-                inChallenge=false; setArenaBg(0);
-                setTimeout(()=>showLightningClear(),400);
-            } else if(state.curLevel===FINAL_LEVEL){
-                setTimeout(()=>showCongrats(),500);
-            } else {
-                setTimeout(()=>showRoundWin(),500);
-            }
-        } else { setTimeout(spawnBlock,500); }
+    } else { 
+        setTimeout(spawnBlock, 500); 
     }
-
-    function cleanup(){
-        const t=document.getElementById('falling-target');
-        if(t){ t.style.transition='none'; t.style.top='-200px'; t.style.opacity='1'; t.style.transform='translateX(-50%)'; t.style.filter='none'; }
-        currentBlock=null; cancelAnimationFrame(animationId); stopTimer();
-        const old=document.getElementById('combo-banner'); if(old) old.remove();
-    }
-    function closeMenus(){
-        document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
-        state.isPaused=false;
-        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
-        if(!currentBlock&&state.roundHits<limit){
-            spawnBlock();
-        } else if(currentBlock){
-            const rate=inChallenge?challengeRate:(state.audioRate??1.0);
-            if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
-            const a=new Audio(buildAudioPath(currentBlock.data));
-            a.playbackRate=rate; currentAudio=a;
-            a.onerror=()=>{ animate(); };
-            a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
-        }
-    }
-    function setSpeed(s){ state.audioRate=s; updateUI(); }
-
+}
     // ─── ROUND WIN ────────────────────────────────────────────────────────────
     function showRoundWin(){
         document.getElementById('round-win-coins').innerText=`💰 +${roundCoinsEarned} coins earned!`;
@@ -1317,27 +1278,28 @@
     }
     function devAddCoins(){ addCoins(500); updateUI(); }
     function devResetSave(){ if(confirm('Reset ALL save data? This cannot be undone.')){ localStorage.removeItem('phoneticFlowSave'); location.reload(); } }
-   function triggerHeartBreak(correctSide) {
-    const hb = document.createElement('div');
-    hb.className = 'heart-break';
-    hb.textContent = '💔';
-    
-    // Position vertically in the middle
-    hb.style.top = '50%';
-    
-    // Position on the side of the correct answer
-    // 25% is the left lane, 75% is the right lane
-    hb.style.left = (correctSide === 'L') ? '25%' : '75%';
-    
-    // Center the heart on that spot
-    hb.style.transform = 'translate(-50%, -50%)';
-    
-    document.body.appendChild(hb);
+   function triggerHeartBreak(side) {
+        const hb = document.createElement('div');
+        hb.className = 'heart-break';
+        hb.textContent = '💔';
+        
+        // Position it in the middle vertically
+        hb.style.top = '50%';
+        
+        // Position it horizontally based on the correct side
+        // 25% for Left, 75% for Right
+        hb.style.left = (side === 'L') ? '25%' : '75%';
+        
+        // Ensure it is perfectly centered on that spot
+        hb.style.transform = 'translate(-50%, -50%)';
+        
+        document.body.appendChild(hb);
 
-    setTimeout(() => {
-        hb.remove();
-    }, 1200);
-}
+        // Remove the heart after the animation ends
+        setTimeout(() => {
+            hb.remove();
+        }, 1200);
+    }
     // ─── BOOT ─────────────────────────────────────────────────────────────────
     loadGame();
 </script>
