@@ -663,21 +663,55 @@
     const CHALLENGE_TARGETS = ["👻","👻","👾","👻","👻"];
 
     // ─── STATE ────────────────────────────────────────────────────────────────
-    let state = {
-        curLevel:1, maxLevel:1, audioRate:1.0, lives:3, bonusHearts:0,
-        coins:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0},
-        invest:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0},
-        inventory:[], roundHits:0, isPaused:true, gender:"male", seenHelp:false
-    };
+   /* ==================================================================
+   SECTION 1: GLOBAL STATE & CONFIGURATION
+   (The game's memory: scores, levels, inventory)
+==================================================================
+*/
+let state = {
+    // ... your existing state variables ...
+};
 
-    let currentBlock=null, animationId=null, currentAudio=null, typeInterval=null;
-    let confettiParticles=[], confettiRaf=null;
-    let timerRaf=null, timerStart=0;
-    let inChallenge=false, challengeBlock=0, challengeRate=1.0;
-    let comboCount=0, comboBannerTimer=null;
-    let roundCoinsEarned=0;
-    let driftAngle=0;
+/* ==================================================================
+   SECTION 2: CORE GAME ENGINE 
+   (The movement: lanes, falling objects, collisions, timing)
+==================================================================
+*/
+function startGame() { /* ... */ }
+function gameLoop() { /* ... */ }
+function checkCollision() { /* ... */ }
 
+/* ==================================================================
+   SECTION 3: AUDIO & SPEECH 
+   (Everything related to hearing the words)
+==================================================================
+*/
+function speakWord() { /* ... */ }
+function preloadAudio() { /* ... */ }
+
+/* ==================================================================
+   SECTION 4: SHOP & ECONOMY
+   (Stickers, coins, and the sticker book)
+==================================================================
+*/
+function buySticker() { /* ... */ }
+function updateStickerBook() { /* ... */ }
+
+/* ==================================================================
+   SECTION 5: UI & MENU NAVIGATION
+   (Screen switching, buttons, and heart animations)
+==================================================================
+*/
+function showMenu(menuId) { /* ... */ }
+function updateUI() { /* ... */ }
+
+/* ==================================================================
+   SECTION 6: SAVE & INITIALIZATION
+   (LocalStorage and Booting the game)
+==================================================================
+*/
+function saveGame() { /* ... */ }
+function loadGame() { /* ... */ }
     // ─── HELPERS ──────────────────────────────────────────────────────────────
     function coins(){ return state.coins[state.curLevel]??0; }
     function addCoins(n){ state.coins[state.curLevel]=(state.coins[state.curLevel]??0)+n; roundCoinsEarned+=n; }
