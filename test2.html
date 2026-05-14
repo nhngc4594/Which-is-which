@@ -347,23 +347,23 @@
 }
 
 .heart-break {
-    position: absolute;
+    position: fixed;
     top: 50%;
-    /* We removed 'left: 50%' and 'transform' so the JavaScript can put it in the lane */
-    
+    left: 50%;
+    transform: translate(-50%, -50%);
     font-size: 50px; 
     pointer-events: none;
     z-index: 2000;
     display: block !important;
     
-    /* --- THESE ARE YOUR SOFT PINK SETTINGS - KEEPING THEM! --- */
+    /* Settings for soft pink look */
     opacity: 0.6; 
     filter: hue-rotate(310deg) brightness(1.2); 
+    
     text-shadow: 0 0 20px rgba(255, 105, 180, 0.6); 
-    /* --------------------------------------------------------- */
                  
-    /* This makes it float up like the star */
-    animation: coinFly 1.2s ease-out forwards;
+    /* Matches the name 'breakHeart' above */
+    animation: breakHeart 1.2s ease-out forwards;
 }
 /* This makes the whole screen wobble when you make a mistake */
 .screen-shake {
@@ -1162,17 +1162,12 @@
         if(ok){
             state.roundHits++; addCoins(10); comboCount++;
             spawnCoinPop(side); showCombo(comboCount);
-      } else {
+        } else {
             comboCount = 0; 
             state.lives--; 
             
-            // Pass 'correctSide' so the heart knows where to go
-            triggerHeartBreak(correctSide); 
-
-            document.body.classList.add('screen-shake');
-            setTimeout(() => document.body.classList.remove('screen-shake'), 300);
-            
-            // ... rest of your game over logic ...
+            // 1. Change this line to match our new function name
+            triggerHeartBreak(); 
 
             // 2. This triggers the shake on the whole screen
             document.body.classList.add('screen-shake');
@@ -1321,20 +1316,13 @@
     }
     function devAddCoins(){ addCoins(500); updateUI(); }
     function devResetSave(){ if(confirm('Reset ALL save data? This cannot be undone.')){ localStorage.removeItem('phoneticFlowSave'); location.reload(); } }
-    function triggerHeartBreak(side) {
-    const pf = document.getElementById('play-field');
-    const pw = pf.offsetWidth, ph = pf.offsetHeight;
-    
+    function triggerHeartBreak() {
     const hb = document.createElement('div');
     hb.className = 'heart-break';
     hb.textContent = '💔';
-    
-    // Position it in the correct lane (L or R) just like the star
-    hb.style.left = (side === 'L' ? pw * 0.25 : pw * 0.75) - 37 + 'px';
-    hb.style.top = ph * 0.5 + 'px';
-    
-    pf.appendChild(hb);
+    document.body.appendChild(hb);
 
+    // Changed from 800 to 1200 to match the new CSS time
     setTimeout(() => {
         if (hb && hb.parentNode) {
             hb.parentNode.removeChild(hb);
