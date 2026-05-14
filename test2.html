@@ -217,21 +217,26 @@
         }
 
         /* ── COMBO & COIN ───────────────────────────────────────────────── */
-        .coin-pop {
-            position: absolute; font-size: 22px; z-index: 35;
-            pointer-events: none; animation: coinFly 0.8s ease-out forwards;
-        }
-        @keyframes coinFly { 0%{opacity:1;transform:translateY(0) scale(1.2)} 100%{opacity:0;transform:translateY(-90px) scale(0.4)} }
+       /* --- COMBO & COIN --- */
+.coin-pop {
+    position: absolute; /* Changed to absolute to stay inside the play-field */
+    pointer-events: none;
+    z-index: 1500;
+    opacity: 0.6; /* Slightly less opaque as requested */
+    
+    /* Soft white/gold halo glow */
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 
+                 0 0 10px var(--accent);
+    
+    /* Matches your existing animation name */
+    animation: coinFly 1s ease-out forwards;
+}
 
-        #combo-banner {
-            position: absolute; top: 38%; left: 50%;
-            transform: translate(-50%,-50%);
-            font-family: var(--font-retro); font-weight: 900;
-            color: var(--accent); text-align: center;
-            pointer-events: none; z-index: 38; white-space: nowrap;
-            text-shadow: 0 0 24px var(--accent), 0 2px 8px rgba(0,0,0,0.8);
-            animation: comboPop 0.5s ease-out forwards;
-        }
+@keyframes coinFly { 
+    0% { opacity: 0; transform: translateY(0) scale(0.5); } 
+    20% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-120px) scale(1); } 
+}
         @keyframes comboPop {
             0%  {opacity:0;transform:translate(-50%,-50%) scale(0.3);}
             45% {opacity:1;transform:translate(-50%,-50%) scale(1.2);}
@@ -858,15 +863,23 @@
     }
 
     // ─── COIN POP ─────────────────────────────────────────────────────────────
-    function spawnCoinPop(side){
-        const pf=document.getElementById('play-field');
-        const pw=pf.offsetWidth, ph=pf.offsetHeight;
-        const el=document.createElement('div'); el.className='coin-pop'; el.innerText='⭐';
-        el.style.left=(side==='L'?pw*0.25:pw*0.75)-12+'px';
-        el.style.top=ph*0.5+'px';
-        pf.appendChild(el);
-        setTimeout(()=>el.remove(),750);
-    }
+  function spawnCoinPop(side) {
+    const pf = document.getElementById('play-field');
+    const pw = pf.offsetWidth, ph = pf.offsetHeight;
+    const el = document.createElement('div'); 
+    el.className = 'coin-pop'; 
+    el.innerText = '⭐';
+    
+    // ADD THIS LINE: This sets the size to 50px
+    el.style.fontSize = '50px'; 
+    
+    // This centers the larger star correctly
+    el.style.left = (side === 'L' ? pw * 0.25 : pw * 0.75) - 25 + 'px';
+    el.style.top = ph * 0.5 + 'px';
+    
+    pf.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+}
 
     // ─── HEART BREAK ─────────────────────────────────────────────────────────
     function showHeartBreak(){
