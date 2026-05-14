@@ -365,10 +365,6 @@
     /* Matches the name 'breakHeart' above */
     animation: breakHeart 1.2s ease-out forwards;
 }
-/* This makes the whole screen wobble when you make a mistake */
-.screen-shake {
-    animation: shakeAnim 0.3s linear;
-}
 
 @keyframes shakeAnim {
     0% { transform: translate(0, 0); }
@@ -378,9 +374,10 @@
     100% { transform: translate(0, 0); }
 }
 @keyframes breakHeart {
-    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-    20% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.7; }
-    100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
+    0% { transform: scale(0.8); opacity: 0; }
+    15% { transform: scale(1.1); opacity: 0.7; }
+    70% { transform: scale(1.15); opacity: 0.6; } 
+    100% { transform: scale(1.3); opacity: 0; }
 }
 
         /* ── LIGHTNING COUNTDOWN ────────────────────────────────────────── */
@@ -1163,8 +1160,12 @@
             state.roundHits++; addCoins(10); comboCount++;
             spawnCoinPop(side); showCombo(comboCount);
         } else {
-            comboCount = 0; 
-            state.lives--; 
+           } else {
+            comboCount=0;
+            state.lives--;
+            // This replaces the shake and the old heart call:
+            triggerHeartBreak(correct); 
+            showHeartBreak(); 
             
             // 1. Change this line to match our new function name
             triggerHeartBreak(); 
@@ -1316,20 +1317,27 @@
     }
     function devAddCoins(){ addCoins(500); updateUI(); }
     function devResetSave(){ if(confirm('Reset ALL save data? This cannot be undone.')){ localStorage.removeItem('phoneticFlowSave'); location.reload(); } }
-    function triggerHeartBreak() {
+   function triggerHeartBreak(correctSide) {
     const hb = document.createElement('div');
     hb.className = 'heart-break';
     hb.textContent = '💔';
+    
+    // Position vertically in the middle
+    hb.style.top = '50%';
+    
+    // Position on the side of the correct answer
+    // 25% is the left lane, 75% is the right lane
+    hb.style.left = (correctSide === 'L') ? '25%' : '75%';
+    
+    // Center the heart on that spot
+    hb.style.transform = 'translate(-50%, -50%)';
+    
     document.body.appendChild(hb);
 
-    // Changed from 800 to 1200 to match the new CSS time
     setTimeout(() => {
-        if (hb && hb.parentNode) {
-            hb.parentNode.removeChild(hb);
-        }
-    }, 1200); 
+        hb.remove();
+    }, 1200);
 }
-
     // ─── BOOT ─────────────────────────────────────────────────────────────────
     loadGame();
 </script>
