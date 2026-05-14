@@ -1182,6 +1182,43 @@ function resolve(choice){
         }
     } else { 
         setTimeout(spawnBlock, 500); 
+        function cleanup(){
+    const t=document.getElementById('falling-target');
+    if(t){ 
+        t.style.transition='none'; 
+        t.style.top='-200px'; 
+        t.style.opacity='1'; 
+        t.style.transform='translateX(-50%)'; 
+        t.style.filter='none'; 
+    }
+    currentBlock=null; 
+    if(typeof animationId !== 'undefined') cancelAnimationFrame(animationId); 
+    stopTimer();
+    const old=document.getElementById('combo-banner'); 
+    if(old) old.remove();
+}
+
+function closeMenus(){
+    document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
+    state.isPaused=false;
+    
+    // Determine the win limit
+    const limit = (typeof inChallenge !== 'undefined' && inChallenge) ? CHALLENGE_LENGTH : ROUND_LENGTH;
+    
+    if(!currentBlock && state.roundHits < limit){
+        spawnBlock();
+    } else if(currentBlock){
+        const rate = (typeof inChallenge !== 'undefined' && inChallenge) ? challengeRate : (state.audioRate ?? 1.0);
+        if(currentAudio){ 
+            currentAudio.pause(); 
+            currentAudio.onended=null; 
+            currentAudio=null; 
+        }
+        const a=new Audio(buildAudioPath(currentBlock.data));
+        a.playbackRate=rate; 
+        currentAudio=a;
+        a.onerror=()=>{ animate(); };
+        a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
     }
 }
     // ─── ROUND WIN ────────────────────────────────────────────────────────────
