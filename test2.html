@@ -1303,12 +1303,12 @@
     hb.textContent = '💔';
     document.body.appendChild(hb);
 
-    // This removes the heart element once the animation ends
+    // Changed from 800 to 1200 to match the new CSS time
     setTimeout(() => {
         if (hb && hb.parentNode) {
             hb.parentNode.removeChild(hb);
         }
-    }, 800);
+    }, 1200); 
 }
 
     // ─── BOOT ─────────────────────────────────────────────────────────────────
