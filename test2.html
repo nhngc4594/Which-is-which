@@ -679,7 +679,6 @@
     const FINAL_LEVEL = 9;
     const ROUND_LENGTH = 10;
     const CHALLENGE_LENGTH = 15;
-    const FINAL_CHALLENGE_LENGTH = 25;
     const BASE_FALL_SPEED = 2.2;
     const MAX_FALL_SPEED = 5.5;
     const CHALLENGE_TARGETS = ["👻","👻","👾","👻","👻"];
@@ -732,30 +731,38 @@
     }
 
     // ─── WEB AUDIO FX ────────────────────────────────────────────────────────
-    let audioCtx=null;
-    function getAudioCtx(){
-        if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-        return audioCtx;
+    // Dedicated AudioContext just for fx — never paused or touched by word audio
+    let fxCtx=null;
+    function getFxCtx(){
+        if(!fxCtx||fxCtx.state==='closed'){
+            fxCtx=new (window.AudioContext||window.webkitAudioContext)();
+        }
+        if(fxCtx.state==='suspended') fxCtx.resume();
+        return fxCtx;
     }
     function playFx(correct){
         if(!state.soundFx) return;
         try {
-            const ctx=getAudioCtx();
+            const ctx=getFxCtx();
             const osc=ctx.createOscillator();
             const gain=ctx.createGain();
             osc.connect(gain); gain.connect(ctx.destination);
             if(correct){
-                osc.type='sine'; osc.frequency.setValueAtTime(880,ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1320,ctx.currentTime+0.12);
-                gain.gain.setValueAtTime(0.18,ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
-                osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.22);
+                // Short bright ping — 180ms, done well before next spawn
+                osc.type='sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime+0.09);
+                gain.gain.setValueAtTime(0.18, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.18);
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.18);
             } else {
-                osc.type='sawtooth'; osc.frequency.setValueAtTime(200,ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(80,ctx.currentTime+0.18);
-                gain.gain.setValueAtTime(0.14,ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
-                osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.22);
+                // Short low thud — 180ms
+                osc.type='sawtooth';
+                osc.frequency.setValueAtTime(200, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime+0.15);
+                gain.gain.setValueAtTime(0.13, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.18);
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.18);
             }
         } catch(e){}
     }
@@ -1089,8 +1096,7 @@
 
     // ─── SPAWN ────────────────────────────────────────────────────────────────
     function spawnBlock(){
-        const challengeLen=(inChallenge&&state.curLevel===FINAL_LEVEL)?FINAL_CHALLENGE_LENGTH:CHALLENGE_LENGTH;
-        const limit=inChallenge?challengeLen:ROUND_LENGTH;
+        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
         if(state.isPaused||state.lives<=0||state.roundHits>=limit) return;
         if(currentBlock) return;
 
@@ -1099,7 +1105,7 @@
 
         if(inChallenge){ challengeBlock++; challengeRate=getChallengeAudioRate(challengeBlock); updateLightningHud(); setArenaBg(challengeBlock); }
 
-        document.getElementById('block-counter').innerText=`${state.roundHits+1}/${inChallenge?challengeLen:ROUND_LENGTH}`;
+        document.getElementById('block-counter').innerText=`${state.roundHits+1}/${inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH}`;
 
         // Reset and place target
         const targetEl=document.getElementById('falling-target');
@@ -1224,8 +1230,7 @@
         }
         cleanup(); updateUI();
 
-        const challengeLen = (inChallenge && state.curLevel===FINAL_LEVEL) ? FINAL_CHALLENGE_LENGTH : CHALLENGE_LENGTH;
-        const limit=inChallenge?challengeLen:ROUND_LENGTH;
+        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
         if(state.roundHits>=limit){
             addCoins(50);
             updateStreak();
@@ -1259,8 +1264,7 @@
     function closeMenus(){
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         state.isPaused=false;
-        const challengeLen=(inChallenge&&state.curLevel===FINAL_LEVEL)?FINAL_CHALLENGE_LENGTH:CHALLENGE_LENGTH;
-        const limit=inChallenge?challengeLen:ROUND_LENGTH;
+        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
         if(!currentBlock&&state.roundHits<limit){
             spawnBlock();
         } else if(currentBlock){
