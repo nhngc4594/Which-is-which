@@ -217,26 +217,21 @@
         }
 
         /* ── COMBO & COIN ───────────────────────────────────────────────── */
-       /* --- COMBO & COIN --- */
-.coin-pop {
-    position: absolute; /* Changed to absolute to stay inside the play-field */
-    pointer-events: none;
-    z-index: 1500;
-    opacity: 0.6; /* Slightly less opaque as requested */
-    
-    /* Soft white/gold halo glow */
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 
-                 0 0 10px var(--accent);
-    
-    /* Matches your existing animation name */
-    animation: coinFly 1s ease-out forwards;
-}
+        .coin-pop {
+            position: absolute; font-size: 22px; z-index: 35;
+            pointer-events: none; animation: coinFly 0.8s ease-out forwards;
+        }
+        @keyframes coinFly { 0%{opacity:1;transform:translateY(0) scale(1.2)} 100%{opacity:0;transform:translateY(-90px) scale(0.4)} }
 
-@keyframes coinFly { 
-    0% { opacity: 0; transform: translateY(0) scale(0.5); } 
-    20% { opacity: 1; transform: translateY(-20px) scale(1.2); }
-    100% { opacity: 0; transform: translateY(-120px) scale(1); } 
-}
+        #combo-banner {
+            position: absolute; top: 38%; left: 50%;
+            transform: translate(-50%,-50%);
+            font-family: var(--font-retro); font-weight: 900;
+            color: var(--accent); text-align: center;
+            pointer-events: none; z-index: 38; white-space: nowrap;
+            text-shadow: 0 0 24px var(--accent), 0 2px 8px rgba(0,0,0,0.8);
+            animation: comboPop 0.5s ease-out forwards;
+        }
         @keyframes comboPop {
             0%  {opacity:0;transform:translate(-50%,-50%) scale(0.3);}
             45% {opacity:1;transform:translate(-50%,-50%) scale(1.2);}
@@ -339,31 +334,8 @@
 
         @keyframes heartAppear { 0%{transform:scale(0.5);filter:drop-shadow(0 0 0px #f1c40f);opacity:0} 50%{transform:scale(1.4);filter:drop-shadow(0 0 16px #f1c40f);opacity:1} 75%{transform:scale(0.9);filter:drop-shadow(0 0 8px #f1c40f)} 100%{transform:scale(1);filter:drop-shadow(0 0 4px #f1c40f);opacity:1} }
         .heart-new { animation: heartAppear 0.6s ease-out forwards; }
-     @keyframes breakHeart {
-    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-    15% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.7; }
-    70% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.6; } 
-    100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
-}
-
-.heart-break {
-        position: fixed;
-        font-size: 50px; 
-        pointer-events: none;
-        z-index: 2000;
-        display: block !important;
-        opacity: 0.6; 
-        filter: hue-rotate(310deg) brightness(1.2); 
-        text-shadow: 0 0 20px rgba(255, 105, 180, 0.6); 
-        animation: breakHeart 1.2s ease-out forwards;
-    }
-
-    @keyframes breakHeart {
-        0% { transform: scale(0.8); opacity: 0; }
-        15% { transform: scale(1.1); opacity: 0.7; }
-        70% { transform: scale(1.15); opacity: 0.6; } 
-        100% { transform: scale(1.3); opacity: 0; }
-    }
+        @keyframes heartBreakAnim { 0%{transform:scale(1.4);opacity:1} 100%{transform:scale(0.6);opacity:0} }
+        .heart-break { font-size:22px; display:inline-block; animation: heartBreakAnim 0.6s ease-out forwards; }
 
         /* ── LIGHTNING COUNTDOWN ────────────────────────────────────────── */
         #lightning-countdown { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:920; font-family:var(--font-retro); color:var(--accent); }
@@ -599,15 +571,15 @@
 <script>
     // ─── LEVEL DATA ───────────────────────────────────────────────────────────
     const levels = {
-        1: { name:"S vs SH", folder:"S_vs_SH", sounds:["S","SH"], targets:["🌸","🦆","👾"],
+        1: { name:"L vs R", folder:"L_vs_R", sounds:["L","R"], targets:["🍥","🦆","🪆"],
              words:[
-                {sound:"S",position:"initial",word:"sea"},{sound:"S",position:"initial",word:"sail"},{sound:"S",position:"initial",word:"song"},
-                {sound:"SH",position:"initial",word:"she"},{sound:"SH",position:"initial",word:"shake"},{sound:"SH",position:"initial",word:"show"},
-                {sound:"S",position:"medial",word:"basin"},{sound:"S",position:"medial",word:"lesson"},{sound:"S",position:"medial",word:"basic"},
-                {sound:"SH",position:"medial",word:"nation"},{sound:"SH",position:"medial",word:"fashion"},{sound:"SH",position:"medial",word:"fishing"},
-                {sound:"S",position:"final",word:"bus"},{sound:"S",position:"final",word:"face"},{sound:"S",position:"final",word:"nice"},
-                {sound:"SH",position:"final",word:"bush"},{sound:"SH",position:"final",word:"fish"},{sound:"SH",position:"final",word:"rush"}],
-             stickers:[{emoji:"🌙",price:50},{emoji:"⭐",price:100},{emoji:"🌟",price:200},{emoji:"🌠",price:300},{emoji:"🌌",price:500}]},
+                {sound:"L",position:"initial",word:"lake"},{sound:"L",position:"initial",word:"leaf"},{sound:"L",position:"initial",word:"low"},
+                {sound:"R",position:"initial",word:"rain"},{sound:"R",position:"initial",word:"road"},{sound:"R",position:"initial",word:"rice"},
+                {sound:"L",position:"medial",word:"alive"},{sound:"L",position:"medial",word:"balloon"},{sound:"L",position:"medial",word:"below"},
+                {sound:"R",position:"medial",word:"arena"},{sound:"R",position:"medial",word:"carrot"},{sound:"R",position:"medial",word:"story"},
+                {sound:"L",position:"final",word:"bell"},{sound:"L",position:"final",word:"feel"},{sound:"L",position:"final",word:"tall"},
+                {sound:"R",position:"final",word:"star"},{sound:"R",position:"final",word:"door"},{sound:"R",position:"final",word:"far"}],
+             stickers:[{emoji:"☁️",price:50},{emoji:"🌱",price:100},{emoji:"🌲",price:200},{emoji:"🦅",price:300},{emoji:"💎",price:500}]},
         2: { name:"S vs TH", folder:"S_vs_TH_voiceless", sounds:["S","TH"], targets:["🦆","🪆","👾"],
              words:[
                 {sound:"S",position:"initial",word:"sea"},{sound:"S",position:"initial",word:"sin"},{sound:"S",position:"initial",word:"soap"},
@@ -626,15 +598,15 @@
                 {sound:"F",position:"final",word:"leaf"},{sound:"F",position:"final",word:"roof"},{sound:"F",position:"final",word:"safe"},
                 {sound:"P",position:"final",word:"leap"},{sound:"P",position:"final",word:"rope"},{sound:"P",position:"final",word:"tape"}],
              stickers:[{emoji:"🍂",price:50},{emoji:"🦊",price:100},{emoji:"🍁",price:200},{emoji:"🦋",price:300},{emoji:"🌸",price:500}]},
-        4:  { name:"L vs R", folder:"L_vs_R", sounds:["L","R"], targets:["🍥","🦆","🪆"],
+        4: { name:"S vs SH", folder:"S_vs_SH", sounds:["S","SH"], targets:["🌸","🦆","👾"],
              words:[
-                {sound:"L",position:"initial",word:"lake"},{sound:"L",position:"initial",word:"leaf"},{sound:"L",position:"initial",word:"low"},
-                {sound:"R",position:"initial",word:"rain"},{sound:"R",position:"initial",word:"road"},{sound:"R",position:"initial",word:"rice"},
-                {sound:"L",position:"medial",word:"alive"},{sound:"L",position:"medial",word:"balloon"},{sound:"L",position:"medial",word:"below"},
-                {sound:"R",position:"medial",word:"arena"},{sound:"R",position:"medial",word:"carrot"},{sound:"R",position:"medial",word:"story"},
-                {sound:"L",position:"final",word:"bell"},{sound:"L",position:"final",word:"feel"},{sound:"L",position:"final",word:"tall"},
-                {sound:"R",position:"final",word:"star"},{sound:"R",position:"final",word:"door"},{sound:"R",position:"final",word:"far"}],
-             stickers:[{emoji:"☁️",price:50},{emoji:"🌱",price:100},{emoji:"🌲",price:200},{emoji:"🦅",price:300},{emoji:"💎",price:500}]},
+                {sound:"S",position:"initial",word:"sea"},{sound:"S",position:"initial",word:"sail"},{sound:"S",position:"initial",word:"song"},
+                {sound:"SH",position:"initial",word:"she"},{sound:"SH",position:"initial",word:"shake"},{sound:"SH",position:"initial",word:"show"},
+                {sound:"S",position:"medial",word:"basin"},{sound:"S",position:"medial",word:"lesson"},{sound:"S",position:"medial",word:"basic"},
+                {sound:"SH",position:"medial",word:"nation"},{sound:"SH",position:"medial",word:"fashion"},{sound:"SH",position:"medial",word:"fishing"},
+                {sound:"S",position:"final",word:"bus"},{sound:"S",position:"final",word:"face"},{sound:"S",position:"final",word:"nice"},
+                {sound:"SH",position:"final",word:"bush"},{sound:"SH",position:"final",word:"fish"},{sound:"SH",position:"final",word:"rush"}],
+             stickers:[{emoji:"🌙",price:50},{emoji:"⭐",price:100},{emoji:"🌟",price:200},{emoji:"🌠",price:300},{emoji:"🌌",price:500}]},
         5: { name:"Z vs TH (voiced)", folder:"Z_vs_TH_voiced", sounds:["Z","TH"], targets:["🐍","🦎","👾"],
              words:[
                 {sound:"Z",position:"initial",word:"zoo"},{sound:"Z",position:"initial",word:"zone"},{sound:"Z",position:"initial",word:"zero"},
@@ -845,23 +817,15 @@
     }
 
     // ─── COIN POP ─────────────────────────────────────────────────────────────
-  function spawnCoinPop(side) {
-    const pf = document.getElementById('play-field');
-    const pw = pf.offsetWidth, ph = pf.offsetHeight;
-    const el = document.createElement('div'); 
-    el.className = 'coin-pop'; 
-    el.innerText = '⭐';
-    
-    // ADD THIS LINE: This sets the size to 50px
-    el.style.fontSize = '50px'; 
-    
-    // This centers the larger star correctly
-    el.style.left = (side === 'L' ? pw * 0.25 : pw * 0.75) - 25 + 'px';
-    el.style.top = ph * 0.5 + 'px';
-    
-    pf.appendChild(el);
-    setTimeout(() => el.remove(), 1000);
-}
+    function spawnCoinPop(side){
+        const pf=document.getElementById('play-field');
+        const pw=pf.offsetWidth, ph=pf.offsetHeight;
+        const el=document.createElement('div'); el.className='coin-pop'; el.innerText='⭐';
+        el.style.left=(side==='L'?pw*0.25:pw*0.75)-12+'px';
+        el.style.top=ph*0.5+'px';
+        pf.appendChild(el);
+        setTimeout(()=>el.remove(),750);
+    }
 
     // ─── HEART BREAK ─────────────────────────────────────────────────────────
     function showHeartBreak(){
@@ -1103,124 +1067,98 @@
         resolve(e.clientX<window.innerWidth/2?"L":"R");
     });
 
-   // ─── RESOLVE ──────────────────────────────────────────────────────────────
-function resolve(choice){
-    if(!currentBlock) return;
-    const w=currentBlock.data;
-    const leftSide=isLeftSound(w);
-    const correct=leftSide?"L":"R";
-    const missed=choice===null;
-    const ok=!missed&&choice===correct;
-    const side=missed?correct:choice;
+    // ─── RESOLVE ──────────────────────────────────────────────────────────────
+    function resolve(choice){
+        if(!currentBlock) return;
+        const w=currentBlock.data;
+        const leftSide=isLeftSound(w);
+        const correct=leftSide?"L":"R";
+        const missed=choice===null;
+        const ok=!missed&&choice===correct;
+        const side=missed?correct:choice;
 
-    // Target fly-off — clone the target so it animates while the original resets
-    const targetEl=document.getElementById('falling-target');
-    const ghost=document.createElement('div');
-    ghost.style.cssText=`position:absolute;font-size:58px;line-height:1;z-index:21;pointer-events:none;top:${targetEl.style.top};left:${targetEl.style.left};transform:translateX(-50%);transition:transform 0.38s ease-in,opacity 0.38s ease-in,filter 0.2s;`;
-    ghost.innerText=targetEl.innerText;
-    document.getElementById('play-field').appendChild(ghost);
-    
-    // Trigger fly animation on next frame
-    requestAnimationFrame(()=>{
-        const flyX=side==='L'?-180:180;
-        const flyColor=ok?'#2ecc71':'#e74c3c';
-        ghost.style.transform=`translateX(calc(-50% + ${flyX}px)) rotate(${side==='L'?-45:45}deg) scale(0.3)`;
-        ghost.style.opacity='0';
-        ghost.style.filter=`drop-shadow(0 0 16px ${flyColor})`;
-    });
-    setTimeout(()=>ghost.remove(), 420);
+        // Target fly-off — clone the target so it animates while the original resets
+        const targetEl=document.getElementById('falling-target');
+        const ghost=document.createElement('div');
+        ghost.style.cssText=`position:absolute;font-size:58px;line-height:1;z-index:21;pointer-events:none;top:${targetEl.style.top};left:${targetEl.style.left};transform:translateX(-50%);transition:transform 0.38s ease-in,opacity 0.38s ease-in,filter 0.2s;`;
+        ghost.innerText=targetEl.innerText;
+        document.getElementById('play-field').appendChild(ghost);
+        // Trigger fly animation on next frame
+        requestAnimationFrame(()=>{
+            const flyX=side==='L'?-180:180;
+            const flyColor=ok?'#2ecc71':'#e74c3c';
+            ghost.style.transform=`translateX(calc(-50% + ${flyX}px)) rotate(${side==='L'?-45:45}deg) scale(0.3)`;
+            ghost.style.opacity='0';
+            ghost.style.filter=`drop-shadow(0 0 16px ${flyColor})`;
+        });
+        setTimeout(()=>ghost.remove(), 420);
 
-    // Flash
-    const flashEl=document.getElementById(side==='L'?'flash-l':'flash-r');
-    flashEl.className=''; void flashEl.offsetWidth;
-    flashEl.className=ok?'do-flash-green':'do-flash-red';
+        // Flash
+        const flashEl=document.getElementById(side==='L'?'flash-l':'flash-r');
+        flashEl.className=''; void flashEl.offsetWidth;
+        flashEl.className=ok?'do-flash-green':'do-flash-red';
 
-    // Brick — placed in the lane-half div for correct positioning
-    const brick=document.createElement('div'); brick.className='brick'; brick.innerText=w.word;
-    brick.style.background=ok?'var(--l-color)':'var(--r-color)';
-    document.getElementById(side==='L'?'left-stack':'right-stack').appendChild(brick);
+        // Brick — placed in the lane-half div for correct positioning
+        const brick=document.createElement('div'); brick.className='brick'; brick.innerText=w.word;
+        brick.style.background=ok?'var(--l-color)':'var(--r-color)';
+        document.getElementById(side==='L'?'left-stack':'right-stack').appendChild(brick);
 
-    stopTimer();
+        stopTimer();
 
-    if(ok){
-        state.roundHits++; addCoins(10); comboCount++;
-        spawnCoinPop(side); showCombo(comboCount);
-    } else {
-        comboCount=0;
-        state.lives--;
-        
-        // Triggers the heart animation on the side of the correct answer
-        triggerHeartBreak(correct); 
-        
-        // Note: 'showHeartBreak()' is removed here because triggerHeartBreak 
-        // now handles the visual part, and updateUI() handles the heart count.
-
-        if(state.lives <= 0){
-            cleanup();
-            document.getElementById('lightning-hud').classList.add('hidden');
-            inChallenge = false; 
-            setArenaBg(0); 
-            updateUI();
-            return showMenu('game-over');
-        }
-    }
-    
-    cleanup(); 
-    updateUI();
-
-    const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
-    if(state.roundHits>=limit){
-        addCoins(50);
-        if(inChallenge){
-            document.getElementById('lightning-hud').classList.add('hidden');
-            inChallenge=false; setArenaBg(0);
-            setTimeout(()=>showLightningClear(),400);
-        } else if(state.curLevel===FINAL_LEVEL){
-            setTimeout(()=>showCongrats(),500);
+        if(ok){
+            state.roundHits++; addCoins(10); comboCount++;
+            spawnCoinPop(side); showCombo(comboCount);
         } else {
-            setTimeout(()=>showRoundWin(),500);
+            comboCount=0; state.lives--; showHeartBreak();const gameCont = document.getElementById('game-container');
+            gameCont.classList.add('screen-shake');
+            setTimeout(() => gameCont.classList.remove('screen-shake'), 300);
+            if(state.lives<=0){
+                cleanup();
+                document.getElementById('lightning-hud').classList.add('hidden');
+                inChallenge=false; setArenaBg(0); updateUI();
+                return showMenu('game-over');
+            }
         }
-    } else { 
-        setTimeout(spawnBlock, 500); 
-        function cleanup(){
-    const t=document.getElementById('falling-target');
-    if(t){ 
-        t.style.transition='none'; 
-        t.style.top='-200px'; 
-        t.style.opacity='1'; 
-        t.style.transform='translateX(-50%)'; 
-        t.style.filter='none'; 
-    }
-    currentBlock=null; 
-    if(typeof animationId !== 'undefined') cancelAnimationFrame(animationId); 
-    stopTimer();
-    const old=document.getElementById('combo-banner'); 
-    if(old) old.remove();
-}
+        cleanup(); updateUI();
 
-function closeMenus(){
-    document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
-    state.isPaused=false;
-    
-    // Determine the win limit
-    const limit = (typeof inChallenge !== 'undefined' && inChallenge) ? CHALLENGE_LENGTH : ROUND_LENGTH;
-    
-    if(!currentBlock && state.roundHits < limit){
-        spawnBlock();
-    } else if(currentBlock){
-        const rate = (typeof inChallenge !== 'undefined' && inChallenge) ? challengeRate : (state.audioRate ?? 1.0);
-        if(currentAudio){ 
-            currentAudio.pause(); 
-            currentAudio.onended=null; 
-            currentAudio=null; 
-        }
-        const a=new Audio(buildAudioPath(currentBlock.data));
-        a.playbackRate=rate; 
-        currentAudio=a;
-        a.onerror=()=>{ animate(); };
-        a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
+        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+        if(state.roundHits>=limit){
+            addCoins(50);
+            if(inChallenge){
+                document.getElementById('lightning-hud').classList.add('hidden');
+                inChallenge=false; setArenaBg(0);
+                setTimeout(()=>showLightningClear(),400);
+            } else if(state.curLevel===FINAL_LEVEL){
+                setTimeout(()=>showCongrats(),500);
+            } else {
+                setTimeout(()=>showRoundWin(),500);
+            }
+        } else { setTimeout(spawnBlock,500); }
     }
-}
+
+    function cleanup(){
+        const t=document.getElementById('falling-target');
+        if(t){ t.style.transition='none'; t.style.top='-200px'; t.style.opacity='1'; t.style.transform='translateX(-50%)'; t.style.filter='none'; }
+        currentBlock=null; cancelAnimationFrame(animationId); stopTimer();
+        const old=document.getElementById('combo-banner'); if(old) old.remove();
+    }
+    function closeMenus(){
+        document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
+        state.isPaused=false;
+        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+        if(!currentBlock&&state.roundHits<limit){
+            spawnBlock();
+        } else if(currentBlock){
+            const rate=inChallenge?challengeRate:(state.audioRate??1.0);
+            if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+            const a=new Audio(buildAudioPath(currentBlock.data));
+            a.playbackRate=rate; currentAudio=a;
+            a.onerror=()=>{ animate(); };
+            a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
+        }
+    }
+    function setSpeed(s){ state.audioRate=s; updateUI(); }
+
     // ─── ROUND WIN ────────────────────────────────────────────────────────────
     function showRoundWin(){
         document.getElementById('round-win-coins').innerText=`💰 +${roundCoinsEarned} coins earned!`;
@@ -1315,28 +1253,7 @@ function closeMenus(){
     }
     function devAddCoins(){ addCoins(500); updateUI(); }
     function devResetSave(){ if(confirm('Reset ALL save data? This cannot be undone.')){ localStorage.removeItem('phoneticFlowSave'); location.reload(); } }
-   function triggerHeartBreak(side) {
-        const hb = document.createElement('div');
-        hb.className = 'heart-break';
-        hb.textContent = '💔';
-        
-        // Position it in the middle vertically
-        hb.style.top = '50%';
-        
-        // Position it horizontally based on the correct side
-        // 25% for Left, 75% for Right
-        hb.style.left = (side === 'L') ? '25%' : '75%';
-        
-        // Ensure it is perfectly centered on that spot
-        hb.style.transform = 'translate(-50%, -50%)';
-        
-        document.body.appendChild(hb);
 
-        // Remove the heart after the animation ends
-        setTimeout(() => {
-            hb.remove();
-        }, 1200);
-    }
     // ─── BOOT ─────────────────────────────────────────────────────────────────
     loadGame();
 </script>
