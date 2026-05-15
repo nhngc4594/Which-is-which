@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v4.1.0</title>
+    <title>Phonetic Flow v4.3.0</title>
     <style>
         :root {
             --bg-color: #0a0a1a;
@@ -415,6 +415,7 @@
 
 <!-- MAIN MENU -->
 <div id="main-menu" class="overlay">
+    <div id="streak-banner" class="hidden" style="font-size:18px;font-family:var(--font-retro);color:var(--accent);margin-bottom:8px;letter-spacing:2px;text-shadow:0 0 12px var(--accent);"></div>
     <h1 onclick="devTitleTap()" style="color:var(--accent);font-size:42px;margin-bottom:4px;cursor:default;">PHONETIC FLOW</h1>
     <p id="level-display-name" style="color:#aaa;margin-bottom:16px;font-weight:bold;"></p>
     <div id="gender-panel">
@@ -472,6 +473,9 @@
             <button id="speed-1.6" onclick="setSpeed(1.6)" style="font-size:25px;background:#444;">⚡</button>
         </div>
         <button onclick="closeMenus()" style="background:var(--l-color);width:100%;margin-bottom:10px;">RESUME</button>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <button id="btn-sound-fx" onclick="state.soundFx=!state.soundFx;updateUI();" style="flex:1;background:#444;">🔔 SOUND FX</button>
+        </div>
         <button onclick="showMenu('main-menu')" style="background:#444;width:100%;">EXIT TO MENU</button>
     </div>
 </div>
@@ -503,6 +507,7 @@
         <h1>LIGHTNING CLEARED!</h1>
         <div style="font-size:40px;margin:10px 0;">🗝️</div>
         <div style="font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:1px;">KEY UNLOCKED!</div>
+        <div id="lc-accuracy" class="hidden" style="font-size:14px;color:var(--accent);margin-top:8px;letter-spacing:1px;"></div>
         <div class="lc-sub">TAP TO CONTINUE</div>
     </div>
 </div>
@@ -674,6 +679,7 @@
     const FINAL_LEVEL = 9;
     const ROUND_LENGTH = 10;
     const CHALLENGE_LENGTH = 15;
+    const FINAL_CHALLENGE_LENGTH = 25;
     const BASE_FALL_SPEED = 2.2;
     const MAX_FALL_SPEED = 5.5;
     const CHALLENGE_TARGETS = ["👻","👻","👾","👻","👻"];
@@ -683,7 +689,8 @@
         curLevel:1, maxLevel:1, audioRate:1.0, lives:3, bonusHearts:0,
         coins:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0},
         invest:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0},
-        inventory:[], roundHits:0, isPaused:true, gender:"male", seenHelp:false
+        inventory:[], roundHits:0, isPaused:true, gender:"male", seenHelp:false,
+        soundFx:true, streakDays:0, lastPlayedDate:"", bestAccuracy:{}
     };
 
     let currentBlock=null, animationId=null, currentAudio=null, typeInterval=null;
@@ -693,6 +700,8 @@
     let comboCount=0, comboBannerTimer=null;
     let roundCoinsEarned=0;
     let driftAngle=0;
+    let roundCorrect=0, roundTotal=0; // for accuracy tracking
+    let perfectLightning=false;       // for perfect round badge
 
     // ─── HELPERS ──────────────────────────────────────────────────────────────
     function coins(){ return state.coins[state.curLevel]??0; }
@@ -722,6 +731,65 @@
         return w.sound===lvl.sounds[0];
     }
 
+    // ─── WEB AUDIO FX ────────────────────────────────────────────────────────
+    let audioCtx=null;
+    function getAudioCtx(){
+        if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+        return audioCtx;
+    }
+    function playFx(correct){
+        if(!state.soundFx) return;
+        try {
+            const ctx=getAudioCtx();
+            const osc=ctx.createOscillator();
+            const gain=ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            if(correct){
+                osc.type='sine'; osc.frequency.setValueAtTime(880,ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1320,ctx.currentTime+0.12);
+                gain.gain.setValueAtTime(0.18,ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.22);
+            } else {
+                osc.type='sawtooth'; osc.frequency.setValueAtTime(200,ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80,ctx.currentTime+0.18);
+                gain.gain.setValueAtTime(0.14,ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.22);
+            }
+        } catch(e){}
+    }
+
+    // ─── STREAK ──────────────────────────────────────────────────────────────
+    function todayStr(){ return new Date().toISOString().slice(0,10); }
+    function updateStreak(){
+        const today=todayStr();
+        if(state.lastPlayedDate===today) return; // already counted today
+        const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
+        const yStr=yesterday.toISOString().slice(0,10);
+        if(state.lastPlayedDate===yStr){ state.streakDays++; }
+        else if(state.lastPlayedDate!==today){ state.streakDays=1; }
+        state.lastPlayedDate=today;
+        saveGame();
+    }
+    function showStreakBanner(){
+        if(state.streakDays<2) return;
+        const el=document.getElementById('streak-banner');
+        if(!el) return;
+        el.innerText=`🔥 ${state.streakDays} DAY STREAK!`;
+        el.classList.remove('hidden');
+    }
+
+    // ─── ACCURACY ────────────────────────────────────────────────────────────
+    function getAccuracyKey(){ return `${state.curLevel}_${inChallenge?'lightning':'practice'}`; }
+    function recordAccuracy(correct,total){
+        const key=getAccuracyKey();
+        const pct=Math.round((correct/total)*100);
+        if(!state.bestAccuracy[key]||pct>state.bestAccuracy[key]) state.bestAccuracy[key]=pct;
+        saveGame();
+        return pct;
+    }
+
     // ─── SAVE / LOAD ──────────────────────────────────────────────────────────
     function saveGame(){ localStorage.setItem('phoneticFlowSave',JSON.stringify(state)); }
     function loadGame(){
@@ -731,6 +799,10 @@
         state.maxLevel=Number(state.maxLevel)||1;
         state.audioRate=state.audioRate||1.0;
         state.bonusHearts=state.bonusHearts||0;
+        if(state.soundFx===undefined) state.soundFx=true;
+        if(!state.streakDays) state.streakDays=0;
+        if(!state.lastPlayedDate) state.lastPlayedDate="";
+        if(!state.bestAccuracy) state.bestAccuracy={};
         const fc={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
         const fi={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
         for(let k=1;k<=9;k++){
@@ -739,7 +811,15 @@
         }
         state.coins=fc; state.invest=fi;
         setGender(state.gender);
+        // Fox comeback nudge — if played before but not today or yesterday
+        const today=todayStr();
+        const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
+        const yStr=yesterday.toISOString().slice(0,10);
+        if(state.lastPlayedDate && state.lastPlayedDate!==today && state.lastPlayedDate!==yStr){
+            FOX_MESSAGES.unshift("Your ears need exercise! 👂 Let's go!");
+        }
         updateUI();
+        showStreakBanner();
         if(!state.seenHelp) showHelp();
     }
 
@@ -772,6 +852,9 @@
         const cu=(state.invest[state.curLevel]??0)>=400;
         document.getElementById('btn-start-single').classList.toggle('hidden',cu);
         document.getElementById('start-btn-group').classList.toggle('hidden',!cu);
+        // Sound fx toggle button
+        const fxBtn=document.getElementById('btn-sound-fx');
+        if(fxBtn) fxBtn.classList.toggle('active-yellow', state.soundFx);
         document.querySelectorAll('#dev-level-btns button').forEach(b=>{
             b.classList.toggle('dev-active',Number(b.dataset.lvl)===state.curLevel);
         });
@@ -928,7 +1011,7 @@
 
     function startGame(){
         inChallenge=false; challengeBlock=0; challengeRate=1.0;
-        comboCount=0; roundCoinsEarned=0;
+        comboCount=0; roundCoinsEarned=0; roundCorrect=0; roundTotal=0; perfectLightning=false;
         document.getElementById('lightning-hud').classList.add('hidden');
         setArenaBg(0); cleanup(); livesForRoundStart(); state.roundHits=0;
         document.getElementById('left-stack').innerHTML="";
@@ -937,14 +1020,13 @@
         document.getElementById('l-label').innerText=labels[0];
         document.getElementById('r-label').innerText=labels[1];
         preloadAudio();
-        // Hide overlays, unpause, show fox, then spawn first block
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         state.isPaused=false;
         showFoxIntro(()=>{ spawnBlock(); });
     }
     function startChallenge(){
         inChallenge=true; challengeBlock=0; challengeRate=1.0;
-        comboCount=0; roundCoinsEarned=0; driftAngle=0;
+        comboCount=0; roundCoinsEarned=0; driftAngle=0; roundCorrect=0; roundTotal=0; perfectLightning=true;
         cleanup(); livesForRoundStart(); state.roundHits=0;
         document.getElementById('left-stack').innerHTML="";
         document.getElementById('right-stack').innerHTML="";
@@ -1007,7 +1089,8 @@
 
     // ─── SPAWN ────────────────────────────────────────────────────────────────
     function spawnBlock(){
-        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+        const challengeLen=(inChallenge&&state.curLevel===FINAL_LEVEL)?FINAL_CHALLENGE_LENGTH:CHALLENGE_LENGTH;
+        const limit=inChallenge?challengeLen:ROUND_LENGTH;
         if(state.isPaused||state.lives<=0||state.roundHits>=limit) return;
         if(currentBlock) return;
 
@@ -1016,7 +1099,7 @@
 
         if(inChallenge){ challengeBlock++; challengeRate=getChallengeAudioRate(challengeBlock); updateLightningHud(); setArenaBg(challengeBlock); }
 
-        document.getElementById('block-counter').innerText=`${state.roundHits+1}/${inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH}`;
+        document.getElementById('block-counter').innerText=`${state.roundHits+1}/${inChallenge?challengeLen:ROUND_LENGTH}`;
 
         // Reset and place target
         const targetEl=document.getElementById('falling-target');
@@ -1118,13 +1201,17 @@
 
         stopTimer();
 
+        if(!missed) roundTotal++;
         if(ok){
-            state.roundHits++; addCoins(10); comboCount++;
+            state.roundHits++; addCoins(10); comboCount++; roundCorrect++;
             spawnCoinPop(side); showCombo(comboCount);
+            playFx(true);
         } else {
             comboCount = 0; 
-            state.lives--; 
+            state.lives--;
+            if(inChallenge) perfectLightning=false;
             showHeartBreak(correct);
+            playFx(false);
 
             if(state.lives <= 0){
                 cleanup();
@@ -1137,17 +1224,28 @@
         }
         cleanup(); updateUI();
 
-        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+        const challengeLen = (inChallenge && state.curLevel===FINAL_LEVEL) ? FINAL_CHALLENGE_LENGTH : CHALLENGE_LENGTH;
+        const limit=inChallenge?challengeLen:ROUND_LENGTH;
         if(state.roundHits>=limit){
             addCoins(50);
+            updateStreak();
+            const pct=roundTotal>0?recordAccuracy(roundCorrect,roundTotal):null;
             if(inChallenge){
                 document.getElementById('lightning-hud').classList.add('hidden');
                 inChallenge=false; setArenaBg(0);
-                setTimeout(()=>showLightningClear(),400);
+                // Award perfect badge if no hearts lost
+                if(perfectLightning){
+                    const badge={emoji:"⚡🏅",level:state.curLevel,isPerfect:true};
+                    if(!state.inventory.some(i=>i.isPerfect&&i.level===state.curLevel)){
+                        state.inventory.push(badge); saveGame();
+                    }
+                }
+                setTimeout(()=>showLightningClear(pct),400);
             } else if(state.curLevel===FINAL_LEVEL){
-                setTimeout(()=>showCongrats(),500);
+                // On final level, practice round shows CLEAR not congrats
+                setTimeout(()=>showRoundWin(pct),500);
             } else {
-                setTimeout(()=>showRoundWin(),500);
+                setTimeout(()=>showRoundWin(pct),500);
             }
         } else { setTimeout(spawnBlock,500); }
     }
@@ -1161,7 +1259,8 @@
     function closeMenus(){
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         state.isPaused=false;
-        const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+        const challengeLen=(inChallenge&&state.curLevel===FINAL_LEVEL)?FINAL_CHALLENGE_LENGTH:CHALLENGE_LENGTH;
+        const limit=inChallenge?challengeLen:ROUND_LENGTH;
         if(!currentBlock&&state.roundHits<limit){
             spawnBlock();
         } else if(currentBlock){
@@ -1176,24 +1275,46 @@
     function setSpeed(s){ state.audioRate=s; updateUI(); }
 
     // ─── ROUND WIN ────────────────────────────────────────────────────────────
-    function showRoundWin(){
-        document.getElementById('round-win-coins').innerText=`💰 +${roundCoinsEarned} coins earned!`;
+    function showRoundWin(pct){
+        const best=state.bestAccuracy[getAccuracyKey()]||0;
+        let msg=`💰 +${roundCoinsEarned} coins!`;
+        if(pct!=null){
+            msg+=`<br><span style="font-size:15px;color:#aaa;">Accuracy: ${pct}%`;
+            if(pct>=best&&pct>0) msg+=` ⭐ BEST!`;
+            msg+=`</span>`;
+        }
+        document.getElementById('round-win-coins').innerHTML=msg;
         showMenu('round-win');
     }
 
     // ─── LIGHTNING CLEAR ──────────────────────────────────────────────────────
-    function showLightningClear(){
+    function showLightningClear(pct){
+        const isFinalLevel = state.curLevel===FINAL_LEVEL;
         if(!hasKey(state.curLevel)){
             state.inventory.push({emoji:"🗝️",level:state.curLevel,isKey:true});
-            state.maxLevel=Math.max(state.maxLevel,state.curLevel+1);
+            if(!isFinalLevel) state.maxLevel=Math.max(state.maxLevel,state.curLevel+1);
             saveGame();
         }
+        // Show accuracy in the lightning clear screen
+        const subEl=document.getElementById('lc-accuracy');
+        if(subEl&&pct!=null){
+            const best=state.bestAccuracy[getAccuracyKey()]||0;
+            subEl.innerHTML=`Accuracy: ${pct}%${pct>=best&&pct>0?' ⭐ BEST!':''}`;
+            subEl.classList.remove('hidden');
+        }
+        // If this is the final level lightning round, trigger congrats after dismiss
+        document.getElementById('lightning-clear').dataset.finalLevel = isFinalLevel ? '1' : '';
         document.getElementById('lightning-clear').classList.remove('hidden');
     }
     function dismissLightningClear(){
+        const isFinal = document.getElementById('lightning-clear').dataset.finalLevel==='1';
         document.getElementById('lightning-clear').classList.add('hidden');
-        const lvl=state.curLevel; showMenu('main-menu');
-        setTimeout(()=>showKeyCeremony(lvl),200);
+        if(isFinal){
+            setTimeout(()=>showCongrats(),300);
+        } else {
+            const lvl=state.curLevel; showMenu('main-menu');
+            setTimeout(()=>showKeyCeremony(lvl),200);
+        }
     }
 
     // ─── TOWER & BOOK ─────────────────────────────────────────────────────────
