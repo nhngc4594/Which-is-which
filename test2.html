@@ -208,6 +208,10 @@
             0%  { opacity:1; }
             100%{ opacity:0; }
         }
+        @keyframes foxResultPop {
+            0%  { opacity:0; transform: scale(0.5) translateY(30px); }
+            100%{ opacity:1; transform: scale(1)   translateY(0); }
+        }
 
         /* ── COMBO & COIN ───────────────────────────────────────────────── */
         .coin-pop {
@@ -217,19 +221,31 @@
         @keyframes coinFly { 0%{opacity:1;transform:translateY(0) scale(1.2)} 100%{opacity:0;transform:translateY(-90px) scale(0.4)} }
 
         #combo-banner {
-            position: absolute; top: 38%; left: 50%;
+            position: absolute; top: 36%; left: 50%;
             transform: translate(-50%,-50%);
             font-family: var(--font-retro); font-weight: 900;
             color: var(--accent); text-align: center;
             pointer-events: none; z-index: 38; white-space: nowrap;
-            text-shadow: 0 0 24px var(--accent), 0 2px 8px rgba(0,0,0,0.8);
-            animation: comboPop 0.5s ease-out forwards;
         }
-        @keyframes comboPop {
-            0%  {opacity:0;transform:translate(-50%,-50%) scale(0.3);}
-            45% {opacity:1;transform:translate(-50%,-50%) scale(1.2);}
-            70% {transform:translate(-50%,-50%) scale(0.92);}
-            100%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+        .combo-line1 {
+            display: block;
+            text-shadow: 0 0 30px var(--accent), 0 0 60px var(--accent), 0 2px 8px rgba(0,0,0,0.9);
+            animation: comboNumPop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        .combo-line2 {
+            display: block;
+            font-size: 14px; letter-spacing: 3px; opacity: 0.8;
+            margin-top: 2px;
+            animation: comboLabelFade 0.4s 0.1s ease-out both;
+        }
+        @keyframes comboNumPop {
+            0%  { opacity:0; transform: scale(0.3); }
+            60% { opacity:1; transform: scale(1.15); }
+            100%{ opacity:1; transform: scale(1); }
+        }
+        @keyframes comboLabelFade {
+            0%  { opacity:0; transform: translateY(4px); }
+            100%{ opacity:0.8; transform: translateY(0); }
         }
 
         #lightning-hud {
@@ -293,7 +309,7 @@
             z-index: 800; font-family: var(--font-retro); padding: 16px; box-sizing: border-box; overflow-y: auto;
         }
         .help-inner { border: 3px solid var(--accent); border-radius: 10px; padding: 28px 20px 24px; width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; }
-        .help-key { font-size: 72px; filter: sepia(1) saturate(5) hue-rotate(5deg) brightness(1.4); margin-bottom: 8px; animation: helpKeyFloat 2.5s ease-in-out infinite; }
+        .help-key { font-size: 72px; margin-bottom: 8px; animation: helpKeyFloat 2.5s ease-in-out infinite; }
         @keyframes helpKeyFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
         .help-inner h2 { color: var(--accent); font-size: 22px; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 20px 0; }
         .help-body { display: flex; flex-direction: column; width: 100%; gap: 0; }
@@ -445,7 +461,7 @@
 <!-- SHOP -->
 <div id="shop-menu" class="overlay hidden">
     <div id="shopkeeper-area">
-        <div style="font-size:50px;">🧙‍♂️</div>
+        <div style="font-size:50px;">🦊</div>
         <div id="shopkeeper-text"></div>
     </div>
     <div id="shop-items-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;overflow-y:auto;"></div>
@@ -476,7 +492,14 @@
         <div style="display:flex;gap:8px;margin-bottom:10px;">
             <button id="btn-sound-fx" onclick="state.soundFx=!state.soundFx;updateUI();" style="flex:1;background:#444;">🔔 SOUND FX</button>
         </div>
-        <button onclick="showMenu('main-menu')" style="background:#444;width:100%;">EXIT TO MENU</button>
+    </div>
+</div>
+
+<!-- FOX END-OF-ROUND MESSAGE -->
+<div id="fox-result" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:350;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+    <div id="fox-result-inner" style="display:flex;flex-direction:column;align-items:center;gap:10px;animation:foxResultPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;">
+        <div style="font-size:90px;line-height:1;">🦊</div>
+        <div id="fox-result-msg" style="font-size:17px;color:#fff;font-family:var(--font-retro);text-align:center;padding:0 28px;line-height:1.7;text-shadow:0 2px 12px rgba(0,0,0,0.9);background:rgba(0,0,0,0.65);border-radius:14px;padding:12px 20px;"></div>
     </div>
 </div>
 
@@ -539,7 +562,7 @@
 <!-- HELP SCREEN -->
 <div id="help-screen" class="hidden">
     <div class="help-inner">
-        <div class="help-key">🗝️</div>
+        <div class="help-key">🦊</div>
         <h2>How to Play</h2>
         <div class="help-body">
             <div class="help-row">
@@ -900,10 +923,13 @@
         if(comboBannerTimer) clearTimeout(comboBannerTimer);
         if(n<3) return;
         const el=document.createElement('div'); el.id='combo-banner';
-        el.style.fontSize=Math.min(32+n*3,60)+'px';
-        el.innerText=`${n} IN A ROW!`;
+        // Font size grows with streak, capped at 72px
+        const sz=Math.min(28+n*4, 72);
+        // Glow intensity grows too
+        const glow=Math.min(n*6, 40);
+        el.innerHTML=`<span class="combo-line1" style="font-size:${sz}px;text-shadow:0 0 ${glow}px var(--accent),0 0 ${glow*2}px var(--accent),0 2px 8px rgba(0,0,0,0.9);">${n} IN A ROW!</span><span class="combo-line2">${n>=10?'🔥 UNSTOPPABLE!':n>=7?'🔥 ON FIRE!':n>=5?'⚡ SCORCHING!':'✨ NICE STREAK!'}</span>`;
         document.getElementById('play-field').appendChild(el);
-        comboBannerTimer=setTimeout(()=>{ const b=document.getElementById('combo-banner'); if(b) b.remove(); },900);
+        comboBannerTimer=setTimeout(()=>{ const b=document.getElementById('combo-banner'); if(b) b.remove(); },1100);
     }
 
     // ─── COIN POP ─────────────────────────────────────────────────────────────
@@ -1076,14 +1102,82 @@
     ];
     let foxMsgIndex = 0;
 
+    const FOX_RESULT = {
+        high: [
+            "Amazing!! You're on fire! ٩(◕‿◕｡)۶",
+            "Perfect ears!! Keep it up!(°◡°♡)",
+            "Incredible!! You're a natural! 。.:☆*:･'(*⌒―⌒*)))",
+            "Outstanding!! You make it look easy! (๑˃ᴗ˂)ﻭ"
+        ],
+        mid: [
+            "Good Job!! Don't stop, you're getting better! (づ ◕‿◕ )づ",
+            "Nice work!! A little more practice and you'll nail it! (づ ◕‿◕ )づ",
+            "Keep going!! You're improving every round! (づ ◕‿◕ )づ",
+            "Well done!! The more you play, the sharper you get! (づ ◕‿◕ )づ"
+        ],
+        low: [
+            "Don't give up!! It's tough at first, but soon it'll be too easy!! (◕‿◕)♡",
+            "Stay with it!! Every listen makes your ears stronger! (◕‿◕)♡",
+            "No worries!! Even the best started where you are! (◕‿◕)♡",
+            "Keep trying!! Your brain is learning even when it's hard! (◕‿◕)♡"
+        ],
+        lightning: [
+            "LIGHTNING CLEARED!! You're unstoppable! ⚡٩(◕‿◕｡)۶",
+            "INCREDIBLE!! That was lightning fast! ⚡(°◡°♡)",
+            "AMAZING!! You conquered the lightning! ⚡。.:☆*:･'(*⌒―⌒*)))",
+            "LEGENDARY!! The fox is impressed! ⚡(๑˃ᴗ˂)ﻭ"
+        ]
+    };
+    let foxResultIdx = {high:0, mid:0, low:0, lightning:0};
+
+    function getFoxResultMsg(pct, isLightning){
+        if(isLightning){
+            const msgs=FOX_RESULT.lightning;
+            return msgs[(foxResultIdx.lightning++)%msgs.length];
+        }
+        if(pct==null||pct>=80){
+            const msgs=FOX_RESULT.high;
+            return msgs[(foxResultIdx.high++)%msgs.length];
+        } else if(pct>=50){
+            const msgs=FOX_RESULT.mid;
+            return msgs[(foxResultIdx.mid++)%msgs.length];
+        } else {
+            const msgs=FOX_RESULT.low;
+            return msgs[(foxResultIdx.low++)%msgs.length];
+        }
+    }
+
+    function showFoxResult(pct, isLightning, onDone){
+        const overlay=document.getElementById('fox-result');
+        const inner=document.getElementById('fox-result-inner');
+        const msgEl=document.getElementById('fox-result-msg');
+        msgEl.innerText=getFoxResultMsg(pct, isLightning);
+        // Reset animation
+        inner.style.animation='none';
+        overlay.classList.remove('hidden');
+        overlay.style.pointerEvents='auto';
+        requestAnimationFrame(()=>{
+            inner.style.animation='foxResultPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards';
+        });
+        setTimeout(()=>{
+            overlay.style.opacity='0';
+            overlay.style.transition='opacity 0.4s';
+            setTimeout(()=>{
+                overlay.classList.add('hidden');
+                overlay.style.opacity='1';
+                overlay.style.transition='';
+                overlay.style.pointerEvents='none';
+                onDone();
+            }, 400);
+        }, 2000);
+    }
+
     function showFoxIntro(onDone) {
         const el = document.getElementById('fox-intro');
         const msg = document.getElementById('fox-msg');
-        // Pick next message in rotation
         msg.innerText = FOX_MESSAGES[foxMsgIndex % FOX_MESSAGES.length];
         foxMsgIndex++;
         el.classList.remove('hidden', 'fox-out');
-        // After 1.5s fade it out, then call onDone
         setTimeout(()=>{
             el.classList.add('fox-out');
             setTimeout(()=>{
@@ -1288,7 +1382,7 @@
             msg+=`</span>`;
         }
         document.getElementById('round-win-coins').innerHTML=msg;
-        showMenu('round-win');
+        showFoxResult(pct, false, ()=>showMenu('round-win'));
     }
 
     // ─── LIGHTNING CLEAR ──────────────────────────────────────────────────────
@@ -1299,16 +1393,17 @@
             if(!isFinalLevel) state.maxLevel=Math.max(state.maxLevel,state.curLevel+1);
             saveGame();
         }
-        // Show accuracy in the lightning clear screen
         const subEl=document.getElementById('lc-accuracy');
         if(subEl&&pct!=null){
             const best=state.bestAccuracy[getAccuracyKey()]||0;
             subEl.innerHTML=`Accuracy: ${pct}%${pct>=best&&pct>0?' ⭐ BEST!':''}`;
             subEl.classList.remove('hidden');
         }
-        // If this is the final level lightning round, trigger congrats after dismiss
         document.getElementById('lightning-clear').dataset.finalLevel = isFinalLevel ? '1' : '';
-        document.getElementById('lightning-clear').classList.remove('hidden');
+        // Fox message first, then lightning clear screen
+        showFoxResult(pct, true, ()=>{
+            document.getElementById('lightning-clear').classList.remove('hidden');
+        });
     }
     function dismissLightningClear(){
         const isFinal = document.getElementById('lightning-clear').dataset.finalLevel==='1';
