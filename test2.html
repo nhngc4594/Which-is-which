@@ -221,32 +221,24 @@
         @keyframes coinFly { 0%{opacity:1;transform:translateY(0) scale(1.2)} 100%{opacity:0;transform:translateY(-90px) scale(0.4)} }
 
         #combo-banner {
-            position: absolute; top: 33%; left: 0; right: 0;
-            margin: 0 auto;
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
             font-family: var(--font-retro); font-weight: 900;
             color: var(--accent); text-align: center;
             pointer-events: none; z-index: 38; white-space: nowrap;
-            width: 100%;
+            animation: comboBannerAnim 1.2s ease-out forwards;
         }
-        .combo-line1 {
-            display: block;
-            text-shadow: 0 0 30px var(--accent), 0 0 60px var(--accent), 0 2px 8px rgba(0,0,0,0.9);
-            animation: comboNumPop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        @keyframes comboBannerAnim {
+            0%   { opacity:0; transform: translateX(-50%) scale(0.5); }
+            25%  { opacity:1; transform: translateX(-50%) scale(1.1); }
+            60%  { opacity:1; transform: translateX(-50%) scale(1.0); }
+            100% { opacity:0; transform: translateX(-50%) scale(0.9) translateY(-20px); }
         }
-        .combo-line2 {
-            display: block;
-            font-size: 14px; letter-spacing: 3px; opacity: 0.8;
-            margin-top: 2px;
-            animation: comboLabelFade 0.4s 0.1s ease-out both;
-        }
-        @keyframes comboNumPop {
-            0%  { opacity:0; transform: scale(0.3); }
-            60% { opacity:1; transform: scale(1.15); }
-            100%{ opacity:1; transform: scale(1); }
-        }
-        @keyframes comboLabelFade {
-            0%  { opacity:0; transform: translateY(4px); }
-            100%{ opacity:0.8; transform: translateY(0); }
+        .combo-label {
+            display: block; font-size: 13px; letter-spacing: 3px;
+            opacity: 0.75; margin-top: 3px;
         }
 
         #lightning-hud {
@@ -760,6 +752,18 @@
         if(fxCtx.state==='suspended') fxCtx.resume();
         return fxCtx;
     }
+    // Warm up the AudioContext on the very first user touch so it's never suspended mid-game
+    function warmUpAudio(){
+        try {
+            const ctx=getFxCtx();
+            // Play a silent buffer to unlock it
+            const buf=ctx.createBuffer(1,1,22050);
+            const src=ctx.createBufferSource();
+            src.buffer=buf; src.connect(ctx.destination); src.start(0);
+        } catch(e){}
+        document.removeEventListener('pointerdown', warmUpAudio);
+    }
+    document.addEventListener('pointerdown', warmUpAudio);
     function playFx(correct){
         if(!state.soundFx) return;
         try {
@@ -917,16 +921,21 @@
     // ─── COMBO ────────────────────────────────────────────────────────────────
     function showCombo(n){
         const old=document.getElementById('combo-banner'); if(old) old.remove();
-        if(comboBannerTimer) clearTimeout(comboBannerTimer);
+        if(comboBannerTimer){ clearTimeout(comboBannerTimer); comboBannerTimer=null; }
         if(n<3) return;
-        const el=document.createElement('div'); el.id='combo-banner';
-        // Font size grows with streak, capped at 72px
-        const sz=Math.min(28+n*4, 72);
-        // Glow intensity grows too
-        const glow=Math.min(n*6, 40);
-        el.innerHTML=`<span class="combo-line1" style="font-size:${sz}px;text-shadow:0 0 ${glow}px var(--accent),0 0 ${glow*2}px var(--accent),0 2px 8px rgba(0,0,0,0.9);">${n} IN A ROW!</span><span class="combo-line2">${n>=10?'🔥 UNSTOPPABLE!':n>=7?'🔥 ON FIRE!':n>=5?'⚡ SCORCHING!':'✨ NICE STREAK!'}</span>`;
+        const sz=Math.min(26+n*4, 68);
+        const glow=Math.min(n*8, 48);
+        const label=n>=10?'🔥 UNSTOPPABLE!':n>=7?'🔥 ON FIRE!':n>=5?'⚡ SCORCHING!':'✨ NICE STREAK!';
+        const el=document.createElement('div');
+        el.id='combo-banner';
+        el.innerHTML=
+            `<span style="font-size:${sz}px;display:block;text-shadow:0 0 ${glow}px var(--accent),0 2px 8px rgba(0,0,0,0.9);">${n} IN A ROW!</span>`+
+            `<span class="combo-label">${label}</span>`;
         document.getElementById('play-field').appendChild(el);
-        comboBannerTimer=setTimeout(()=>{ const b=document.getElementById('combo-banner'); if(b) b.remove(); },1100);
+        // Remove after animation completes (1.2s)
+        comboBannerTimer=setTimeout(()=>{
+            const b=document.getElementById('combo-banner'); if(b) b.remove();
+        }, 1250);
     }
 
     // ─── COIN POP ─────────────────────────────────────────────────────────────
@@ -1330,7 +1339,27 @@
     function togglePause(){
         const pauseMenu=document.getElementById('pause-menu');
         if(!pauseMenu.classList.contains('hidden')){
-            closeMenus();
+            // Pause menu is open — close it
+            pauseMenu.classList.add('hidden');
+            // Only resume if we're actually mid-game (not on main menu, shop, etc.)
+            const anyOtherOverlay=[...document.querySelectorAll('.overlay')]
+                .some(el=>!el.classList.contains('hidden')&&el.id!=='pause-menu');
+            if(!anyOtherOverlay){
+                // No other overlay visible — we were in-game, resume
+                state.isPaused=false;
+                const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+                if(!currentBlock&&state.roundHits<limit&&state.roundHits>0){
+                    spawnBlock();
+                } else if(currentBlock){
+                    const rate=inChallenge?challengeRate:(state.audioRate??1.0);
+                    if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+                    const a=new Audio(buildAudioPath(currentBlock.data));
+                    a.playbackRate=rate; currentAudio=a;
+                    a.onerror=()=>{ animate(); };
+                    a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
+                }
+            }
+            // Otherwise just leave whatever overlay was showing
         } else {
             showMenu('pause-menu');
         }
