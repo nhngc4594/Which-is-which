@@ -517,9 +517,6 @@
     <button id="btn-world-map" onclick="showMenu('level-select')" style="width:220px;background:#8e44ad;" class="hidden">🗺 WORLD MAP</button>
     <button onclick="showMenu('shop-menu')" style="width:220px;background:#e67e22;">🛍 STICKER SHOP</button>
     <button onclick="showMenu('sticker-book')" style="width:220px;background:#2980b9;">📖 MY BOOK</button>
-    <div style="margin-top:14px;">
-        <button id="btn-sound-fx" onclick="state.soundFx=!state.soundFx;updateUI();" style="background:#444;width:220px;">✔️💢 Feedback Sound</button>
-    </div>
 </div>
 
 <!-- LEVEL SELECT -->
@@ -955,10 +952,6 @@
         const cu=(state.invest[state.curLevel]??0)>=400;
         document.getElementById('btn-start-single').classList.toggle('hidden',cu);
         document.getElementById('start-btn-group').classList.toggle('hidden',!cu);
-
-        // Feedback sound toggle — now on main menu
-        const fxBtn=document.getElementById('btn-sound-fx');
-        if(fxBtn) fxBtn.classList.toggle('active-yellow', state.soundFx);
 
         // Pause button — only show during active gameplay (no overlay visible)
         const anyOverlay=[...document.querySelectorAll('.overlay')].some(el=>!el.classList.contains('hidden'));
