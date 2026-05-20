@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v5.0.0</title>
+    <title>Phonetic Flow v5.1.0</title>
     <style>
         :root {
             --bg-color: #0a0a1a;
@@ -454,15 +454,14 @@
 
 <!-- MAIN MENU -->
 <div id="main-menu" class="overlay">
-    <div id="streak-banner" class="hidden" style="font-size:18px;font-family:var(--font-retro);color:var(--accent);margin-bottom:8px;letter-spacing:2px;text-shadow:0 0 12px var(--accent);"></div>
-    <h1 onclick="devTitleTap()" style="color:var(--accent);font-size:42px;margin-bottom:4px;cursor:default;">PHONETIC FLOW</h1>
-    <p id="level-display-name" style="color:#aaa;margin-bottom:16px;font-weight:bold;"></p>
-    <div id="gender-panel">
-        <label>🎙️ Voice</label>
-        <div class="gender-row">
-            <button id="btn-mike" onclick="setGender('male')" class="active-yellow">🎤 Mike</button>
-            <button id="btn-jenny" onclick="setGender('female')">🎀 Jenny</button>
-        </div>
+    <div id="streak-banner" class="hidden" style="font-size:18px;font-family:var(--font-retro);color:#000;background:var(--accent);margin-bottom:12px;letter-spacing:2px;padding:8px 20px;border-radius:20px;font-weight:900;box-shadow:0 0 16px var(--accent);"></div>
+    <div style="font-size:72px;line-height:1;margin-bottom:6px;animation:foxDrop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;">🦊</div>
+    <h1 onclick="devTitleTap()" style="color:var(--accent);font-size:42px;margin:0 0 4px 0;cursor:default;">PHONETIC FLOW</h1>
+    <p id="level-display-name" style="color:#aaa;margin:0 0 14px 0;font-weight:bold;"></p>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
+        <span style="font-size:14px;opacity:0.6;">🎙️</span>
+        <button id="btn-mike" onclick="setGender('male')" class="active-yellow" style="margin:0;padding:10px 18px;font-size:14px;">🎤 Mike</button>
+        <button id="btn-jenny" onclick="setGender('female')" style="margin:0;padding:10px 18px;font-size:14px;">🎀 Jenny</button>
     </div>
     <button id="btn-start-single" onclick="startGame()">▶ START</button>
     <div id="start-btn-group" class="hidden">
@@ -499,7 +498,7 @@
 </div>
 
 <!-- PAUSE MENU -->
-<div id="pause-menu" class="overlay hidden">
+<div id="pause-menu" class="overlay hidden" onclick="if(event.target===this)togglePause()">
     <div class="pmenu-inner">
         <h2 style="color:var(--accent);margin:0 0 20px 0;letter-spacing:3px;">PAUSED</h2>
 
@@ -1278,6 +1277,8 @@
 
     // ─── INPUT ────────────────────────────────────────────────────────────────
     window.addEventListener('pointerdown',e=>{
+        // Keep AudioContext alive on every tap — so miss sounds work even without user gesture
+        if(fxCtx && fxCtx.state==='suspended') fxCtx.resume().catch(()=>{});
         if(state.isPaused||!currentBlock) return;
         if(e.target.closest('.overlay')) return;
         if(e.target.closest('#help-btn')) return;
@@ -1337,7 +1338,9 @@
             spawnCoinPop(side); showCombo(comboCount);
             playFx(true);
         } else {
-            comboCount = 0; 
+            comboCount = 0;
+            const old=document.getElementById('combo-banner'); if(old) old.remove();
+            if(comboBannerTimer){ clearTimeout(comboBannerTimer); comboBannerTimer=null; }
             state.lives--;
             if(inChallenge) perfectLightning=false;
             showHeartBreak(correct);
@@ -1357,6 +1360,8 @@
 
         const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
         if(state.roundHits>=limit){
+            const old=document.getElementById('combo-banner'); if(old) old.remove();
+            if(comboBannerTimer){ clearTimeout(comboBannerTimer); comboBannerTimer=null; }
             addCoins(50);
             updateStreak();
             const pct=roundTotal>0?recordAccuracy(roundCorrect,roundTotal):null;
@@ -1384,7 +1389,6 @@
         const t=document.getElementById('falling-target');
         if(t){ t.style.transition='none'; t.style.top='-200px'; t.style.opacity='1'; t.style.transform='translateX(-50%)'; t.style.filter='none'; }
         currentBlock=null; cancelAnimationFrame(animationId); stopTimer();
-        const old=document.getElementById('combo-banner'); if(old) old.remove();
     }
     function togglePause(){
         const pauseMenu=document.getElementById('pause-menu');
