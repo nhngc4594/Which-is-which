@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v4.3.0</title>
+    <title>Phonetic Flow v4.8.0</title>
     <style>
         :root {
             --bg-color: #0a0a1a;
@@ -84,9 +84,10 @@
             font-size: 26px; cursor: pointer; transition: transform 0.1s;
             background: rgba(0,0,0,0.7); border: 2px solid rgba(255,255,255,0.3);
             border-radius: 50%; width: 52px; height: 52px;
-            display: flex; align-items: center; justify-content: center;
+            display: none; align-items: center; justify-content: center;
             color: rgba(255,255,255,0.85); z-index: 500; padding: 0; margin: 0;
         }
+        #pause-btn.visible { display: flex; }
         #pause-btn:active { transform: scale(0.88); }
 
         #play-field { flex: 1; position: relative; display: flex; overflow: hidden; }
@@ -221,20 +222,21 @@
         @keyframes coinFly { 0%{opacity:1;transform:translateY(0) scale(1.2)} 100%{opacity:0;transform:translateY(-90px) scale(0.4)} }
 
         #combo-banner {
-            position: absolute;
+            position: fixed;
             top: 30%;
             left: 50%;
             transform: translateX(-50%);
             font-family: var(--font-retro); font-weight: 900;
             color: var(--accent); text-align: center;
             pointer-events: none; z-index: 38; white-space: nowrap;
-            animation: comboBannerAnim 1.2s ease-out forwards;
+            opacity: 0;
+            animation: comboBannerAnim 1.4s ease-out forwards;
         }
         @keyframes comboBannerAnim {
             0%   { opacity:0; transform: translateX(-50%) scale(0.5); }
-            25%  { opacity:1; transform: translateX(-50%) scale(1.1); }
-            60%  { opacity:1; transform: translateX(-50%) scale(1.0); }
-            100% { opacity:0; transform: translateX(-50%) scale(0.9) translateY(-20px); }
+            20%  { opacity:0.75; transform: translateX(-50%) scale(1.15); }
+            55%  { opacity:0.75; transform: translateX(-50%) scale(1.0); }
+            100% { opacity:0; transform: translateX(-50%) scale(0.85) translateY(-30px); }
         }
         .combo-label {
             display: block; font-size: 13px; letter-spacing: 3px;
@@ -298,10 +300,16 @@
         #help-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            z-index: 800; font-family: var(--font-retro); padding: 16px; box-sizing: border-box; overflow-y: auto;
+            align-items: center; justify-content: flex-start;
+            z-index: 800; font-family: var(--font-retro);
+            padding: 12px; box-sizing: border-box; overflow: hidden;
         }
-        .help-inner { border: 3px solid var(--accent); border-radius: 10px; padding: 28px 20px 24px; width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; }
+        .help-inner {
+            border: 3px solid var(--accent); border-radius: 10px;
+            padding: 18px 16px 16px; width: 100%; max-width: 440px;
+            display: flex; flex-direction: column; align-items: center;
+            max-height: calc(100vh - 24px); overflow-y: auto; box-sizing: border-box;
+        }
         .help-key { font-size: 72px; margin-bottom: 8px; animation: helpKeyFloat 2.5s ease-in-out infinite; }
         @keyframes helpKeyFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
         .help-inner h2 { color: var(--accent); font-size: 22px; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 20px 0; }
@@ -374,6 +382,31 @@
         #dev-panel button { padding:4px 10px; font-size:11px; border-radius:4px; margin:2px; background:#222; border:1px solid #e74c3c; color:#e74c3c; font-family:var(--font-retro); }
         #dev-panel button.dev-active { background:#e74c3c; color:#000; }
         #dev-panel .dev-actions { display:flex; gap:4px; flex-wrap:wrap; }
+
+        /* ── PAUSE MENU BOUNCE ──────────────────────────────────────────── */
+        @keyframes pauseBounceIn {
+            0%   { opacity:0; transform: scale(0.4) translateY(40px); }
+            55%  { opacity:1; transform: scale(1.08) translateY(-6px); }
+            75%  { transform: scale(0.97) translateY(2px); }
+            90%  { transform: scale(1.02) translateY(-1px); }
+            100% { transform: scale(1) translateY(0); }
+        }
+        @keyframes pauseBounceOut {
+            0%   { opacity:1; transform: scale(1) translateY(0); }
+            30%  { transform: scale(1.05) translateY(-4px); }
+            100% { opacity:0; transform: scale(0.4) translateY(40px); }
+        }
+        #pause-menu .pause-inner {
+            background: rgba(30,39,46,0.96);
+            padding: 28px 24px 20px;
+            border-radius: 24px;
+            border: 2px solid var(--accent);
+            width: 88%; max-width: 320px;
+            animation: pauseBounceIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        #pause-menu.bouncing-out .pause-inner {
+            animation: pauseBounceOut 0.28s ease-in forwards;
+        }
     </style>
 </head>
 <body>
@@ -470,21 +503,30 @@
 
 <!-- PAUSE MENU -->
 <div id="pause-menu" class="overlay hidden">
-    <div style="background:rgba(30,39,46,0.95);padding:30px;border-radius:24px;border:2px solid var(--accent);width:85%;">
-        <h2 style="color:var(--accent);">PAUSED</h2>
-        <div style="background:rgba(255,255,255,0.1);padding:15px;border-radius:15px;margin-bottom:20px;">
-            <p style="margin:0 0 10px 0;font-weight:bold;">NEED A LIFE?</p>
-            <button onclick="buyHeart()" style="background:#e74c3c;width:150px;">❤️ BUY (⭐75)</button>
+    <div class="pause-inner">
+        <h2 style="color:var(--accent);margin:0 0 18px 0;">PAUSED</h2>
+
+        <!-- Fox + heart buy -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+            <div style="font-size:44px;line-height:1;flex-shrink:0;">🦊</div>
+            <div style="flex:1;">
+                <div style="font-size:12px;color:rgba(255,255,255,0.65);font-family:var(--font-retro);margin-bottom:6px;">Need a Heart?</div>
+                <button onclick="buyHeart()" style="background:#e74c3c;width:100%;margin:0;padding:10px 14px;font-size:14px;">❤️ Buy ⭐75</button>
+            </div>
         </div>
-        <div style="display:flex;justify-content:space-around;margin-bottom:25px;">
-            <button id="speed-0.5" onclick="setSpeed(0.5)" style="font-size:25px;background:#444;">🐢</button>
-            <button id="speed-1.0" onclick="setSpeed(1.0)" style="font-size:25px;background:#444;">🧑</button>
-            <button id="speed-1.6" onclick="setSpeed(1.6)" style="font-size:25px;background:#444;">⚡</button>
+
+        <!-- Voice Speed -->
+        <div style="margin-bottom:18px;">
+            <div style="font-size:14px;font-weight:900;letter-spacing:2px;color:rgba(255,255,255,0.85);margin-bottom:8px;text-align:center;font-family:var(--font-retro);">VOICE SPEED</div>
+            <div style="display:flex;justify-content:space-around;">
+                <button id="speed-0.5" onclick="setSpeed(0.5)" style="font-size:25px;background:#444;">🐢</button>
+                <button id="speed-1.0" onclick="setSpeed(1.0)" style="font-size:25px;background:#444;">🧑</button>
+                <button id="speed-1.6" onclick="setSpeed(1.6)" style="font-size:25px;background:#444;">⚡</button>
+            </div>
         </div>
-        <button onclick="closeMenus()" style="background:var(--l-color);width:100%;margin-bottom:10px;">RESUME</button>
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-            <button id="btn-sound-fx" onclick="state.soundFx=!state.soundFx;updateUI();" style="flex:1;background:#444;">🔔 SOUND FX</button>
-        </div>
+
+        <!-- Exit to Menu -->
+        <button onclick="closePauseToMenu()" style="background:#444;width:100%;margin:0;">EXIT TO MENU</button>
     </div>
 </div>
 
@@ -765,28 +807,33 @@
     }
     document.addEventListener('pointerdown', warmUpAudio);
     function playFx(correct){
-        if(!state.soundFx) return;
         try {
             const ctx=getFxCtx();
-            const osc=ctx.createOscillator();
-            const gain=ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            if(correct){
-                // Short bright ping — 180ms, done well before next spawn
-                osc.type='sine';
-                osc.frequency.setValueAtTime(880, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime+0.09);
-                gain.gain.setValueAtTime(0.18, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.18);
-                osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.18);
+            // Always try to resume — safe to call even if already running
+            const doPlay=()=>{
+                const osc=ctx.createOscillator();
+                const gain=ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                if(correct){
+                    osc.type='sine';
+                    osc.frequency.setValueAtTime(880, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime+0.09);
+                    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.18);
+                    osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.18);
+                } else {
+                    osc.type='sawtooth';
+                    osc.frequency.setValueAtTime(200, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime+0.15);
+                    gain.gain.setValueAtTime(0.13, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.18);
+                    osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.18);
+                }
+            };
+            if(ctx.state==='suspended'){
+                ctx.resume().then(doPlay).catch(()=>{});
             } else {
-                // Short low thud — 180ms
-                osc.type='sawtooth';
-                osc.frequency.setValueAtTime(200, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime+0.15);
-                gain.gain.setValueAtTime(0.13, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.18);
-                osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.18);
+                doPlay();
             }
         } catch(e){}
     }
@@ -867,6 +914,7 @@
         if(currentAudio) currentAudio.pause();
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
+        document.getElementById('pause-btn').classList.remove('visible');
         if(id==='shop-menu') renderShop();
         if(id==='level-select') renderTower();
         if(id==='sticker-book') renderBook();
@@ -883,9 +931,14 @@
         const cu=(state.invest[state.curLevel]??0)>=400;
         document.getElementById('btn-start-single').classList.toggle('hidden',cu);
         document.getElementById('start-btn-group').classList.toggle('hidden',!cu);
-        // Sound fx toggle button
-        const fxBtn=document.getElementById('btn-sound-fx');
-        if(fxBtn) fxBtn.classList.toggle('active-yellow', state.soundFx);
+        // Show pause button only during active gameplay (not on menus)
+        const anyOverlay=[...document.querySelectorAll('.overlay')].some(el=>!el.classList.contains('hidden'));
+        const pauseBtn=document.getElementById('pause-btn');
+        if(!state.isPaused && !anyOverlay){
+            pauseBtn.classList.add('visible');
+        } else if(anyOverlay && document.getElementById('pause-menu').classList.contains('hidden')){
+            pauseBtn.classList.remove('visible');
+        }
         document.querySelectorAll('#dev-level-btns button').forEach(b=>{
             b.classList.toggle('dev-active',Number(b.dataset.lvl)===state.curLevel);
         });
@@ -931,11 +984,10 @@
         el.innerHTML=
             `<span style="font-size:${sz}px;display:block;text-shadow:0 0 ${glow}px var(--accent),0 2px 8px rgba(0,0,0,0.9);">${n} IN A ROW!</span>`+
             `<span class="combo-label">${label}</span>`;
-        document.getElementById('play-field').appendChild(el);
-        // Remove after animation completes (1.2s)
+        document.body.appendChild(el);
         comboBannerTimer=setTimeout(()=>{
             const b=document.getElementById('combo-banner'); if(b) b.remove();
-        }, 1250);
+        }, 1450);
     }
 
     // ─── COIN POP ─────────────────────────────────────────────────────────────
@@ -1061,6 +1113,7 @@
         preloadAudio();
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         state.isPaused=false;
+        document.getElementById('pause-btn').classList.add('visible');
         showFoxIntro(()=>{ spawnBlock(); });
     }
     function startChallenge(){
@@ -1074,6 +1127,7 @@
         document.getElementById('r-label').innerText=labels[1];
         preloadAudio(); updateUI();
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
+        document.getElementById('pause-btn').classList.add('visible');
         runCountdown(3,()=>{
             state.isPaused=false;
             document.getElementById('lightning-hud').classList.remove('hidden');
@@ -1297,6 +1351,7 @@
             if(state.lives <= 0){
                 cleanup();
                 document.getElementById('lightning-hud').classList.add('hidden');
+                document.getElementById('pause-btn').classList.remove('visible');
                 inChallenge = false; 
                 setArenaBg(0); 
                 updateUI();
@@ -1338,35 +1393,55 @@
     }
     function togglePause(){
         const pauseMenu=document.getElementById('pause-menu');
+        const pauseBtn=document.getElementById('pause-btn');
         if(!pauseMenu.classList.contains('hidden')){
-            // Pause menu is open — close it
-            pauseMenu.classList.add('hidden');
-            // Only resume if we're actually mid-game (not on main menu, shop, etc.)
-            const anyOtherOverlay=[...document.querySelectorAll('.overlay')]
-                .some(el=>!el.classList.contains('hidden')&&el.id!=='pause-menu');
-            if(!anyOtherOverlay){
-                // No other overlay visible — we were in-game, resume
-                state.isPaused=false;
-                const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
-                if(!currentBlock&&state.roundHits<limit&&state.roundHits>0){
-                    spawnBlock();
-                } else if(currentBlock){
-                    const rate=inChallenge?challengeRate:(state.audioRate??1.0);
-                    if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
-                    const a=new Audio(buildAudioPath(currentBlock.data));
-                    a.playbackRate=rate; currentAudio=a;
-                    a.onerror=()=>{ animate(); };
-                    a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
+            // Pause menu is open — bounce it out then close
+            pauseMenu.classList.add('bouncing-out');
+            setTimeout(()=>{
+                pauseMenu.classList.add('hidden');
+                pauseMenu.classList.remove('bouncing-out');
+                const anyOtherOverlay=[...document.querySelectorAll('.overlay')]
+                    .some(el=>!el.classList.contains('hidden')&&el.id!=='pause-menu');
+                if(!anyOtherOverlay){
+                    state.isPaused=false;
+                    pauseBtn.classList.add('visible');
+                    const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+                    if(!currentBlock&&state.roundHits<limit&&state.roundHits>0){
+                        spawnBlock();
+                    } else if(currentBlock){
+                        const rate=inChallenge?challengeRate:(state.audioRate??1.0);
+                        if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+                        const a=new Audio(buildAudioPath(currentBlock.data));
+                        a.playbackRate=rate; currentAudio=a;
+                        a.onerror=()=>{ animate(); };
+                        a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
+                    }
                 }
-            }
-            // Otherwise just leave whatever overlay was showing
+            }, 290);
         } else {
-            showMenu('pause-menu');
+            // Open the pause menu — pause button stays visible as the toggle
+            state.isPaused=true; cancelAnimationFrame(animationId); stopTimer();
+            if(currentAudio) currentAudio.pause();
+            document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
+            pauseMenu.classList.remove('hidden');
+            pauseBtn.classList.add('visible');
+            updateUI();
         }
+    }
+    function closePauseToMenu(){
+        const pauseMenu=document.getElementById('pause-menu');
+        pauseMenu.classList.add('bouncing-out');
+        setTimeout(()=>{
+            pauseMenu.classList.add('hidden');
+            pauseMenu.classList.remove('bouncing-out');
+            document.getElementById('pause-btn').classList.remove('visible');
+            showMenu('main-menu');
+        }, 290);
     }
     function closeMenus(){
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         state.isPaused=false;
+        document.getElementById('pause-btn').classList.add('visible');
         const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
         if(!currentBlock&&state.roundHits<limit){
             spawnBlock();
