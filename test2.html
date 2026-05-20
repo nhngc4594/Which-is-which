@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v4.8.0</title>
+    <title>Phonetic Flow v4.3.0</title>
     <style>
         :root {
             --bg-color: #0a0a1a;
@@ -79,8 +79,6 @@
         #speaker-btn:active { transform: scale(0.82); }
         #timer-wrap { display: none; }
         #timer-bar { display: none; }
-
-        /* ── PAUSE BUTTON — only visible during active gameplay ─────────── */
         #pause-btn {
             position: fixed; bottom: 20px; left: 20px;
             font-size: 26px; cursor: pointer; transition: transform 0.1s;
@@ -121,38 +119,64 @@
             pointer-events: none; top: -200px;
         }
 
+        /* Stacks live inside each lane-half, anchored to bottom, grow upward */
+        .side-stack {
+            position: absolute; bottom: 8px; width: 100%;
+            display: flex; flex-direction: column; justify-content: flex-end; z-index: 10;
+            padding: 4px; box-sizing: border-box; pointer-events: none;
+            height: 50%; overflow: hidden;
+        }
+        /* Fix: Stacks now sit at a fixed 'floor' above the lane buttons */
         #left-stack, #right-stack {
-            position: absolute;
-            bottom: 120px;
-            width: 100%;
+            position: absolute; 
+            bottom: 120px; /* This keeps them from sliding below the screen */
+            width: 50%;
             max-height: 65vh;
-            display: flex;
-            flex-direction: column-reverse;
+            display: flex; 
+            flex-direction: column-reverse; 
             pointer-events: none;
+            overflow: hidden;
             z-index: 10;
         }
+       /* Fix: Stacks now sit at a fixed 'floor' and don't cut off the pill shape */
+        #left-stack, #right-stack {
+            position: absolute; 
+            bottom: 120px; 
+            width: 100%; 
+            max-height: 65vh;
+            display: flex; 
+            flex-direction: column-reverse; 
+            pointer-events: none;
+            /* Removed overflow:hidden so the rounded ends show */
+            z-index: 10;
+        }
+
         #left-stack  { left: 0; align-items: flex-start; padding-left: 10px; }
         #right-stack { right: 0; align-items: flex-end; padding-right: 10px; }
 
         .brick {
-            width: 80%;
+            /* Width: uses percentage to fit screens, with a max limit */
+            width: 80%; 
             max-width: 180px;
-            height: 45px;
-            margin-top: 5px;
-            border-radius: 25px;
-            display: flex;
-            align-items: center;
+            height: 45px; 
+            margin-top: 5px; 
+            border-radius: 25px; /* Perfect Pill Shape */
+            display: flex; 
+            align-items: center; 
             justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
+            /* Font size: significantly larger to fill the pill */
+            font-size: 20px; 
+            font-weight: bold; 
             color: white;
-            animation: slideIn 0.18s ease-out;
-            flex-shrink: 1;
+            animation: slideIn 0.18s ease-out; 
+            flex-shrink: 1; 
             min-height: 30px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             border: 2px solid rgba(255,255,255,0.3);
-            white-space: nowrap;
+            white-space: nowrap; 
         }
+
+
         @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
 
         /* ── FOX MASCOT INTRO ───────────────────────────────────────────── */
@@ -204,15 +228,13 @@
             font-family: var(--font-retro); font-weight: 900;
             color: var(--accent); text-align: center;
             pointer-events: none; z-index: 38; white-space: nowrap;
-            animation: comboBannerAnim 1.6s ease-out forwards;
+            animation: comboBannerAnim 1.2s ease-out forwards;
         }
         @keyframes comboBannerAnim {
-            0%   { opacity:0; transform: translateX(-50%) scale(0.4); }
-            18%  { opacity:1; transform: translateX(-50%) scale(1.12); }
-            32%  { opacity:1; transform: translateX(-50%) scale(0.96); }
-            45%  { opacity:1; transform: translateX(-50%) scale(1.04); }
+            0%   { opacity:0; transform: translateX(-50%) scale(0.5); }
+            25%  { opacity:1; transform: translateX(-50%) scale(1.1); }
             60%  { opacity:1; transform: translateX(-50%) scale(1.0); }
-            100% { opacity:0; transform: translateX(-50%) scale(0.9) translateY(-24px); }
+            100% { opacity:0; transform: translateX(-50%) scale(0.9) translateY(-20px); }
         }
         .combo-label {
             display: block; font-size: 13px; letter-spacing: 3px;
@@ -225,103 +247,6 @@
             color: var(--accent); background: rgba(0,0,0,0.75);
             padding: 4px 14px; border-radius: 16px;
             border: 1px solid var(--accent); letter-spacing: 2px; pointer-events: none;
-        }
-
-        /* ── PAUSE MENU ─────────────────────────────────────────────────── */
-        #pause-menu {
-            background: rgba(0,0,0,0.85);
-        }
-        #pause-card {
-            background: rgba(20,26,36,0.98);
-            padding: 28px 24px 24px;
-            border-radius: 24px;
-            border: 2px solid var(--accent);
-            width: 88%;
-            max-width: 340px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0;
-        }
-        /* Bounce IN */
-        @keyframes pauseBounceIn {
-            0%   { opacity:0; transform: scale(0.5); }
-            55%  { opacity:1; transform: scale(1.06); }
-            75%  { transform: scale(0.97); }
-            100% { transform: scale(1.0); }
-        }
-        /* Bounce OUT */
-        @keyframes pauseBounceOut {
-            0%   { opacity:1; transform: scale(1.0); }
-            25%  { transform: scale(1.08); }
-            100% { opacity:0; transform: scale(0.45); }
-        }
-        #pause-card.bounce-in {
-            animation: pauseBounceIn 0.28s cubic-bezier(0.34,1.4,0.64,1) forwards;
-        }
-        #pause-card.bounce-out {
-            animation: pauseBounceOut 0.32s cubic-bezier(0.55,0,0.8,0.2) forwards;
-        }
-
-        #pause-fox {
-            font-size: 72px;
-            line-height: 1;
-            margin-bottom: 4px;
-        }
-        #pause-fox-msg {
-            font-family: var(--font-retro);
-            font-size: 14px;
-            color: rgba(255,255,255,0.75);
-            margin-bottom: 18px;
-            letter-spacing: 0.5px;
-        }
-        #pause-buy-btn {
-            background: #c0392b !important;
-            width: 160px;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-        #pause-progress {
-            font-family: var(--font-retro);
-            font-size: 13px;
-            color: rgba(255,255,255,0.4);
-            letter-spacing: 2px;
-            margin-bottom: 18px;
-        }
-        .pause-speed-label {
-            font-size: 11px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.45);
-            margin-bottom: 8px;
-            font-family: var(--font-retro);
-        }
-        #pause-speed-row {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 22px;
-        }
-        #pause-speed-row button {
-            font-size: 24px;
-            background: #333;
-            width: 58px;
-            height: 58px;
-            padding: 0;
-            margin: 0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #pause-exit-btn {
-            background: #2c2c2c !important;
-            color: rgba(255,255,255,0.55) !important;
-            width: 100%;
-            font-size: 14px;
-            letter-spacing: 1px;
-            margin-top: 4px;
         }
 
         /* ── MENUS ──────────────────────────────────────────────────────── */
@@ -413,20 +338,20 @@
         @keyframes heartAppear { 0%{transform:scale(0.5);filter:drop-shadow(0 0 0px #f1c40f);opacity:0} 50%{transform:scale(1.4);filter:drop-shadow(0 0 16px #f1c40f);opacity:1} 75%{transform:scale(0.9);filter:drop-shadow(0 0 8px #f1c40f)} 100%{transform:scale(1);filter:drop-shadow(0 0 4px #f1c40f);opacity:1} }
         .heart-new { animation: heartAppear 0.6s ease-out forwards; }
         @keyframes heartBreakAnim { 0%{transform:scale(1.4);opacity:1} 100%{transform:scale(0.6);opacity:0} }
-        .heart-break {
-            position: fixed;
-            font-size: 55px;
-            pointer-events: none;
-            z-index: 2000;
-            opacity: 0.9;
-            filter: hue-rotate(310deg) brightness(1.2);
-            text-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
-            animation: heartBreakFloat 1.0s ease-out forwards;
-        }
-        @keyframes heartBreakFloat {
-            0%   { transform: translateY(0) scale(1.1); opacity: 0.9; }
-            100% { transform: translateY(-120px) scale(0.6); opacity: 0; }
-        }
+     .heart-break {
+    position: fixed;
+    font-size: 55px; 
+    pointer-events: none;
+    z-index: 2000;
+    opacity: 0.9;
+    filter: hue-rotate(310deg) brightness(1.2);
+    text-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
+    animation: heartBreakFloat 1.0s ease-out forwards;
+}
+@keyframes heartBreakFloat {
+    0%   { transform: translateY(0) scale(1.1); opacity: 0.9; }
+    100% { transform: translateY(-120px) scale(0.6); opacity: 0; }
+}
 
         /* ── LIGHTNING COUNTDOWN ────────────────────────────────────────── */
         #lightning-countdown { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:920; font-family:var(--font-retro); color:var(--accent); }
@@ -454,7 +379,7 @@
 <body>
 
 <button id="help-btn" onpointerdown="event.stopPropagation()" onclick="showHelp()" title="How to play">？</button>
-<button id="pause-btn" class="hidden" onpointerdown="event.stopPropagation()" onclick="togglePause()">⏸</button>
+<button id="pause-btn" onpointerdown="event.stopPropagation()" onclick="togglePause()">⏸</button>
 <div id="currency-display">⭐ 0</div>
 <div id="lives-display">❤️❤️❤️</div>
 
@@ -517,9 +442,6 @@
     <button id="btn-world-map" onclick="showMenu('level-select')" style="width:220px;background:#8e44ad;" class="hidden">🗺 WORLD MAP</button>
     <button onclick="showMenu('shop-menu')" style="width:220px;background:#e67e22;">🛍 STICKER SHOP</button>
     <button onclick="showMenu('sticker-book')" style="width:220px;background:#2980b9;">📖 MY BOOK</button>
-    <div style="margin-top:14px;">
-        <button id="btn-sound-fx" onclick="state.soundFx=!state.soundFx;updateUI();" style="background:#444;width:220px;">✔️💢 Feedback Sound</button>
-    </div>
 </div>
 
 <!-- LEVEL SELECT -->
@@ -548,18 +470,21 @@
 
 <!-- PAUSE MENU -->
 <div id="pause-menu" class="overlay hidden">
-    <div id="pause-card">
-        <div id="pause-fox">🦊</div>
-        <div id="pause-fox-msg">Need a Heart?</div>
-        <button id="pause-buy-btn" onclick="buyHeart()">❤️ Buy ⭐75</button>
-        <div id="pause-progress"></div>
-        <div class="pause-speed-label">Voice Speed</div>
-        <div id="pause-speed-row">
-            <button id="speed-0.5" onclick="setSpeed(0.5)">🐢</button>
-            <button id="speed-1.0" onclick="setSpeed(1.0)">🧑</button>
-            <button id="speed-1.6" onclick="setSpeed(1.6)">⚡</button>
+    <div style="background:rgba(30,39,46,0.95);padding:30px;border-radius:24px;border:2px solid var(--accent);width:85%;">
+        <h2 style="color:var(--accent);">PAUSED</h2>
+        <div style="background:rgba(255,255,255,0.1);padding:15px;border-radius:15px;margin-bottom:20px;">
+            <p style="margin:0 0 10px 0;font-weight:bold;">NEED A LIFE?</p>
+            <button onclick="buyHeart()" style="background:#e74c3c;width:150px;">❤️ BUY (⭐75)</button>
         </div>
-        <button id="pause-exit-btn" onclick="exitToMenu()">EXIT TO MENU</button>
+        <div style="display:flex;justify-content:space-around;margin-bottom:25px;">
+            <button id="speed-0.5" onclick="setSpeed(0.5)" style="font-size:25px;background:#444;">🐢</button>
+            <button id="speed-1.0" onclick="setSpeed(1.0)" style="font-size:25px;background:#444;">🧑</button>
+            <button id="speed-1.6" onclick="setSpeed(1.6)" style="font-size:25px;background:#444;">⚡</button>
+        </div>
+        <button onclick="closeMenus()" style="background:var(--l-color);width:100%;margin-bottom:10px;">RESUME</button>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <button id="btn-sound-fx" onclick="state.soundFx=!state.soundFx;updateUI();" style="flex:1;background:#444;">🔔 SOUND FX</button>
+        </div>
     </div>
 </div>
 
@@ -786,8 +711,8 @@
     let comboCount=0, comboBannerTimer=null;
     let roundCoinsEarned=0;
     let driftAngle=0;
-    let roundCorrect=0, roundTotal=0;
-    let perfectLightning=false;
+    let roundCorrect=0, roundTotal=0; // for accuracy tracking
+    let perfectLightning=false;       // for perfect round badge
 
     // ─── HELPERS ──────────────────────────────────────────────────────────────
     function coins(){ return state.coins[state.curLevel]??0; }
@@ -818,6 +743,7 @@
     }
 
     // ─── WEB AUDIO FX ────────────────────────────────────────────────────────
+    // Dedicated AudioContext just for fx — never paused or touched by word audio
     let fxCtx=null;
     function getFxCtx(){
         if(!fxCtx||fxCtx.state==='closed'){
@@ -826,9 +752,11 @@
         if(fxCtx.state==='suspended') fxCtx.resume();
         return fxCtx;
     }
+    // Warm up the AudioContext on the very first user touch so it's never suspended mid-game
     function warmUpAudio(){
         try {
             const ctx=getFxCtx();
+            // Play a silent buffer to unlock it
             const buf=ctx.createBuffer(1,1,22050);
             const src=ctx.createBufferSource();
             src.buffer=buf; src.connect(ctx.destination); src.start(0);
@@ -844,6 +772,7 @@
             const gain=ctx.createGain();
             osc.connect(gain); gain.connect(ctx.destination);
             if(correct){
+                // Short bright ping — 180ms, done well before next spawn
                 osc.type='sine';
                 osc.frequency.setValueAtTime(880, ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime+0.09);
@@ -851,6 +780,7 @@
                 gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.18);
                 osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.18);
             } else {
+                // Short low thud — 180ms
                 osc.type='sawtooth';
                 osc.frequency.setValueAtTime(200, ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime+0.15);
@@ -865,7 +795,7 @@
     function todayStr(){ return new Date().toISOString().slice(0,10); }
     function updateStreak(){
         const today=todayStr();
-        if(state.lastPlayedDate===today) return;
+        if(state.lastPlayedDate===today) return; // already counted today
         const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
         const yStr=yesterday.toISOString().slice(0,10);
         if(state.lastPlayedDate===yStr){ state.streakDays++; }
@@ -912,6 +842,7 @@
         }
         state.coins=fc; state.invest=fi;
         setGender(state.gender);
+        // Fox comeback nudge — if played before but not today or yesterday
         const today=todayStr();
         const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
         const yStr=yesterday.toISOString().slice(0,10);
@@ -946,39 +877,15 @@
         document.getElementById('lives-display').innerHTML='❤️'.repeat(Math.max(0,state.lives));
         document.getElementById('level-display-name').innerText=levels[state.curLevel].name;
         if(state.maxLevel>=2) document.getElementById('btn-world-map').classList.remove('hidden');
-
-        // Speed button highlights — covers both pause menu buttons
-        document.querySelectorAll('button[id^="speed-"]').forEach(b=>b.classList.remove('active-yellow'));
+        document.querySelectorAll('#pause-menu button[id^="speed-"]').forEach(b=>b.classList.remove('active-yellow'));
         const rk=state.audioRate===0.5?'speed-0.5':state.audioRate===1.6?'speed-1.6':'speed-1.0';
         const sb=document.getElementById(rk); if(sb) sb.classList.add('active-yellow');
-
         const cu=(state.invest[state.curLevel]??0)>=400;
         document.getElementById('btn-start-single').classList.toggle('hidden',cu);
         document.getElementById('start-btn-group').classList.toggle('hidden',!cu);
-
-        // Feedback sound toggle — now on main menu
+        // Sound fx toggle button
         const fxBtn=document.getElementById('btn-sound-fx');
         if(fxBtn) fxBtn.classList.toggle('active-yellow', state.soundFx);
-
-        // Pause button — only show during active gameplay (no overlay visible)
-        const anyOverlay=[...document.querySelectorAll('.overlay')].some(el=>!el.classList.contains('hidden'));
-        const pauseBtn=document.getElementById('pause-btn');
-        if(!state.isPaused && !anyOverlay){
-            pauseBtn.classList.remove('hidden');
-        } else if(anyOverlay && !document.getElementById('pause-menu').classList.contains('hidden')){
-            // Pause menu is open — keep button visible so user can toggle it closed
-            pauseBtn.classList.remove('hidden');
-        } else {
-            pauseBtn.classList.add('hidden');
-        }
-
-        // Pause menu progress counter
-        const progressEl=document.getElementById('pause-progress');
-        if(progressEl){
-            const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
-            progressEl.innerText=`ROUND  ${state.roundHits} / ${limit}`;
-        }
-
         document.querySelectorAll('#dev-level-btns button').forEach(b=>{
             b.classList.toggle('dev-active',Number(b.dataset.lvl)===state.curLevel);
         });
@@ -1003,7 +910,7 @@
     function startTimer(duration){ /* timer bar removed */ }
     function stopTimer(){ if(timerRaf){ cancelAnimationFrame(timerRaf); timerRaf=null; } }
 
-    // ─── ARENA BG SHIFT ───────────────────────────────────────────────────────
+    // ─── ARENA BG SHIFT (⚡ ROUND intensity) ─────────────────────────────────
     function setArenaBg(blockNum){
         if(!inChallenge){ document.getElementById('game-container').style.background='#0a0a1a'; return; }
         const t=Math.min(1,(blockNum-1)/14);
@@ -1013,11 +920,9 @@
 
     // ─── COMBO ────────────────────────────────────────────────────────────────
     function showCombo(n){
-        // Clear any existing banner and its removal timer
-        if(comboBannerTimer){ clearTimeout(comboBannerTimer); comboBannerTimer=null; }
         const old=document.getElementById('combo-banner'); if(old) old.remove();
+        if(comboBannerTimer){ clearTimeout(comboBannerTimer); comboBannerTimer=null; }
         if(n<3) return;
-
         const sz=Math.min(26+n*4, 68);
         const glow=Math.min(n*8, 48);
         const label=n>=10?'🔥 UNSTOPPABLE!':n>=7?'🔥 ON FIRE!':n>=5?'⚡ SCORCHING!':'✨ NICE STREAK!';
@@ -1027,12 +932,10 @@
             `<span style="font-size:${sz}px;display:block;text-shadow:0 0 ${glow}px var(--accent),0 2px 8px rgba(0,0,0,0.9);">${n} IN A ROW!</span>`+
             `<span class="combo-label">${label}</span>`;
         document.getElementById('play-field').appendChild(el);
-
-        // Let the CSS animation run its full 1.6s, then remove
+        // Remove after animation completes (1.2s)
         comboBannerTimer=setTimeout(()=>{
             const b=document.getElementById('combo-banner'); if(b) b.remove();
-            comboBannerTimer=null;
-        }, 1650);
+        }, 1250);
     }
 
     // ─── COIN POP ─────────────────────────────────────────────────────────────
@@ -1048,13 +951,17 @@
 
     // ─── HEART BREAK ─────────────────────────────────────────────────────────
     function showHeartBreak(correctSide){
+        // Update the lives display
         const remaining=Math.max(0,state.lives);
         document.getElementById('lives-display').innerHTML='❤️'.repeat(remaining);
+
+        // Spawn a floating broken heart on the correct-answer side
         const pf=document.getElementById('play-field');
         const pw=pf.offsetWidth, ph=pf.offsetHeight;
         const hb=document.createElement('div');
         hb.className='heart-break';
         hb.textContent='💔';
+        // Position at mid-height of play field, in the correct lane
         const xPos = correctSide==='L' ? pw*0.25 : pw*0.75;
         const rect = pf.getBoundingClientRect();
         hb.style.left = (rect.left + xPos - 27) + 'px';
@@ -1154,8 +1061,6 @@
         preloadAudio();
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         state.isPaused=false;
-        // Show pause button now that gameplay is starting
-        document.getElementById('pause-btn').classList.remove('hidden');
         showFoxIntro(()=>{ spawnBlock(); });
     }
     function startChallenge(){
@@ -1169,8 +1074,6 @@
         document.getElementById('r-label').innerText=labels[1];
         preloadAudio(); updateUI();
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
-        // Show pause button now that gameplay is starting
-        document.getElementById('pause-btn').classList.remove('hidden');
         runCountdown(3,()=>{
             state.isPaused=false;
             document.getElementById('lightning-hud').classList.remove('hidden');
@@ -1279,6 +1182,7 @@
 
         document.getElementById('block-counter').innerText=`${state.roundHits+1}/${inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH}`;
 
+        // Reset and place target
         const targetEl=document.getElementById('falling-target');
         targetEl.style.transition='none';
         targetEl.style.transform='translateX(-50%)';
@@ -1290,15 +1194,18 @@
 
         currentBlock={data:w, top:-70};
 
+        // Pre-create audio so it starts buffering immediately
         const rate=inChallenge?challengeRate:(state.audioRate??1.0);
         if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
         const a=new Audio(buildAudioPath(w));
         a.playbackRate=rate; currentAudio=a;
 
+        // Calculate timer duration based on fall speed
         const speed=inChallenge?getChallengeFallSpeed(challengeBlock):BASE_FALL_SPEED;
         const arenaH=document.getElementById('play-field').offsetHeight||500;
         const duration=((arenaH+70)/speed)*(1000/60);
 
+        // ── SYNC: timer and animation both start the instant audio plays ──
         a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); startTimer(duration); animate(); };
         a.play()
             .then(()=>{ startTimer(duration); animate(); })
@@ -1347,11 +1254,13 @@
         const ok=!missed&&choice===correct;
         const side=missed?correct:choice;
 
+        // Target fly-off — clone the target so it animates while the original resets
         const targetEl=document.getElementById('falling-target');
         const ghost=document.createElement('div');
         ghost.style.cssText=`position:absolute;font-size:58px;line-height:1;z-index:21;pointer-events:none;top:${targetEl.style.top};left:${targetEl.style.left};transform:translateX(-50%);transition:transform 0.38s ease-in,opacity 0.38s ease-in,filter 0.2s;`;
         ghost.innerText=targetEl.innerText;
         document.getElementById('play-field').appendChild(ghost);
+        // Trigger fly animation on next frame
         requestAnimationFrame(()=>{
             const flyX=side==='L'?-180:180;
             const flyColor=ok?'#2ecc71':'#e74c3c';
@@ -1361,10 +1270,12 @@
         });
         setTimeout(()=>ghost.remove(), 420);
 
+        // Flash
         const flashEl=document.getElementById(side==='L'?'flash-l':'flash-r');
         flashEl.className=''; void flashEl.offsetWidth;
         flashEl.className=ok?'do-flash-green':'do-flash-red';
 
+        // Brick — placed in the lane-half div for correct positioning
         const brick=document.createElement('div'); brick.className='brick'; brick.innerText=w.word;
         brick.style.background=ok?'var(--l-color)':'var(--r-color)';
         document.getElementById(side==='L'?'left-stack':'right-stack').appendChild(brick);
@@ -1377,7 +1288,7 @@
             spawnCoinPop(side); showCombo(comboCount);
             playFx(true);
         } else {
-            comboCount = 0;
+            comboCount = 0; 
             state.lives--;
             if(inChallenge) perfectLightning=false;
             showHeartBreak(correct);
@@ -1386,8 +1297,8 @@
             if(state.lives <= 0){
                 cleanup();
                 document.getElementById('lightning-hud').classList.add('hidden');
-                inChallenge = false;
-                setArenaBg(0);
+                inChallenge = false; 
+                setArenaBg(0); 
                 updateUI();
                 return showMenu('game-over');
             }
@@ -1402,6 +1313,7 @@
             if(inChallenge){
                 document.getElementById('lightning-hud').classList.add('hidden');
                 inChallenge=false; setArenaBg(0);
+                // Award perfect badge if no hearts lost
                 if(perfectLightning){
                     const badge={emoji:"⚡🏅",level:state.curLevel,isPerfect:true};
                     if(!state.inventory.some(i=>i.isPerfect&&i.level===state.curLevel)){
@@ -1410,6 +1322,7 @@
                 }
                 setTimeout(()=>showLightningClear(pct),400);
             } else if(state.curLevel===FINAL_LEVEL){
+                // On final level, practice round shows CLEAR not congrats
                 setTimeout(()=>showRoundWin(pct),500);
             } else {
                 setTimeout(()=>showRoundWin(pct),500);
@@ -1421,72 +1334,39 @@
         const t=document.getElementById('falling-target');
         if(t){ t.style.transition='none'; t.style.top='-200px'; t.style.opacity='1'; t.style.transform='translateX(-50%)'; t.style.filter='none'; }
         currentBlock=null; cancelAnimationFrame(animationId); stopTimer();
-        // NOTE: combo banner is NOT removed here — it has its own timer (comboBannerTimer)
-        // so it completes its animation naturally without being killed by the next spawn
+        const old=document.getElementById('combo-banner'); if(old) old.remove();
     }
-
-    // ─── PAUSE TOGGLE ─────────────────────────────────────────────────────────
     function togglePause(){
         const pauseMenu=document.getElementById('pause-menu');
-        const card=document.getElementById('pause-card');
-
         if(!pauseMenu.classList.contains('hidden')){
-            // ── CLOSING: bounce out, then hide and resume ──
-            card.classList.remove('bounce-in');
-            card.classList.add('bounce-out');
-            setTimeout(()=>{
-                card.classList.remove('bounce-out');
-                pauseMenu.classList.add('hidden');
-
-                const anyOtherOverlay=[...document.querySelectorAll('.overlay')]
-                    .some(el=>!el.classList.contains('hidden')&&el.id!=='pause-menu');
-                if(!anyOtherOverlay){
-                    state.isPaused=false;
-                    updateUI(); // re-evaluates pause button visibility
-                    const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
-                    if(!currentBlock&&state.roundHits<limit&&state.roundHits>0){
-                        spawnBlock();
-                    } else if(currentBlock){
-                        const rate=inChallenge?challengeRate:(state.audioRate??1.0);
-                        if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
-                        const a=new Audio(buildAudioPath(currentBlock.data));
-                        a.playbackRate=rate; currentAudio=a;
-                        a.onerror=()=>{ animate(); };
-                        a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
-                    }
+            // Pause menu is open — close it
+            pauseMenu.classList.add('hidden');
+            // Only resume if we're actually mid-game (not on main menu, shop, etc.)
+            const anyOtherOverlay=[...document.querySelectorAll('.overlay')]
+                .some(el=>!el.classList.contains('hidden')&&el.id!=='pause-menu');
+            if(!anyOtherOverlay){
+                // No other overlay visible — we were in-game, resume
+                state.isPaused=false;
+                const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+                if(!currentBlock&&state.roundHits<limit&&state.roundHits>0){
+                    spawnBlock();
+                } else if(currentBlock){
+                    const rate=inChallenge?challengeRate:(state.audioRate??1.0);
+                    if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+                    const a=new Audio(buildAudioPath(currentBlock.data));
+                    a.playbackRate=rate; currentAudio=a;
+                    a.onerror=()=>{ animate(); };
+                    a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
                 }
-            }, 320); // matches bounce-out animation duration
-
+            }
+            // Otherwise just leave whatever overlay was showing
         } else {
-            // ── OPENING: show pause menu, then bounce in ──
-            state.isPaused=true; cancelAnimationFrame(animationId); stopTimer();
-            if(currentAudio) currentAudio.pause();
-            updateUI(); // update progress counter etc.
-            pauseMenu.classList.remove('hidden');
-            // Force reflow so animation triggers fresh
-            card.classList.remove('bounce-in','bounce-out');
-            void card.offsetWidth;
-            card.classList.add('bounce-in');
+            showMenu('pause-menu');
         }
     }
-
-    // ─── EXIT TO MENU ─────────────────────────────────────────────────────────
-    function exitToMenu(){
-        const card=document.getElementById('pause-card');
-        card.classList.remove('bounce-in');
-        card.classList.add('bounce-out');
-        setTimeout(()=>{
-            card.classList.remove('bounce-out');
-            inChallenge=false; setArenaBg(0);
-            document.getElementById('lightning-hud').classList.add('hidden');
-            showMenu('main-menu');
-        }, 320);
-    }
-
     function closeMenus(){
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         state.isPaused=false;
-        updateUI();
         const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
         if(!currentBlock&&state.roundHits<limit){
             spawnBlock();
@@ -1618,6 +1498,7 @@
     }
     function devAddCoins(){ addCoins(500); updateUI(); }
     function devResetSave(){ if(confirm('Reset ALL save data? This cannot be undone.')){ localStorage.removeItem('phoneticFlowSave'); location.reload(); } }
+
 
     // ─── BOOT ─────────────────────────────────────────────────────────────────
     loadGame();
