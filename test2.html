@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v5.2.0</title>
+    <title>Phonetic Flow v5.3.0</title>
     <style>
         :root {
             --bg-color: #0a0a1a;
@@ -315,8 +315,8 @@
         #gender-panel label { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
         #gender-panel .gender-row { display: flex; gap: 8px; justify-content: center; }
         #gender-panel button { width: 120px; background: #444; margin: 0; }
-        #btn-mike  { background: #2980b9; color: #fff; }
-        #btn-jenny { background: #c0392b; color: #fff; }
+        #btn-mike  { background: #c8d8f0; color: #1a2a3a; }
+        #btn-jenny { background: #f5ccd4; color: #3a1a22; }
         #btn-mike.active-yellow, #btn-jenny.active-yellow { background: var(--accent) !important; color: #000 !important; }
         .tower-item { background: #222; width: 85%; margin: 6px; padding: 15px; border-radius: 12px; border: 2px solid #444; transition: 0.3s; }
         @keyframes goldSparkle {
@@ -326,7 +326,7 @@
 
         #start-btn-group { display: flex; gap: 0; width: 260px; margin-top: 14px; border-radius: 40px; overflow: hidden; }
         #btn-practice { flex:1; padding:12px 8px; font-size:13px; border:none; background:var(--l-color); color:#000; cursor:pointer; font-weight:900; font-family:var(--font-main); border-radius:40px 0 0 40px; transition:filter 0.1s; margin:0; }
-        #btn-challenge { flex:1; padding:12px 10px; font-size:15px; border:none; background:#2980b9; color:#fff; cursor:pointer; font-weight:900; font-family:var(--font-main); border-radius:0 40px 40px 0; transition:filter 0.1s; margin:0; }
+        #btn-challenge { flex:1; padding:12px 10px; font-size:15px; border:none; background:#d4510a; color:#fff; cursor:pointer; font-weight:900; font-family:var(--font-main); border-radius:0 40px 40px 0; transition:filter 0.1s; margin:0; }
         #btn-practice:active, #btn-challenge:active { filter: brightness(0.85); }
         #btn-start-single { background: var(--l-color); min-width: 220px; font-size: 18px; margin-top: 14px; }
         #round-win-coins { font-size: 20px; color: var(--accent); font-weight: 900; font-family: var(--font-retro); margin: 4px 0 16px; letter-spacing: 1px; }
@@ -494,12 +494,12 @@
     <h1 onclick="devTitleTap()" style="color:var(--accent);font-size:42px;margin:0 0 4px 0;cursor:default;">PHONETIC FLOW</h1>
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
         <span style="font-size:22px;font-weight:900;color:rgba(255,255,255,0.7);font-family:'Hiragino Sans','Yu Gothic',sans-serif;line-height:1;">声</span>
-        <button id="btn-mike" onclick="setGender('male')" class="active-yellow" style="margin:0;padding:10px 18px;font-size:14px;">🎤 Boy</button>
-        <button id="btn-jenny" onclick="setGender('female')" style="margin:0;padding:10px 18px;font-size:14px;">🎀 Girl</button>
+        <button id="btn-mike" onclick="setGender('male')" class="active-yellow" style="margin:0;padding:10px 18px;font-size:14px;">🐦‍⬛ Boy</button>
+        <button id="btn-jenny" onclick="setGender('female')" style="margin:0;padding:10px 18px;font-size:14px;">🐦 Girl</button>
     </div>
-    <button id="btn-start-single" onclick="startGame()">CH vs TS GO!</button>
+    <button id="btn-start-single" onclick="startGame()">"CH vs TS" <span style="font-size:1.25em;font-weight:900;">GO!</span></button>
     <div id="start-btn-group" class="hidden">
-        <button id="btn-practice" onclick="startGame()">CH vs TS GO!</button>
+        <button id="btn-practice" onclick="startGame()">"CH vs TS" <span style="font-size:1.25em;font-weight:900;">GO!</span></button>
         <button id="btn-challenge" onclick="startChallenge()">👻 BOSS</button>
     </div>
     <button id="btn-world-map" onclick="showMenu('level-select')" style="width:220px;background:#8e44ad;" class="hidden">🗺 WORLD MAP</button>
@@ -819,66 +819,49 @@
     // ─── WEB AUDIO FX ────────────────────────────────────────────────────────
     // Dedicated AudioContext just for fx — never paused or touched by word audio
     let fxCtx=null;
-    let scheduledMissNode=null; // pre-scheduled miss oscillator that can be cancelled
-    let scheduledMissGain=null;
+    let fxKeepAliveTimer=null;
 
     function getFxCtx(){
         if(!fxCtx||fxCtx.state==='closed'){
             fxCtx=new (window.AudioContext||window.webkitAudioContext)();
         }
-        if(fxCtx.state==='suspended') fxCtx.resume();
         return fxCtx;
     }
-    // Warm up the AudioContext on the very first user touch so it's never suspended mid-game
-    function warmUpAudio(){
+
+    // Play a completely silent buffer — browsers won't suspend a context
+    // that has recently produced audio output, even silence.
+    function fxHeartbeat(){
         try {
             const ctx=getFxCtx();
-            // Play a silent buffer to unlock it
-            const buf=ctx.createBuffer(1,1,22050);
+            if(ctx.state==='suspended') ctx.resume().catch(()=>{});
+            const buf=ctx.createBuffer(1,1,ctx.sampleRate);
             const src=ctx.createBufferSource();
             src.buffer=buf; src.connect(ctx.destination); src.start(0);
         } catch(e){}
+    }
+
+    // Start the keepalive — fires every 700ms during gameplay to prevent auto-suspend.
+    function startFxKeepAlive(){
+        stopFxKeepAlive();
+        fxHeartbeat(); // immediate pulse to unlock on first gesture
+        fxKeepAliveTimer=setInterval(fxHeartbeat, 700);
+    }
+    function stopFxKeepAlive(){
+        if(fxKeepAliveTimer){ clearInterval(fxKeepAliveTimer); fxKeepAliveTimer=null; }
+    }
+
+    // Warm up the AudioContext on the very first user touch
+    function warmUpAudio(){
+        try { getFxCtx().resume().catch(()=>{}); fxHeartbeat(); } catch(e){}
         document.removeEventListener('pointerdown', warmUpAudio);
     }
     document.addEventListener('pointerdown', warmUpAudio);
 
-    // Cancel any pre-scheduled miss sound (called when user taps in time)
-    function cancelScheduledMiss(){
-        if(scheduledMissGain){
-            try { scheduledMissGain.gain.cancelScheduledValues(0); scheduledMissGain.gain.setValueAtTime(0,0); } catch(e){}
-        }
-        if(scheduledMissNode){
-            try { scheduledMissNode.stop(0); } catch(e){}
-            scheduledMissNode=null; scheduledMissGain=null;
-        }
-    }
-
-    // Pre-schedule a miss sound to fire at a future AudioContext time.
-    // This runs inside the AC scheduler, so no user gesture needed at fire time.
-    function scheduleMissSound(atTime){
-        cancelScheduledMiss();
+    function playFx(correct){
         try {
             const ctx=getFxCtx();
-            const osc=ctx.createOscillator(), gain=ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.type='sawtooth';
-            osc.frequency.setValueAtTime(200, atTime);
-            osc.frequency.exponentialRampToValueAtTime(60, atTime+0.15);
-            gain.gain.setValueAtTime(0, atTime-0.001); // silent until atTime
-            gain.gain.setValueAtTime(0.13, atTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, atTime+0.18);
-            osc.start(atTime); osc.stop(atTime+0.2);
-            scheduledMissNode=osc; scheduledMissGain=gain;
-        } catch(e){}
-    }
-
-    function playFx(correct){
-        // For correct or wrong-tap: play immediately (always during user gesture, so ctx is running)
-        try {
-            if(!fxCtx||fxCtx.state==='closed'){
-                fxCtx=new (window.AudioContext||window.webkitAudioContext)();
-            }
-            const ctx=fxCtx;
+            // Context is kept warm by the heartbeat, so currentTime is reliable.
+            // We still call resume() as a safety net — it resolves instantly if running.
             const doPlay=()=>{
                 try {
                     const osc=ctx.createOscillator(), gain=ctx.createGain();
@@ -977,6 +960,7 @@
     }
     function showMenu(id){
         state.isPaused=true; cancelAnimationFrame(animationId); stopTimer();
+        stopFxKeepAlive();
         if(currentAudio) currentAudio.pause();
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
@@ -993,11 +977,11 @@
         const lvl=levels[state.curLevel];
         const isFinal=(state.curLevel===FINAL_LEVEL);
         const pairLabel=isFinal?'L vs R 👑':''+((lvl.labels||lvl.sounds).join(' vs '));
-        const goLabel=`${pairLabel} GO!`;
+        const goLabel=`"${pairLabel}" <span style="font-size:1.25em;font-weight:900;">GO!</span>`;
         const singleBtn=document.getElementById('btn-start-single');
         const practiceBtn=document.getElementById('btn-practice');
-        if(singleBtn) singleBtn.innerText=goLabel;
-        if(practiceBtn) practiceBtn.innerText=goLabel;
+        if(singleBtn) singleBtn.innerHTML=goLabel;
+        if(practiceBtn) practiceBtn.innerHTML=goLabel;
         if(state.maxLevel>=2) document.getElementById('btn-world-map').classList.remove('hidden');
         document.querySelectorAll('#pause-menu button[id^="speed-"]').forEach(b=>b.classList.remove('active-yellow'));
         const rk=state.audioRate===0.5?'speed-0.5':state.audioRate===1.6?'speed-1.6':'speed-1.0';
@@ -1186,6 +1170,7 @@
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         state.isPaused=false;
         document.getElementById('pause-btn').classList.add('visible');
+        startFxKeepAlive();
         showFoxIntro(()=>{ spawnBlock(); });
     }
     function startChallenge(){
@@ -1200,6 +1185,7 @@
         preloadAudio(); updateUI();
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         document.getElementById('pause-btn').classList.add('visible');
+        startFxKeepAlive();
         runCountdown(3,()=>{
             state.isPaused=false;
             document.getElementById('lightning-hud').classList.remove('hidden');
@@ -1347,22 +1333,10 @@
         const duration=((arenaH+70)/speed)*(1000/60);
 
         // ── SYNC: timer and animation both start the instant audio plays ──
-        // Pre-schedule the miss sound using the AudioContext clock so it fires
-        // even if the context is suspended at miss-time (no user gesture needed).
-        const startAndSchedule=()=>{
-            startTimer(duration);
-            animate();
-            // Schedule miss sound at the exact future time the block hits bottom
-            try {
-                const ctx=getFxCtx();
-                const missAt=ctx.currentTime+(duration/1000);
-                scheduleMissSound(missAt);
-            } catch(e){}
-        };
-        a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); startAndSchedule(); };
+        a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); startTimer(duration); animate(); };
         a.play()
-            .then(()=>{ startAndSchedule(); })
-            .catch(e=>{ console.warn(e); startAndSchedule(); });
+            .then(()=>{ startTimer(duration); animate(); })
+            .catch(e=>{ console.warn(e); startTimer(duration); animate(); });
     }
 
     // ─── ANIMATE ─────────────────────────────────────────────────────────────
@@ -1402,11 +1376,6 @@
     // ─── RESOLVE ──────────────────────────────────────────────────────────────
     function resolve(choice){
         if(!currentBlock) return;
-        // If user tapped, cancel the pre-scheduled miss sound before it fires.
-        // If this is a miss (choice===null), let the scheduled sound play naturally
-        // — but still cancel the node reference so we don't double-play.
-        if(choice!==null) cancelScheduledMiss();
-        else { scheduledMissNode=null; scheduledMissGain=null; } // already fired, just clear refs
         const w=currentBlock.data;
         const leftSide=isLeftSound(w);
         const correct=leftSide?"L":"R";
@@ -1454,9 +1423,7 @@
             state.lives--;
             if(inChallenge) perfectLightning=false;
             showHeartBreak(correct);
-            // Miss: sound already pre-scheduled and will fire (or has fired) automatically.
-            // Wrong tap: play immediately since we're in a user gesture.
-            if(!missed) playFx(false);
+            playFx(false); // plays for both wrong tap and miss — keepalive ensures context is warm
 
             if(state.lives <= 0){
                 cleanup();
@@ -1498,7 +1465,6 @@
     }
 
     function cleanup(){
-        cancelScheduledMiss();
         const t=document.getElementById('falling-target');
         if(t){ t.style.transition='none'; t.style.top='-200px'; t.style.opacity='1'; t.style.transform='translateX(-50%)'; t.style.filter='none'; }
         currentBlock=null; cancelAnimationFrame(animationId); stopTimer();
