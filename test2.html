@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v5.1.0</title>
+    <title>Phonetic Flow v5.2.0</title>
     <style>
         :root {
             --bg-color: #0a0a1a;
@@ -250,6 +250,42 @@
             border: 1px solid var(--accent); letter-spacing: 2px; pointer-events: none;
         }
 
+        /* ── BOSS GHOST COUNTDOWN ───────────────────────────────────────── */
+        #boss-ghost-float {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 110px; line-height: 1;
+            z-index: 50; pointer-events: none;
+            animation: ghostFloat 1.5s ease-in-out infinite;
+        }
+        @keyframes ghostFloat {
+            0%,100% { transform: translate(-50%,-50%) translateY(0); }
+            50%      { transform: translate(-50%,-50%) translateY(-14px); }
+        }
+        @keyframes ghostExpand {
+            0%   { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%,-50%) scale(12); opacity: 0; }
+        }
+        #boss-ghost-float.expanding {
+            animation: ghostExpand 0.65s ease-in forwards;
+        }
+
+        /* ── BOSS CLEAR — fox bouncing ghost ────────────────────────────── */
+        @keyframes foxBounceLeft {
+            0%   { transform: translateX(0) scaleX(1); }
+            30%  { transform: translateX(-12px) scaleX(-1.1); }
+            60%  { transform: translateX(0) scaleX(1); }
+            100% { transform: translateX(0) scaleX(1); }
+        }
+        @keyframes ghostBounceOff {
+            0%   { transform: translateX(0) rotate(0deg); opacity: 1; }
+            20%  { transform: translateX(0) rotate(-15deg); opacity: 1; }
+            100% { transform: translateX(200px) rotate(60deg) scale(0.2); opacity: 0; }
+        }
+        .lc-boss-row { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 60px; margin: 6px 0; }
+        .lc-fox-bounce { display: inline-block; animation: foxBounceLeft 0.7s 0.3s ease-in-out; }
+        .lc-ghost-flyoff { display: inline-block; animation: ghostBounceOff 0.7s 0.5s ease-in both; }
+
         /* ── MENUS ──────────────────────────────────────────────────────── */
         #shopkeeper-area {
             background: #000; border: 3px solid #fff; border-radius: 10px;
@@ -288,11 +324,11 @@
         }
         .purchased-anim { animation: goldSparkle 0.6s ease; }
 
-        #start-btn-group { display: flex; gap: 0; width: 220px; margin-top: 14px; border-radius: 40px; overflow: hidden; }
-        #btn-practice { flex:1; padding:12px 10px; font-size:16px; border:none; background:var(--l-color); color:#000; cursor:pointer; font-weight:900; font-family:var(--font-main); border-radius:40px 0 0 40px; transition:filter 0.1s; margin:0; }
+        #start-btn-group { display: flex; gap: 0; width: 260px; margin-top: 14px; border-radius: 40px; overflow: hidden; }
+        #btn-practice { flex:1; padding:12px 8px; font-size:13px; border:none; background:var(--l-color); color:#000; cursor:pointer; font-weight:900; font-family:var(--font-main); border-radius:40px 0 0 40px; transition:filter 0.1s; margin:0; }
         #btn-challenge { flex:1; padding:12px 10px; font-size:15px; border:none; background:#2980b9; color:#fff; cursor:pointer; font-weight:900; font-family:var(--font-main); border-radius:0 40px 40px 0; transition:filter 0.1s; margin:0; }
         #btn-practice:active, #btn-challenge:active { filter: brightness(0.85); }
-        #btn-start-single { background: var(--l-color); width: 220px; font-size: 20px; margin-top: 14px; }
+        #btn-start-single { background: var(--l-color); min-width: 220px; font-size: 18px; margin-top: 14px; }
         #round-win-coins { font-size: 20px; color: var(--accent); font-weight: 900; font-family: var(--font-retro); margin: 4px 0 16px; letter-spacing: 1px; }
 
         /* ── HELP ───────────────────────────────────────────────────────── */
@@ -364,14 +400,13 @@
         #lightning-countdown { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:920; font-family:var(--font-retro); color:var(--accent); }
         #lightning-countdown .lcd-number { font-size:140px; font-weight:900; letter-spacing:-4px; animation:countPop 0.4s ease-out; text-shadow:0 0 40px var(--accent); }
         #lightning-countdown .lcd-label  { font-size:14px; letter-spacing:4px; text-transform:uppercase; opacity:0.6; margin-top:10px; }
-        #lightning-countdown .lcd-bolt   { font-size:100px; animation:boltFlash 0.3s ease-out; }
-        @keyframes countPop  { 0%{transform:scale(1.6);opacity:0} 100%{transform:scale(1);opacity:1} }
-        @keyframes boltFlash { 0%{transform:scale(0.5) rotate(-20deg);opacity:0} 60%{transform:scale(1.3) rotate(5deg);opacity:1} 100%{transform:scale(1) rotate(0deg);opacity:1} }
+        #lightning-countdown .lcd-ghost  { font-size:100px; animation:ghostAppear 0.4s ease-out; }
+        @keyframes countPop   { 0%{transform:scale(1.6);opacity:0} 100%{transform:scale(1);opacity:1} }
+        @keyframes ghostAppear{ 0%{transform:scale(0.5) rotate(-20deg);opacity:0} 60%{transform:scale(1.3) rotate(5deg);opacity:1} 100%{transform:scale(1) rotate(0deg);opacity:1} }
 
-        /* ── LIGHTNING CLEAR ────────────────────────────────────────────── */
+        /* ── BOSS CLEAR ─────────────────────────────────────────────────── */
         #lightning-clear { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:925; font-family:var(--font-retro); cursor:pointer; }
         #lightning-clear .lc-inner { border:4px solid var(--accent); padding:40px 30px; border-radius:12px; display:flex; flex-direction:column; align-items:center; animation:fadeIn 0.3s ease-out; }
-        #lightning-clear .lc-bolt { font-size:80px; animation:boltFlash 0.5s ease-out; }
         #lightning-clear h1 { color:var(--accent); font-size:22px; letter-spacing:3px; text-transform:uppercase; margin:16px 0 8px; text-shadow:0 0 20px var(--accent); }
         #lightning-clear .lc-sub { font-size:12px; color:rgba(255,255,255,0.4); letter-spacing:2px; text-transform:uppercase; margin-top:24px; }
 
@@ -444,7 +479,7 @@
             <div class="lane-letter" id="r-label"></div>
             <div id="right-stack" class="side-stack"></div>
         </div>
-        <div id="lightning-hud" class="hidden">⚡ <span id="lhud-block">1</span>/15 &nbsp;|&nbsp; <span id="lhud-speed">1.0</span>x</div>
+        <div id="lightning-hud" class="hidden">👻 <span id="lhud-block">1</span>/15 &nbsp;|&nbsp; <span id="lhud-speed">1.0</span>x</div>
         <div id="fox-intro" class="hidden">
             <div class="fox-emoji">🦊</div>
             <div class="fox-msg" id="fox-msg"></div>
@@ -454,19 +489,18 @@
 
 <!-- MAIN MENU -->
 <div id="main-menu" class="overlay">
-    <div id="streak-banner" class="hidden" style="font-size:18px;font-family:var(--font-retro);color:#000;background:var(--accent);margin-bottom:12px;letter-spacing:2px;padding:8px 20px;border-radius:20px;font-weight:900;box-shadow:0 0 16px var(--accent);"></div>
     <div style="font-size:72px;line-height:1;margin-bottom:6px;animation:foxDrop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;">🦊</div>
+    <div id="streak-banner" class="hidden" style="font-size:18px;font-family:var(--font-retro);color:var(--accent);margin-bottom:10px;letter-spacing:2px;font-weight:900;text-shadow:0 0 16px var(--accent),0 0 32px var(--accent);"></div>
     <h1 onclick="devTitleTap()" style="color:var(--accent);font-size:42px;margin:0 0 4px 0;cursor:default;">PHONETIC FLOW</h1>
-    <p id="level-display-name" style="color:#aaa;margin:0 0 14px 0;font-weight:bold;"></p>
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
-        <span style="font-size:14px;opacity:0.6;">🎙️</span>
-        <button id="btn-mike" onclick="setGender('male')" class="active-yellow" style="margin:0;padding:10px 18px;font-size:14px;">🎤 Mike</button>
-        <button id="btn-jenny" onclick="setGender('female')" style="margin:0;padding:10px 18px;font-size:14px;">🎀 Jenny</button>
+        <span style="font-size:22px;font-weight:900;color:rgba(255,255,255,0.7);font-family:'Hiragino Sans','Yu Gothic',sans-serif;line-height:1;">声</span>
+        <button id="btn-mike" onclick="setGender('male')" class="active-yellow" style="margin:0;padding:10px 18px;font-size:14px;">🎤 Boy</button>
+        <button id="btn-jenny" onclick="setGender('female')" style="margin:0;padding:10px 18px;font-size:14px;">🎀 Girl</button>
     </div>
-    <button id="btn-start-single" onclick="startGame()">▶ START</button>
+    <button id="btn-start-single" onclick="startGame()">CH vs TS GO!</button>
     <div id="start-btn-group" class="hidden">
-        <button id="btn-practice" onclick="startGame()">▶ PRACTICE</button>
-        <button id="btn-challenge" onclick="startChallenge()">⚡ ROUND</button>
+        <button id="btn-practice" onclick="startGame()">CH vs TS GO!</button>
+        <button id="btn-challenge" onclick="startChallenge()">👻 BOSS</button>
     </div>
     <button id="btn-world-map" onclick="showMenu('level-select')" style="width:220px;background:#8e44ad;" class="hidden">🗺 WORLD MAP</button>
     <button onclick="showMenu('shop-menu')" style="width:220px;background:#e67e22;">🛍 STICKER SHOP</button>
@@ -548,12 +582,14 @@
     <div class="lcd-label">GET READY</div>
 </div>
 
-<!-- LIGHTNING CLEAR -->
+<!-- BOSS CLEAR -->
 <div id="lightning-clear" class="hidden" onclick="dismissLightningClear()">
     <div class="lc-inner">
-        <div class="lc-bolt">⚡</div>
-        <h1>LIGHTNING CLEARED!</h1>
-        <div style="font-size:60px;margin:6px 0;animation:foxResultPop 0.5s 0.2s cubic-bezier(0.34,1.56,0.64,1) both;">🦊</div>
+        <h1>BOSS CHALLENGE CLEARED!</h1>
+        <div class="lc-boss-row">
+            <span class="lc-fox-bounce">🦊</span>
+            <span class="lc-ghost-flyoff">👻</span>
+        </div>
         <div id="lc-fox-msg" style="font-size:14px;color:#fff;font-family:var(--font-retro);text-align:center;line-height:1.7;margin-bottom:8px;padding:0 10px;"></div>
         <div style="font-size:32px;margin:6px 0;">🗝️</div>
         <div style="font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:1px;">KEY UNLOCKED!</div>
@@ -628,10 +664,10 @@
                 </div>
             </div>
             <div class="help-row">
-                <div class="icon">⚡</div>
+                <div class="icon">👻</div>
                 <div class="text">
-                    <span class="jp">ライトニングラウンドで腕試し！</span>
-                    <span class="en">Unlock the Lightning Round by spending coins in the shop. Speed increases as you go!</span>
+                    <span class="jp">ボスラウンドで腕試し！</span>
+                    <span class="en">Unlock the Boss Round by spending coins in the shop. Speed increases as you go!</span>
                 </div>
             </div>
         </div>
@@ -783,6 +819,9 @@
     // ─── WEB AUDIO FX ────────────────────────────────────────────────────────
     // Dedicated AudioContext just for fx — never paused or touched by word audio
     let fxCtx=null;
+    let scheduledMissNode=null; // pre-scheduled miss oscillator that can be cancelled
+    let scheduledMissGain=null;
+
     function getFxCtx(){
         if(!fxCtx||fxCtx.state==='closed'){
             fxCtx=new (window.AudioContext||window.webkitAudioContext)();
@@ -802,7 +841,39 @@
         document.removeEventListener('pointerdown', warmUpAudio);
     }
     document.addEventListener('pointerdown', warmUpAudio);
+
+    // Cancel any pre-scheduled miss sound (called when user taps in time)
+    function cancelScheduledMiss(){
+        if(scheduledMissGain){
+            try { scheduledMissGain.gain.cancelScheduledValues(0); scheduledMissGain.gain.setValueAtTime(0,0); } catch(e){}
+        }
+        if(scheduledMissNode){
+            try { scheduledMissNode.stop(0); } catch(e){}
+            scheduledMissNode=null; scheduledMissGain=null;
+        }
+    }
+
+    // Pre-schedule a miss sound to fire at a future AudioContext time.
+    // This runs inside the AC scheduler, so no user gesture needed at fire time.
+    function scheduleMissSound(atTime){
+        cancelScheduledMiss();
+        try {
+            const ctx=getFxCtx();
+            const osc=ctx.createOscillator(), gain=ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type='sawtooth';
+            osc.frequency.setValueAtTime(200, atTime);
+            osc.frequency.exponentialRampToValueAtTime(60, atTime+0.15);
+            gain.gain.setValueAtTime(0, atTime-0.001); // silent until atTime
+            gain.gain.setValueAtTime(0.13, atTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, atTime+0.18);
+            osc.start(atTime); osc.stop(atTime+0.2);
+            scheduledMissNode=osc; scheduledMissGain=gain;
+        } catch(e){}
+    }
+
     function playFx(correct){
+        // For correct or wrong-tap: play immediately (always during user gesture, so ctx is running)
         try {
             if(!fxCtx||fxCtx.state==='closed'){
                 fxCtx=new (window.AudioContext||window.webkitAudioContext)();
@@ -829,7 +900,6 @@
                     }
                 } catch(e){}
             };
-            // Always go through resume().then() — if already running, promise resolves instantly
             ctx.resume().then(doPlay).catch(()=>{});
         } catch(e){}
     }
@@ -919,7 +989,15 @@
     function updateUI(){
         document.getElementById('currency-display').innerText=`⭐ ${coins()}`;
         document.getElementById('lives-display').innerHTML='❤️'.repeat(Math.max(0,state.lives));
-        document.getElementById('level-display-name').innerText=levels[state.curLevel].name;
+        // Update start button labels with sound pair
+        const lvl=levels[state.curLevel];
+        const isFinal=(state.curLevel===FINAL_LEVEL);
+        const pairLabel=isFinal?'L vs R 👑':''+((lvl.labels||lvl.sounds).join(' vs '));
+        const goLabel=`${pairLabel} GO!`;
+        const singleBtn=document.getElementById('btn-start-single');
+        const practiceBtn=document.getElementById('btn-practice');
+        if(singleBtn) singleBtn.innerText=goLabel;
+        if(practiceBtn) practiceBtn.innerText=goLabel;
         if(state.maxLevel>=2) document.getElementById('btn-world-map').classList.remove('hidden');
         document.querySelectorAll('#pause-menu button[id^="speed-"]').forEach(b=>b.classList.remove('active-yellow'));
         const rk=state.audioRate===0.5?'speed-0.5':state.audioRate===1.6?'speed-1.6':'speed-1.0';
@@ -1064,8 +1142,8 @@
         const inv=state.invest[state.curLevel]??0;
         const grid=document.getElementById('shop-items-grid'); grid.innerHTML="";
         const eligible=(inv>=400)||hasKey(state.curLevel);
-        if(eligible&&!hasKey(state.curLevel)) typeWriter("⚡ YOU'VE UNLOCKED THE LIGHTNING ROUND!",true);
-        else if(eligible) typeWriter("⚡ LIGHTNING ROUND AVAILABLE!",true);
+        if(eligible&&!hasKey(state.curLevel)) typeWriter("👻 YOU'VE UNLOCKED THE BOSS ROUND!",true);
+        else if(eligible) typeWriter("👻 BOSS ROUND AVAILABLE!",true);
         else typeWriter("FLOOR "+state.curLevel+" SHOP!",false);
         const hc=document.createElement('div'); hc.className="item-card";
         hc.innerHTML=`<div>❤️</div><button onclick="buyHeart()">⭐75</button>`; grid.appendChild(hc);
@@ -1134,8 +1212,23 @@
         const screen=document.getElementById('lightning-countdown');
         const content=document.getElementById('lcd-content');
         screen.classList.remove('hidden');
+        // Add floating ghost to the play field for boss round atmosphere
+        const playField=document.getElementById('play-field');
+        const floatGhost=document.createElement('div');
+        floatGhost.id='boss-ghost-float';
+        floatGhost.innerText='👻';
+        playField.appendChild(floatGhost);
         function showStep(val){
-            if(val===0){ content.innerHTML=`<div class="lcd-bolt">⚡</div>`; setTimeout(()=>{ screen.classList.add('hidden'); onDone(); },600); return; }
+            if(val===0){
+                content.innerHTML=`<div class="lcd-ghost">👻</div>`;
+                setTimeout(()=>{
+                    screen.classList.add('hidden');
+                    // Expand the ghost out before starting gameplay
+                    floatGhost.classList.add('expanding');
+                    setTimeout(()=>{ floatGhost.remove(); onDone(); },680);
+                },600);
+                return;
+            }
             content.innerHTML=`<div class="lcd-number">${val}</div>`;
             setTimeout(()=>showStep(val-1),800);
         }
@@ -1176,10 +1269,10 @@
             "Keep trying!! Your brain is learning even when it's hard! (◕‿◕)♡"
         ],
         lightning: [
-            "LIGHTNING CLEARED!! You're unstoppable! ⚡٩(◕‿◕｡)۶",
-            "INCREDIBLE!! That was lightning fast! ⚡(°◡°♡)",
-            "AMAZING!! You conquered the lightning! ⚡。.:☆*:･'(*⌒―⌒*)))",
-            "LEGENDARY!! The fox is impressed! ⚡(๑˃ᴗ˂)ﻭ"
+            "BOSS CLEARED!! You're unstoppable! 👻٩(◕‿◕｡)۶",
+            "INCREDIBLE!! You beat the Boss! 👻(°◡°♡)",
+            "AMAZING!! You conquered the ghost! 👻。.:☆*:･'(*⌒―⌒*)))",
+            "LEGENDARY!! The fox is impressed! 👻(๑˃ᴗ˂)ﻭ"
         ]
     };
     let foxResultIdx = {high:0, mid:0, low:0, lightning:0};
@@ -1254,10 +1347,22 @@
         const duration=((arenaH+70)/speed)*(1000/60);
 
         // ── SYNC: timer and animation both start the instant audio plays ──
-        a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); startTimer(duration); animate(); };
+        // Pre-schedule the miss sound using the AudioContext clock so it fires
+        // even if the context is suspended at miss-time (no user gesture needed).
+        const startAndSchedule=()=>{
+            startTimer(duration);
+            animate();
+            // Schedule miss sound at the exact future time the block hits bottom
+            try {
+                const ctx=getFxCtx();
+                const missAt=ctx.currentTime+(duration/1000);
+                scheduleMissSound(missAt);
+            } catch(e){}
+        };
+        a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); startAndSchedule(); };
         a.play()
-            .then(()=>{ startTimer(duration); animate(); })
-            .catch(e=>{ console.warn(e); startTimer(duration); animate(); });
+            .then(()=>{ startAndSchedule(); })
+            .catch(e=>{ console.warn(e); startAndSchedule(); });
     }
 
     // ─── ANIMATE ─────────────────────────────────────────────────────────────
@@ -1297,6 +1402,11 @@
     // ─── RESOLVE ──────────────────────────────────────────────────────────────
     function resolve(choice){
         if(!currentBlock) return;
+        // If user tapped, cancel the pre-scheduled miss sound before it fires.
+        // If this is a miss (choice===null), let the scheduled sound play naturally
+        // — but still cancel the node reference so we don't double-play.
+        if(choice!==null) cancelScheduledMiss();
+        else { scheduledMissNode=null; scheduledMissGain=null; } // already fired, just clear refs
         const w=currentBlock.data;
         const leftSide=isLeftSound(w);
         const correct=leftSide?"L":"R";
@@ -1344,7 +1454,9 @@
             state.lives--;
             if(inChallenge) perfectLightning=false;
             showHeartBreak(correct);
-            playFx(false);
+            // Miss: sound already pre-scheduled and will fire (or has fired) automatically.
+            // Wrong tap: play immediately since we're in a user gesture.
+            if(!missed) playFx(false);
 
             if(state.lives <= 0){
                 cleanup();
@@ -1386,6 +1498,7 @@
     }
 
     function cleanup(){
+        cancelScheduledMiss();
         const t=document.getElementById('falling-target');
         if(t){ t.style.transition='none'; t.style.top='-200px'; t.style.opacity='1'; t.style.transform='translateX(-50%)'; t.style.filter='none'; }
         currentBlock=null; cancelAnimationFrame(animationId); stopTimer();
@@ -1464,7 +1577,7 @@
         showMenu('round-win');
     }
 
-    // ─── LIGHTNING CLEAR ──────────────────────────────────────────────────────
+    // ─── BOSS CLEAR ───────────────────────────────────────────────────────────
     function showLightningClear(pct){
         const isFinalLevel = state.curLevel===FINAL_LEVEL;
         if(!hasKey(state.curLevel)){
@@ -1504,7 +1617,8 @@
             if(i===state.curLevel){ div.style.borderColor="var(--accent)"; div.style.boxShadow="0 0 15px var(--accent)"; }
             div.style.opacity=locked?"0.4":"1";
             const kb=hasKey(i)?`<span style="float:right;filter:sepia(1) saturate(5) hue-rotate(5deg) brightness(1.2);">🗝️</span>`:'';
-            div.innerHTML=`Floor ${i}: ${levels[i].name} ${locked?'🔒':''}${kb}`;
+            const displayName=i===FINAL_LEVEL?'L vs R 👑':levels[i].name;
+            div.innerHTML=`Floor ${i}: ${displayName} ${locked?'🔒':''}${kb}`;
             if(!locked) div.onclick=()=>{ state.curLevel=Number(i); preloadAudio(); updateUI(); renderTower(); };
             list.appendChild(div);
         }
