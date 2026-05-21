@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v5.3.0</title>
+    <title>Phonetic Flow v5.4.0</title>
     <style>
         :root {
             --bg-color: #0a0a1a;
@@ -317,7 +317,8 @@
         #gender-panel button { width: 120px; background: #444; margin: 0; }
         #btn-mike  { background: #c8d8f0; color: #1a2a3a; }
         #btn-jenny { background: #f5ccd4; color: #3a1a22; }
-        #btn-mike.active-yellow, #btn-jenny.active-yellow { background: var(--accent) !important; color: #000 !important; }
+        #btn-mike.active-yellow  { background: #c8d8f0 !important; color: #1a2a3a !important; border: 3px solid var(--accent) !important; box-shadow: 0 0 10px var(--accent); }
+        #btn-jenny.active-yellow { background: #f5ccd4 !important; color: #3a1a22 !important; border: 3px solid var(--accent) !important; box-shadow: 0 0 10px var(--accent); }
         .tower-item { background: #222; width: 85%; margin: 6px; padding: 15px; border-radius: 12px; border: 2px solid #444; transition: 0.3s; }
         @keyframes goldSparkle {
             0%{transform:scale(1);filter:brightness(1)} 50%{transform:scale(1.3);filter:brightness(1.5) drop-shadow(0 0 20px #f1c40f)} 100%{transform:scale(1);filter:brightness(1)}
@@ -629,45 +630,59 @@
         <h2>How to Play</h2>
         <div class="help-body">
             <div class="help-row">
-                <div class="icon">🔊</div>
+                <div class="icon">🐦‍⬛🐦</div>
                 <div class="text">
-                    <span class="jp">音声ボタンを押して単語を聞こう</span>
-                    <span class="en">Tap the speaker to hear the word. Tap it again to replay.</span>
+                    <span class="jp">まず声を選ぼう</span>
+                    <span class="en">Choose a voice.</span>
                 </div>
             </div>
             <div class="help-row">
-                <div class="icon">👆</div>
+                <div class="icon">▶️</div>
                 <div class="text">
-                    <span class="jp">左か右をタップして正しい音を選ぼう</span>
-                    <span class="en">Tap the LEFT or RIGHT side of the screen for the sound you heard.</span>
+                    <span class="jp">GO！を押してスタート！単語を聞いて、左か右をタップして聞こえた音を選ぼう</span>
+                    <span class="en">Hit Go! to start. Listen to the word and choose which sound you heard by tapping left or right.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">🔊</div>
+                <div class="text">
+                    <span class="jp">スピーカーをタップするともう一度聞けるよ</span>
+                    <span class="en">Tap the speaker to hear the word again.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">⏸</div>
+                <div class="text">
+                    <span class="jp">ポーズボタンでゲームを止めたり、ハートを買ったり、声のスピードを変えたりできるよ</span>
+                    <span class="en">Tap pause to stop the game, buy a heart, or change the voice speed.</span>
                 </div>
             </div>
             <div class="help-row">
                 <div class="icon">✅</div>
                 <div class="text">
                     <span class="jp">10問正解でフロアクリア！</span>
-                    <span class="en">Get 10 correct answers to clear the floor and move on.</span>
+                    <span class="en">Get 10 correct answers to clear the floor.</span>
                 </div>
             </div>
             <div class="help-row">
                 <div class="icon">❤️</div>
                 <div class="text">
-                    <span class="jp">間違えるとハートを失います</span>
-                    <span class="en">A wrong answer costs you a heart. Lose all 3 and it's game over.</span>
-                </div>
-            </div>
-            <div class="help-row">
-                <div class="icon">🔥</div>
-                <div class="text">
-                    <span class="jp">連続正解でコンボボーナス！</span>
-                    <span class="en">Get 3+ in a row for a combo bonus!</span>
+                    <span class="jp">間違えるとハートを失う。3つ全部なくなるとゲームオーバー！3連続正解でコンボボーナス！</span>
+                    <span class="en">A wrong answer costs a heart. Lose all 3 and it's game over! Get 3+ in a row for a combo bonus!</span>
                 </div>
             </div>
             <div class="help-row">
                 <div class="icon">👻</div>
                 <div class="text">
-                    <span class="jp">ボスラウンドで腕試し！</span>
-                    <span class="en">Unlock the Boss Round by spending coins in the shop. Speed increases as you go!</span>
+                    <span class="jp">ショップで300コイン使うとボスラウンド解放！ボスを倒すと次のラウンドを開く魔法の鍵をゲット！！</span>
+                    <span class="en">Spend 300 coins in the shop to unlock the Boss Round! Defeat the Boss to get a magic key that opens the next round!!</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">🗝️</div>
+                <div class="text">
+                    <span class="jp">続けて聴く力を鍛えてゲームをクリアしよう！！</span>
+                    <span class="en">Keep going to build strong listening skills and win the game!!</span>
                 </div>
             </div>
         </div>
@@ -817,75 +832,9 @@
     }
 
     // ─── WEB AUDIO FX ────────────────────────────────────────────────────────
-    // Dedicated AudioContext just for fx — never paused or touched by word audio
-    let fxCtx=null;
-    let fxKeepAliveTimer=null;
-
-    function getFxCtx(){
-        if(!fxCtx||fxCtx.state==='closed'){
-            fxCtx=new (window.AudioContext||window.webkitAudioContext)();
-        }
-        return fxCtx;
-    }
-
-    // Play a completely silent buffer — browsers won't suspend a context
-    // that has recently produced audio output, even silence.
-    function fxHeartbeat(){
-        try {
-            const ctx=getFxCtx();
-            if(ctx.state==='suspended') ctx.resume().catch(()=>{});
-            const buf=ctx.createBuffer(1,1,ctx.sampleRate);
-            const src=ctx.createBufferSource();
-            src.buffer=buf; src.connect(ctx.destination); src.start(0);
-        } catch(e){}
-    }
-
-    // Start the keepalive — fires every 700ms during gameplay to prevent auto-suspend.
-    function startFxKeepAlive(){
-        stopFxKeepAlive();
-        fxHeartbeat(); // immediate pulse to unlock on first gesture
-        fxKeepAliveTimer=setInterval(fxHeartbeat, 700);
-    }
-    function stopFxKeepAlive(){
-        if(fxKeepAliveTimer){ clearInterval(fxKeepAliveTimer); fxKeepAliveTimer=null; }
-    }
-
-    // Warm up the AudioContext on the very first user touch
-    function warmUpAudio(){
-        try { getFxCtx().resume().catch(()=>{}); fxHeartbeat(); } catch(e){}
-        document.removeEventListener('pointerdown', warmUpAudio);
-    }
-    document.addEventListener('pointerdown', warmUpAudio);
-
-    function playFx(correct){
-        try {
-            const ctx=getFxCtx();
-            // Context is kept warm by the heartbeat, so currentTime is reliable.
-            // We still call resume() as a safety net — it resolves instantly if running.
-            const doPlay=()=>{
-                try {
-                    const osc=ctx.createOscillator(), gain=ctx.createGain();
-                    osc.connect(gain); gain.connect(ctx.destination);
-                    if(correct){
-                        osc.type='sine';
-                        osc.frequency.setValueAtTime(880, ctx.currentTime);
-                        osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime+0.09);
-                        gain.gain.setValueAtTime(0.18, ctx.currentTime);
-                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.18);
-                        osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.18);
-                    } else {
-                        osc.type='sawtooth';
-                        osc.frequency.setValueAtTime(200, ctx.currentTime);
-                        osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime+0.15);
-                        gain.gain.setValueAtTime(0.13, ctx.currentTime);
-                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.18);
-                        osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.18);
-                    }
-                } catch(e){}
-            };
-            ctx.resume().then(doPlay).catch(()=>{});
-        } catch(e){}
-    }
+    // Sound FX removed — visual feedback (flash, heart break, combo) handles it.
+    function startFxKeepAlive(){}
+    function stopFxKeepAlive(){}
 
     // ─── STREAK ──────────────────────────────────────────────────────────────
     function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -1159,6 +1108,7 @@
     function startGame(){
         inChallenge=false; challengeBlock=0; challengeRate=1.0;
         comboCount=0; roundCoinsEarned=0; roundCorrect=0; roundTotal=0; perfectLightning=false;
+        recentWords=[];
         document.getElementById('lightning-hud').classList.add('hidden');
         setArenaBg(0); cleanup(); livesForRoundStart(); state.roundHits=0;
         document.getElementById('left-stack').innerHTML="";
@@ -1176,6 +1126,7 @@
     function startChallenge(){
         inChallenge=true; challengeBlock=0; challengeRate=1.0;
         comboCount=0; roundCoinsEarned=0; driftAngle=0; roundCorrect=0; roundTotal=0; perfectLightning=true;
+        recentWords=[];
         cleanup(); livesForRoundStart(); state.roundHits=0;
         document.getElementById('left-stack').innerHTML="";
         document.getElementById('right-stack').innerHTML="";
@@ -1297,13 +1248,27 @@
     }
 
     // ─── SPAWN ────────────────────────────────────────────────────────────────
+    let recentWords=[]; // tracks last 4 word keys to avoid repeats
+
+    function pickWord(){
+        const pool=levels[state.curLevel].words;
+        // Build a filtered pool excluding recently played words
+        const key=w=>`${w.sound}_${w.word}`;
+        let candidates=pool.filter(w=>!recentWords.includes(key(w)));
+        // If pool is small enough that we can't avoid all recent, just use full pool
+        if(candidates.length===0) candidates=pool;
+        const w=candidates[Math.floor(Math.random()*candidates.length)];
+        recentWords.push(key(w));
+        if(recentWords.length>4) recentWords.shift();
+        return w;
+    }
+
     function spawnBlock(){
         const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
         if(state.isPaused||state.lives<=0||state.roundHits>=limit) return;
         if(currentBlock) return;
 
-        const pool=levels[state.curLevel].words;
-        const w=pool[Math.floor(Math.random()*pool.length)];
+        const w=pickWord();
 
         if(inChallenge){ challengeBlock++; challengeRate=getChallengeAudioRate(challengeBlock); updateLightningHud(); setArenaBg(challengeBlock); }
 
@@ -1333,6 +1298,8 @@
         const duration=((arenaH+70)/speed)*(1000/60);
 
         // ── SYNC: timer and animation both start the instant audio plays ──
+        // load() before play() fixes Chrome not auto-playing the very first word
+        a.load();
         a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); startTimer(duration); animate(); };
         a.play()
             .then(()=>{ startTimer(duration); animate(); })
@@ -1356,8 +1323,6 @@
 
     // ─── INPUT ────────────────────────────────────────────────────────────────
     window.addEventListener('pointerdown',e=>{
-        // Keep AudioContext alive on every tap — so miss sounds work even without user gesture
-        if(fxCtx && fxCtx.state==='suspended') fxCtx.resume().catch(()=>{});
         if(state.isPaused||!currentBlock) return;
         if(e.target.closest('.overlay')) return;
         if(e.target.closest('#help-btn')) return;
@@ -1415,7 +1380,6 @@
         if(ok){
             state.roundHits++; addCoins(10); comboCount++; roundCorrect++;
             spawnCoinPop(side); showCombo(comboCount);
-            playFx(true);
         } else {
             comboCount = 0;
             const old=document.getElementById('combo-banner'); if(old) old.remove();
@@ -1423,7 +1387,6 @@
             state.lives--;
             if(inChallenge) perfectLightning=false;
             showHeartBreak(correct);
-            playFx(false); // plays for both wrong tap and miss — keepalive ensures context is warm
 
             if(state.lives <= 0){
                 cleanup();
