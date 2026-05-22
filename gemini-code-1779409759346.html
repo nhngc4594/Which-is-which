@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="manifest" href="manifest.json">
+    <title>Phonetic Flow v5.4.0</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<button id="help-btn" onpointerdown="event.stopPropagation()" onclick="showHelp()" title="How to play">？</button>
+<button id="pause-btn" onpointerdown="event.stopPropagation()" onclick="togglePause()">⏸</button>
+<div id="currency-display">⭐ 0</div>
+<div id="lives-display">❤️❤️❤️</div>
+
+<div id="dev-panel" class="hidden">
+    <span>⚠️ DEV</span>
+    <div class="dev-actions" id="dev-level-btns"></div>
+    <button onclick="devUnlockAll()" style="border-color:#f1c40f;color:#f1c40f;">UNLOCK ALL</button>
+    <button onclick="devAddCoins()" style="border-color:#2ecc71;color:#2ecc71;">+500 ⭐</button>
+    <button onclick="devResetSave()" style="border-color:#e74c3c;color:#e74c3c;">RESET SAVE</button>
+    <button onclick="document.getElementById('dev-panel').classList.add('hidden')" style="margin-left:auto;">✕</button>
+</div>
+
+<div id="game-container">
+    <div id="stall-header">
+        <span class="lantern">🏮</span><span class="lantern">🏮</span><span class="lantern">🏮</span>
+        <span class="lantern">🏮</span><span class="lantern">🏮</span><span class="lantern">🏮</span>
+        <span class="lantern">🏮</span><span class="lantern">🏮</span><span class="lantern">🏮</span>
+    </div>
+    <div id="speaker-row">
+        <button id="speaker-btn" onpointerdown="event.stopPropagation()" onclick="replayCurrent()">🔊</button>
+        <div id="block-counter">— / —</div>
+    </div>
+    <div id="play-field">
+        <div class="lane-half" id="lane-l">
+            <div class="lane-letter" id="l-label"></div>
+            <div id="left-stack" class="side-stack"></div>
+        </div>
+        <div id="flash-l"></div>
+        <div id="flash-r"></div>
+        <div id="falling-target"></div>
+        <div class="lane-half" id="lane-r">
+            <div class="lane-letter" id="r-label"></div>
+            <div id="right-stack" class="side-stack"></div>
+        </div>
+        <div id="lightning-hud" class="hidden">👻 <span id="lhud-block">1</span>/15 &nbsp;|&nbsp; <span id="lhud-speed">1.0</span>x</div>
+        <div id="fox-intro" class="hidden">
+            <div class="fox-emoji">🦊</div>
+            <div class="fox-msg" id="fox-msg"></div>
+        </div>
+    </div>
+</div>
+
+<div id="main-menu" class="overlay">
+    <div style="font-size:72px;line-height:1;margin-bottom:6px;animation:foxDrop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;">🦊</div>
+    <div id="streak-banner" class="hidden" style="font-size:18px;font-family:var(--font-retro);color:var(--accent);margin-bottom:10px;letter-spacing:2px;font-weight:900;text-shadow:0 0 16px var(--accent),0 0 32px var(--accent);"></div>
+    <h1 onclick="devTitleTap()" style="color:var(--accent);font-size:42px;margin:0 0 4px 0;cursor:default;">PHONETIC FLOW</h1>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
+        <span style="font-size:22px;font-weight:900;color:rgba(255,255,255,0.7);font-family:'Hiragino Sans','Yu Gothic',sans-serif;line-height:1;">声</span>
+        <button id="btn-mike" onclick="setGender('male')" class="active-yellow" style="margin:0;padding:10px 18px;font-size:14px;">🐦‍⬛ Boy</button>
+        <button id="btn-jenny" onclick="setGender('female')" style="margin:0;padding:10px 18px;font-size:14px;">🐦 Girl</button>
+    </div>
+    <button id="btn-start-single" onclick="startGame()">"CH vs TS" <span style="font-size:1.25em;font-weight:900;">GO!</span></button>
+    <div id="start-btn-group" class="hidden">
+        <button id="btn-practice" onclick="startGame()">"CH vs TS" <span style="font-size:1.25em;font-weight:900;">GO!</span></button>
+        <button id="btn-challenge" onclick="startChallenge()">👻 BOSS</button>
+    </div>
+    <button id="btn-world-map" onclick="showMenu('level-select')" style="width:220px;background:#8e44ad;" class="hidden">🗺 WORLD MAP</button>
+    <button onclick="showMenu('shop-menu')" style="width:220px;background:#e67e22;">🛍 STICKER SHOP</button>
+    <button onclick="showMenu('sticker-book')" style="width:220px;background:#2980b9;">📖 MY BOOK</button>
+</div>
+
+<div id="level-select" class="overlay hidden">
+    <h2 style="color:var(--accent)">ASCENDING TOWER</h2>
+    <div id="tower-list" style="display:flex;flex-direction:column-reverse;width:100%;align-items:center;overflow-y:auto;max-height:60vh;"></div>
+    <button onclick="showMenu('main-menu')" style="background:#444;width:200px;margin-top:20px;flex-shrink:0;">BACK</button>
+</div>
+
+<div id="shop-menu" class="overlay hidden">
+    <div id="shopkeeper-area">
+        <div style="font-size:50px;">🦊</div>
+        <div id="shopkeeper-text"></div>
+    </div>
+    <div id="shop-items-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;overflow-y:auto;"></div>
+    <button onclick="showMenu('main-menu')" style="background:#2980b9;width:100%;margin-top:15px;">BACK</button>
+</div>
+
+<div id="sticker-book" class="overlay hidden" style="display:flex;flex-direction:column;">
+    <h2 style="margin-top:40px;color:var(--accent);flex-shrink:0;">COLLECTION</h2>
+    <div id="book-display" style="flex-grow:1;overflow-y:auto;width:100%;padding:20px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;justify-items:center;align-content:start;"></div>
+    <button onclick="showMenu('main-menu')" style="background:#444;width:200px;margin:20px 0;flex-shrink:0;">BACK</button>
+</div>
+
+<div id="pause-menu" class="overlay hidden" onclick="if(event.target===this)togglePause()">
+    <div class="pmenu-inner">
+        <h2 style="color:var(--accent);margin:0 0 20px 0;letter-spacing:3px;">PAUSED</h2>
+
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+            <div style="font-size:48px;line-height:1;flex-shrink:0;">🦊</div>
+            <div style="flex:1;">
+                <div style="font-size:12px;color:rgba(255,255,255,0.6);font-family:var(--font-retro);margin-bottom:7px;">Need a Heart?</div>
+                <button onclick="buyHeart()" style="background:#e74c3c;width:100%;margin:0;padding:10px 12px;font-size:14px;">❤️ Buy ⭐75</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+            <div style="font-size:13px;font-weight:900;letter-spacing:2px;color:rgba(255,255,255,0.8);margin-bottom:9px;text-align:center;font-family:var(--font-retro);">VOICE SPEED</div>
+            <div style="display:flex;justify-content:space-around;">
+                <button id="speed-0.5" onclick="setSpeed(0.5)" style="font-size:24px;background:#444;margin:0;">🐢</button>
+                <button id="speed-1.0" onclick="setSpeed(1.0)" style="font-size:24px;background:#444;margin:0;">🧑</button>
+                <button id="speed-1.6" onclick="setSpeed(1.6)" style="font-size:24px;background:#444;margin:0;">⚡</button>
+            </div>
+        </div>
+
+        <button onclick="pauseExitToMenu()" style="background:#555;width:100%;margin:0;letter-spacing:1px;">EXIT TO MENU</button>
+    </div>
+</div>
+
+<div id="round-win" class="overlay hidden">
+    <div style="font-size:80px;line-height:1;margin-bottom:8px;animation:foxResultPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;">🦊</div>
+    <div id="fox-round-msg" style="font-size:16px;color:#fff;font-family:var(--font-retro);text-align:center;margin:0 0 16px 0;line-height:1.7;padding:0 20px;"></div>
+    <h1 style="color:var(--l-color);margin:0 0 4px 0;">CLEAR!</h1>
+    <div id="round-win-coins"></div>
+    <button onclick="showMenu('main-menu')">CONTINUE</button>
+</div>
+
+<div id="game-over" class="overlay hidden">
+    <h1 style="color:var(--r-color);">GAME OVER</h1>
+    <button onclick="startGame()">RETRY</button>
+    <button onclick="showMenu('main-menu')" style="background:#444;">EXIT</button>
+</div>
+
+<div id="lightning-countdown" class="hidden">
+    <div id="lcd-content"></div>
+    <div class="lcd-label">GET READY</div>
+</div>
+
+<div id="lightning-clear" class="hidden" onclick="dismissLightningClear()">
+    <div class="lc-inner">
+        <h1>BOSS CHALLENGE CLEARED!</h1>
+        <div class="lc-boss-row">
+            <span class="lc-fox-bounce">🦊</span>
+            <span class="lc-ghost-flyoff">👻</span>
+        </div>
+        <div id="lc-fox-msg" style="font-size:14px;color:#fff;font-family:var(--font-retro);text-align:center;line-height:1.7;margin-bottom:8px;padding:0 10px;"></div>
+        <div style="font-size:32px;margin:6px 0;">🗝️</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:1px;">KEY UNLOCKED!</div>
+        <div id="lc-accuracy" class="hidden" style="font-size:14px;color:var(--accent);margin-top:8px;letter-spacing:1px;"></div>
+        <div class="lc-sub">TAP TO CONTINUE</div>
+    </div>
+</div>
+
+<div id="key-ceremony" class="hidden" onclick="dismissKeyCeremony()">
+    <div class="ceremony-border" style="cursor:pointer;">
+        <div style="display:flex;align-items:flex-start;">
+            <div class="ceremony-sprite">🧍</div>
+            <div class="ceremony-key">🗝️</div>
+        </div>
+        <div class="ceremony-text" id="ceremony-text"></div>
+        <div style="font-size:11px;opacity:0.4;margin-top:16px;font-family:var(--font-retro);letter-spacing:1px;">TAP TO CONTINUE</div>
+    </div>
+</div>
+
+<div id="congrats-screen" class="hidden">
+    <canvas class="confetti-canvas" id="confetti-canvas"></canvas>
+    <div class="congrats-inner">
+        <div class="trophy-row">🏆</div>
+        <h1>CONGRATULATIONS!</h1>
+        <div class="congrats-sub">おめでとうございます！<br>You have mastered all 9 floors.<br>Your phonetic skills are complete!</div>
+        <div class="star-row">⭐⭐⭐</div>
+        <button onclick="dismissCongrats()">わかった！ / RETURN</button>
+    </div>
+</div>
+
+<div id="help-screen" class="hidden">
+    <div class="help-inner">
+        <div class="help-key">🦊</div>
+        <h2>How to Play</h2>
+        <div class="help-body">
+            <div class="help-row">
+                <div class="icon">🐦‍⬛🐦</div>
+                <div class="text">
+                    <span class="jp">まず声を選ぼう</span>
+                    <span class="en">Choose a voice.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">▶️</div>
+                <div class="text">
+                    <span class="jp">GO！を押してスタート！単語を聞いて、左か右をタップして聞こえた音を選ぼう</span>
+                    <span class="en">Hit Go! to start. Listen to the word and choose which sound you heard by tapping left or right.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">🔊</div>
+                <div class="text">
+                    <span class="jp">スピーカーをタップするともう一度聞けるよ</span>
+                    <span class="en">Tap the speaker to hear the word again.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">⏸</div>
+                <div class="text">
+                    <span class="jp">ポーズボタンでゲームを止めたり、ハートを買ったり、声のスピードを変えたりできるよ</span>
+                    <span class="en">Tap pause to stop the game, buy a heart, or change the voice speed.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">✅</div>
+                <div class="text">
+                    <span class="jp">10問正解でフロアクリア！</span>
+                    <span class="en">Get 10 correct answers to clear the floor.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">❤️</div>
+                <div class="text">
+                    <span class="jp">間違えるとハートを失う。3つ全部なくなるとゲームオーバー！3連続正解でコンボボーナス！</span>
+                    <span class="en">A wrong answer costs a heart. Lose all 3 and it's game over! Get 3+ in a row for a combo bonus!</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">👻</div>
+                <div class="text">
+                    <span class="jp">ショップで300コイン使うとボスラウンド解放！ボスを倒すと次のラウンドを開く魔法の鍵をゲット！！</span>
+                    <span class="en">Spend 300 coins in the shop to unlock the Boss Round! Defeat the Boss to get a magic key that opens the next round!!</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">🗝️</div>
+                <div class="text">
+                    <span class="jp">続けて聴く力を鍛えてゲームをクリアしよう！！</span>
+                    <span class="en">Keep going to build strong listening skills and win the game!!</span>
+                </div>
+            </div>
+        </div>
+        <button class="got-it-btn" onclick="dismissHelp()">わかった！ / GOT IT!</button>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
