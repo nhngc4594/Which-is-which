@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<button id="help-btn" onpointerdown="event.stopPropagation()" onclick="showHelp()" title="How to play">？</button>
+<button id="help-btn" class="hidden" onpointerdown="event.stopPropagation()" onclick="showHelp()" title="How to play">？</button>
 <div id="currency-display">⭐ 0</div>
 <div id="lives-display">❤️❤️❤️</div>
 
@@ -76,18 +76,6 @@
     </div>
 </div>
 
-<!-- helper to show/hide the answer-zones wrapper (both zones together) -->
-<script>
-// Patch showAnswerZones to toggle the wrapper div instead of individual zones
-// (overrides the version in app.js which toggles them individually)
-function showAnswerZones(show){
-    const wrap = document.getElementById('answer-zones');
-    if(!wrap) return;
-    if(show){ wrap.classList.remove('hidden'); }
-    else    { wrap.classList.add('hidden');    }
-}
-</script>
-
 <div id="main-menu" class="overlay">
     <div style="font-size:72px;line-height:1;margin-bottom:6px;animation:foxDrop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;">🦊</div>
     <div id="streak-banner" class="hidden" style="font-size:18px;font-family:var(--font-retro);color:var(--accent);margin-bottom:10px;letter-spacing:2px;font-weight:900;text-shadow:0 0 16px var(--accent),0 0 32px var(--accent);"></div>
@@ -105,6 +93,7 @@ function showAnswerZones(show){
     <button id="btn-world-map" onclick="showMenu('level-select')" style="width:220px;background:#8e44ad;" class="hidden">🗺 WORLD MAP</button>
     <button onclick="showMenu('shop-menu')" style="width:220px;background:#e67e22;">🛍 STICKER SHOP</button>
     <button onclick="showMenu('sticker-book')" style="width:220px;background:#2980b9;">📖 MY BOOK</button>
+    <button onclick="showHelp()" style="width:220px;background:#555;">？ HOW TO PLAY</button>
 </div>
 
 <div id="level-select" class="overlay hidden">
