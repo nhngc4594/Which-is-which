@@ -1,89 +1,4 @@
-// ─── LEVEL DATA ───────────────────────────────────────────────────────────
-const levels = {
-    1: { name:"S vs SH", folder:"S_vs_SH", sounds:["S","SH"], targets:["🌸","🦆","👾"],
-         words:[
-            {sound:"S",position:"initial",word:"sea"},{sound:"S",position:"initial",word:"sail"},{sound:"S",position:"initial",word:"song"},
-            {sound:"SH",position:"initial",word:"she"},{sound:"SH",position:"initial",word:"shake"},{sound:"SH",position:"initial",word:"show"},
-            {sound:"S",position:"medial",word:"basin"},{sound:"S",position:"medial",word:"lesson"},{sound:"S",position:"medial",word:"basic"},
-            {sound:"SH",position:"medial",word:"nation"},{sound:"SH",position:"medial",word:"fashion"},{sound:"SH",position:"medial",word:"fishing"},
-            {sound:"S",position:"final",word:"bus"},{sound:"S",position:"final",word:"face"},{sound:"S",position:"final",word:"nice"},
-            {sound:"SH",position:"final",word:"bush"},{sound:"SH",position:"final",word:"fish"},{sound:"SH",position:"final",word:"rush"}],
-         stickers:[{emoji:"🌙",price:50},{emoji:"⭐",price:100},{emoji:"🌟",price:200},{emoji:"🌠",price:300},{emoji:"🌌",price:500}]},
-    2: { name:"S vs TH", folder:"S_vs_TH_voiceless", sounds:["S","TH"], targets:["🦆","🪆","👾"],
-         words:[
-            {sound:"S",position:"initial",word:"sea"},{sound:"S",position:"initial",word:"sin"},{sound:"S",position:"initial",word:"soap"},
-            {sound:"TH",position:"initial",word:"thin"},{sound:"TH",position:"initial",word:"think"},{sound:"TH",position:"initial",word:"three"},
-            {sound:"S",position:"medial",word:"basin"},{sound:"S",position:"medial",word:"frosty"},{sound:"S",position:"medial",word:"lesson"},
-            {sound:"TH",position:"medial",word:"author"},{sound:"TH",position:"medial",word:"nothing"},{sound:"TH",position:"medial",word:"method"},
-            {sound:"S",position:"final",word:"base"},{sound:"S",position:"final",word:"peace"},{sound:"S",position:"final",word:"bus"},
-            {sound:"TH",position:"final",word:"bath"},{sound:"TH",position:"final",word:"math"},{sound:"TH",position:"final",word:"teeth"}],
-         stickers:[{emoji:"🌬️",price:50},{emoji:"🍃",price:100},{emoji:"🌀",price:200},{emoji:"⚡",price:300},{emoji:"🌊",price:500}]},
-    3: { name:"F vs P", folder:"F_vs_P", sounds:["F","P"], targets:["🗼","🦆","🪆"],
-         words:[
-            {sound:"F",position:"initial",word:"fan"},{sound:"F",position:"initial",word:"feel"},{sound:"F",position:"initial",word:"photo"},
-            {sound:"P",position:"initial",word:"pan"},{sound:"P",position:"initial",word:"peel"},{sound:"P",position:"initial",word:"pot"},
-            {sound:"F",position:"medial",word:"after"},{sound:"F",position:"medial",word:"offer"},{sound:"F",position:"medial",word:"sofa"},
-            {sound:"P",position:"medial",word:"paper"},{sound:"P",position:"medial",word:"open"},{sound:"P",position:"medial",word:"topic"},
-            {sound:"F",position:"final",word:"leaf"},{sound:"F",position:"final",word:"roof"},{sound:"F",position:"final",word:"safe"},
-            {sound:"P",position:"final",word:"leap"},{sound:"P",position:"final",word:"rope"},{sound:"P",position:"final",word:"tape"}],
-         stickers:[{emoji:"🍂",price:50},{emoji:"🦊",price:100},{emoji:"🍁",price:200},{emoji:"🦋",price:300},{emoji:"🌸",price:500}]},
-    4:  { name:"L vs R", folder:"L_vs_R", sounds:["L","R"], targets:["🍥","🦆","🪆"],
-         words:[
-            {sound:"L",position:"initial",word:"lake"},{sound:"L",position:"initial",word:"leaf"},{sound:"L",position:"initial",word:"low"},
-            {sound:"R",position:"initial",word:"rain"},{sound:"R",position:"initial",word:"road"},{sound:"R",position:"initial",word:"rice"},
-            {sound:"L",position:"medial",word:"alive"},{sound:"L",position:"medial",word:"balloon"},{sound:"L",position:"medial",word:"below"},
-            {sound:"R",position:"medial",word:"arena"},{sound:"R",position:"medial",word:"carrot"},{sound:"R",position:"medial",word:"story"},
-            {sound:"L",position:"final",word:"bell"},{sound:"L",position:"final",word:"feel"},{sound:"L",position:"final",word:"tall"},
-            {sound:"R",position:"final",word:"star"},{sound:"R",position:"final",word:"door"},{sound:"R",position:"final",word:"far"}],
-         stickers:[{emoji:"☁️",price:50},{emoji:"🌱",price:100},{emoji:"🌲",price:200},{emoji:"🦅",price:300},{emoji:"💎",price:500}]},
-    5: { name:"Z vs TH (voiced)", folder:"Z_vs_TH_voiced", sounds:["Z","TH"], targets:["🐍","🦎","👾"],
-         words:[
-            {sound:"Z",position:"initial",word:"zoo"},{sound:"Z",position:"initial",word:"zone"},{sound:"Z",position:"initial",word:"zero"},
-            {sound:"TH",position:"initial",word:"the"},{sound:"TH",position:"initial",word:"this"},{sound:"TH",position:"initial",word:"those"},
-            {sound:"Z",position:"medial",word:"frozen"},{sound:"Z",position:"medial",word:"razor"},{sound:"Z",position:"medial",word:"season"},
-            {sound:"TH",position:"medial",word:"father"},{sound:"TH",position:"medial",word:"mother"},{sound:"TH",position:"medial",word:"other"},
-            {sound:"Z",position:"final",word:"bees"},{sound:"Z",position:"final",word:"nose"},{sound:"Z",position:"final",word:"phase"},
-            {sound:"TH",position:"final",word:"bathe"},{sound:"TH",position:"final",word:"breathe"},{sound:"TH",position:"final",word:"soothe"}],
-         stickers:[{emoji:"🐝",price:50},{emoji:"🦎",price:100},{emoji:"🐍",price:200},{emoji:"🦁",price:300},{emoji:"🔥",price:500}]},
-    6: { name:"CH vs TS", folder:"CH_vs_TS", sounds:["CH","TS"], targets:["⛩️","🏮","🎋"],
-         words:[
-            {sound:"CH",position:"initial",word:"chain"},{sound:"CH",position:"initial",word:"chip"},{sound:"CH",position:"initial",word:"choose"},
-            {sound:"CH",position:"medial",word:"teacher"},{sound:"CH",position:"medial",word:"kitchen"},{sound:"CH",position:"medial",word:"nature"},
-            {sound:"CH",position:"final",word:"beach"},{sound:"CH",position:"final",word:"catch"},{sound:"CH",position:"final",word:"coach"},
-            {sound:"TS",position:"final",word:"boats"},{sound:"TS",position:"final",word:"cats"},{sound:"TS",position:"final",word:"roots"}],
-         stickers:[{emoji:"🎵",price:50},{emoji:"🎸",price:100},{emoji:"🎺",price:200},{emoji:"🎻",price:300},{emoji:"🎹",price:500}]},
-    7: { name:"N vs NG", folder:"N_vs_NG", sounds:["N","NG"], targets:["🎋","🌿","🦆"],
-         words:[
-            {sound:"N",position:"initial",word:"nail"},{sound:"N",position:"initial",word:"night"},{sound:"N",position:"initial",word:"nose"},
-            {sound:"N",position:"medial",word:"animal"},{sound:"N",position:"medial",word:"dinner"},{sound:"N",position:"medial",word:"money"},
-            {sound:"NG",position:"medial",word:"anger"},{sound:"NG",position:"medial",word:"finger"},{sound:"NG",position:"medial",word:"longer"},
-            {sound:"N",position:"final",word:"bone"},{sound:"N",position:"final",word:"moon"},{sound:"N",position:"final",word:"train"},
-            {sound:"NG",position:"final",word:"king"},{sound:"NG",position:"final",word:"long"},{sound:"NG",position:"final",word:"song"}],
-         stickers:[{emoji:"🌿",price:50},{emoji:"🍀",price:100},{emoji:"🌺",price:200},{emoji:"🦚",price:300},{emoji:"🌈",price:500}]},
-    8: { name:"V vs B", folder:"V_vs_B", sounds:["V","B"], targets:["🙈","🙉","🙊"],
-         words:[
-            {sound:"V",position:"initial",word:"van"},{sound:"V",position:"initial",word:"vine"},{sound:"V",position:"initial",word:"vote"},
-            {sound:"B",position:"initial",word:"ban"},{sound:"B",position:"initial",word:"bone"},{sound:"B",position:"initial",word:"boat"},
-            {sound:"V",position:"medial",word:"clever"},{sound:"V",position:"medial",word:"oven"},{sound:"V",position:"medial",word:"river"},
-            {sound:"B",position:"medial",word:"table"},{sound:"B",position:"medial",word:"robot"},{sound:"B",position:"medial",word:"cabin"},
-            {sound:"V",position:"final",word:"cave"},{sound:"V",position:"final",word:"live"},{sound:"V",position:"final",word:"stove"},
-            {sound:"B",position:"final",word:"cab"},{sound:"B",position:"final",word:"robe"},{sound:"B",position:"final",word:"tube"}],
-         stickers:[{emoji:"💧",price:50},{emoji:"🐚",price:100},{emoji:"🦀",price:200},{emoji:"🦈",price:300},{emoji:"🔱",price:500}]},
-    9: { name:"L vs R Blends", folder:"L_blends_vs_R_blends", sounds:["L_blend","R_blend"], labels:["L","R"], targets:["🍢","🏮","👾"],
-         words:[
-            {sound:"L_blend_bl",position:"initial",word:"blade"},{sound:"L_blend_bl",position:"initial",word:"blow"},{sound:"L_blend_bl",position:"initial",word:"blue"},
-            {sound:"L_blend_cl",position:"initial",word:"clay"},{sound:"L_blend_cl",position:"initial",word:"clean"},{sound:"L_blend_cl",position:"initial",word:"climb"},
-            {sound:"L_blend_fl",position:"initial",word:"flag"},{sound:"L_blend_fl",position:"initial",word:"flat"},{sound:"L_blend_fl",position:"initial",word:"flow"},
-            {sound:"L_blend_gl",position:"initial",word:"glad"},{sound:"L_blend_gl",position:"initial",word:"glow"},{sound:"L_blend_gl",position:"initial",word:"glue"},
-            {sound:"L_blend_pl",position:"initial",word:"plan"},{sound:"L_blend_pl",position:"initial",word:"play"},{sound:"L_blend_pl",position:"initial",word:"plus"},
-            {sound:"R_blend_br",position:"initial",word:"brain"},{sound:"R_blend_br",position:"initial",word:"bread"},{sound:"R_blend_br",position:"initial",word:"broke"},
-            {sound:"R_blend_cr",position:"initial",word:"crab"},{sound:"R_blend_cr",position:"initial",word:"crime"},{sound:"R_blend_cr",position:"initial",word:"cross"},
-            {sound:"R_blend_fr",position:"initial",word:"frame"},{sound:"R_blend_fr",position:"initial",word:"free"},{sound:"R_blend_fr",position:"initial",word:"frog"},
-            {sound:"R_blend_gr",position:"initial",word:"grab"},{sound:"R_blend_gr",position:"initial",word:"green"},{sound:"R_blend_gr",position:"initial",word:"grow"},
-            {sound:"R_blend_pr",position:"initial",word:"price"},{sound:"R_blend_pr",position:"initial",word:"proud"},{sound:"R_blend_pr",position:"initial",word:"prove"}],
-         stickers:[{emoji:"🌊",price:50},{emoji:"🏄",price:100},{emoji:"🐬",price:200},{emoji:"🦅",price:300},{emoji:"🏆",price:500}]},
-};
-
+// ─── CONSTANTS ────────────────────────────────────────────────────────────
 const FINAL_LEVEL = 9;
 const ROUND_LENGTH = 10;
 const CHALLENGE_LENGTH = 15;
@@ -107,8 +22,50 @@ let inChallenge=false, challengeBlock=0, challengeRate=1.0;
 let comboCount=0, comboBannerTimer=null;
 let roundCoinsEarned=0;
 let driftAngle=0;
-let roundCorrect=0, roundTotal=0; // for accuracy tracking
-let perfectLightning=false;       // for perfect round badge
+let roundCorrect=0, roundTotal=0;
+let perfectLightning=false;
+
+// ─── SOFT-PAUSE STATE ─────────────────────────────────────────────────────
+// softPause: the play field is frozen for review; distinct from the full pause menu
+let softPaused = false;
+let softPauseTapTimer = null;       // used to detect double-tap on bricks
+let softPauseLastBrick = null;      // last brick element tapped (for double-tap)
+let softPauseBrickFlipped = false;  // is the last tapped brick showing Japanese?
+let audioCtx = null;                // Web Audio context for soft-pause click sound
+
+function getAudioCtx(){
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+}
+
+// Play a short, friendly click using a Web Audio oscillator — no files needed
+function playClickSound(type){
+    // type: 'on' (entering soft-pause) or 'off' (leaving soft-pause)
+    try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        if(type === 'on'){
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.18, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.15);
+        } else {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.14, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.12);
+        }
+    } catch(e){ /* silently ignore if audio not available */ }
+}
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────
 function coins(){ return state.coins[state.curLevel]??0; }
@@ -138,16 +95,11 @@ function isLeftSound(w){
     return w.sound===lvl.sounds[0];
 }
 
-// ─── WEB AUDIO FX ────────────────────────────────────────────────────────
-// Sound FX removed — visual feedback (flash, heart break, combo) handles it.
-function startFxKeepAlive(){}
-function stopFxKeepAlive(){}
-
 // ─── STREAK ──────────────────────────────────────────────────────────────
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function updateStreak(){
     const today=todayStr();
-    if(state.lastPlayedDate===today) return; // already counted today
+    if(state.lastPlayedDate===today) return;
     const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
     const yStr=yesterday.toISOString().slice(0,10);
     if(state.lastPlayedDate===yStr){ state.streakDays++; }
@@ -194,7 +146,6 @@ function loadGame(){
     }
     state.coins=fc; state.invest=fi;
     setGender(state.gender);
-    // Fox comeback nudge — if played before but not today or yesterday
     const today=todayStr();
     const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
     const yStr=yesterday.toISOString().slice(0,10);
@@ -215,12 +166,16 @@ function typeWriter(text,gold){
     typeInterval=setInterval(()=>{ el.innerHTML+=text.charAt(i); i++; if(i>=text.length) clearInterval(typeInterval); },40);
 }
 function showMenu(id){
+    // Exit soft-pause cleanly before going to any overlay
+    if(softPaused) exitSoftPause(false);
     state.isPaused=true; cancelAnimationFrame(animationId); stopTimer();
-    stopFxKeepAlive();
     if(currentAudio) currentAudio.pause();
     document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
     document.getElementById('pause-btn').classList.remove('visible');
+    // Hide answer buttons when in a menu
+    document.getElementById('answer-zone-l').classList.add('hidden');
+    document.getElementById('answer-zone-r').classList.add('hidden');
     if(id==='shop-menu') renderShop();
     if(id==='level-select') renderTower();
     if(id==='sticker-book') renderBook();
@@ -229,7 +184,6 @@ function showMenu(id){
 function updateUI(){
     document.getElementById('currency-display').innerText=`⭐ ${coins()}`;
     document.getElementById('lives-display').innerHTML='❤️'.repeat(Math.max(0,state.lives));
-    // Update start button labels with sound pair
     const lvl=levels[state.curLevel];
     const isFinal=(state.curLevel===FINAL_LEVEL);
     const pairLabel=isFinal?'L vs R 👑':''+((lvl.labels||lvl.sounds).join(' vs '));
@@ -248,6 +202,12 @@ function updateUI(){
     document.querySelectorAll('#dev-level-btns button').forEach(b=>{
         b.classList.toggle('dev-active',Number(b.dataset.lvl)===state.curLevel);
     });
+    // Update answer zone labels to match current level's sound labels
+    const labels = lvl.labels || lvl.sounds;
+    const azl = document.getElementById('answer-zone-l');
+    const azr = document.getElementById('answer-zone-r');
+    if(azl) azl.querySelector('.az-label').innerText = labels[0];
+    if(azr) azr.querySelector('.az-label').innerText = labels[1];
     saveGame();
 }
 function setGender(g){
@@ -265,11 +225,11 @@ function setGender(g){
     saveGame();
 }
 
-// ─── TIMER BAR ────────────────────────────────────────────────────────────
+// ─── TIMER ────────────────────────────────────────────────────────────────
 function startTimer(duration){ /* timer bar removed */ }
 function stopTimer(){ if(timerRaf){ cancelAnimationFrame(timerRaf); timerRaf=null; } }
 
-// ─── ARENA BG SHIFT (⚡ ROUND intensity) ─────────────────────────────────
+// ─── ARENA BG SHIFT ───────────────────────────────────────────────────────
 function setArenaBg(blockNum){
     if(!inChallenge){ document.getElementById('game-container').style.background='#0a0a1a'; return; }
     const t=Math.min(1,(blockNum-1)/14);
@@ -309,17 +269,13 @@ function spawnCoinPop(side){
 
 // ─── HEART BREAK ─────────────────────────────────────────────────────────
 function showHeartBreak(correctSide){
-    // Update the lives display
     const remaining=Math.max(0,state.lives);
     document.getElementById('lives-display').innerHTML='❤️'.repeat(remaining);
-
-    // Spawn a floating broken heart on the correct-answer side
     const pf=document.getElementById('play-field');
     const pw=pf.offsetWidth, ph=pf.offsetHeight;
     const hb=document.createElement('div');
     hb.className='heart-break';
     hb.textContent='💔';
-    // Position at mid-height of play field, in the correct lane
     const xPos = correctSide==='L' ? pw*0.25 : pw*0.75;
     const rect = pf.getBoundingClientRect();
     hb.style.left = (rect.left + xPos - 27) + 'px';
@@ -332,8 +288,6 @@ function showHeartBreak(correctSide){
 function showHelp(){
     state.isPaused=true; cancelAnimationFrame(animationId); stopTimer();
     if(currentAudio) currentAudio.pause();
-    // Ensure main-menu is showing underneath so dismissHelp finds an overlay
-    // and doesn't try to resume a game that hasn't started yet
     const anyOverlay=[...document.querySelectorAll('.overlay')].some(el=>!el.classList.contains('hidden'));
     if(!anyOverlay) document.getElementById('main-menu').classList.remove('hidden');
     document.getElementById('help-screen').classList.remove('hidden');
@@ -342,14 +296,14 @@ function showHelp(){
 function dismissHelp(){
     document.getElementById('help-screen').classList.add('hidden');
     state.seenHelp=true; saveGame();
-    // If another overlay (e.g. main-menu) is visible, leave it showing — don't resume game
     const anyVisible=[...document.querySelectorAll('.overlay')].some(el=>!el.classList.contains('hidden'));
     if(!anyVisible) closeMenus();
 }
 
 // ─── REPLAY CURRENT ───────────────────────────────────────────────────────
 function replayCurrent(){
-    if(!currentBlock||state.isPaused) return;
+    if(!currentBlock) return;
+    // Allow replay both in normal play and soft-pause
     const rate=inChallenge?challengeRate:(state.audioRate??1.0);
     if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
     const a=new Audio(buildAudioPath(currentBlock.data));
@@ -412,6 +366,18 @@ function dismissKeyCeremony(){
 // ─── GAME FLOW ────────────────────────────────────────────────────────────
 function livesForRoundStart(){ state.lives=Math.max(state.lives,3); }
 
+function showAnswerZones(show){
+    const azl = document.getElementById('answer-zone-l');
+    const azr = document.getElementById('answer-zone-r');
+    if(show){
+        azl.classList.remove('hidden');
+        azr.classList.remove('hidden');
+    } else {
+        azl.classList.add('hidden');
+        azr.classList.add('hidden');
+    }
+}
+
 function startGame(){
     inChallenge=false; challengeBlock=0; challengeRate=1.0;
     comboCount=0; roundCoinsEarned=0; roundCorrect=0; roundTotal=0; perfectLightning=false;
@@ -427,7 +393,8 @@ function startGame(){
     document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
     state.isPaused=false;
     document.getElementById('pause-btn').classList.add('visible');
-    startFxKeepAlive();
+    showAnswerZones(true);
+    updateUI();
     showFoxIntro(()=>{ spawnBlock(); });
 }
 function startChallenge(){
@@ -443,7 +410,7 @@ function startChallenge(){
     preloadAudio(); updateUI();
     document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
     document.getElementById('pause-btn').classList.add('visible');
-    startFxKeepAlive();
+    showAnswerZones(true);
     runCountdown(3,()=>{
         state.isPaused=false;
         document.getElementById('lightning-hud').classList.remove('hidden');
@@ -456,7 +423,6 @@ function runCountdown(n,onDone){
     const screen=document.getElementById('lightning-countdown');
     const content=document.getElementById('lcd-content');
     screen.classList.remove('hidden');
-    // Add floating ghost to the play field for boss round atmosphere
     const playField=document.getElementById('play-field');
     const floatGhost=document.createElement('div');
     floatGhost.id='boss-ghost-float';
@@ -467,7 +433,6 @@ function runCountdown(n,onDone){
             content.innerHTML=`<div class="lcd-ghost">👻</div>`;
             setTimeout(()=>{
                 screen.classList.add('hidden');
-                // Expand the ghost out before starting gameplay
                 floatGhost.classList.add('expanding');
                 setTimeout(()=>{ floatGhost.remove(); onDone(); },680);
             },600);
@@ -555,14 +520,12 @@ function showFoxIntro(onDone) {
 }
 
 // ─── SPAWN ────────────────────────────────────────────────────────────────
-let recentWords=[]; // tracks last 4 word keys to avoid repeats
+let recentWords=[];
 
 function pickWord(){
     const pool=levels[state.curLevel].words;
-    // Build a filtered pool excluding recently played words
     const key=w=>`${w.sound}_${w.word}`;
     let candidates=pool.filter(w=>!recentWords.includes(key(w)));
-    // If pool is small enough that we can't avoid all recent, just use full pool
     if(candidates.length===0) candidates=pool;
     const w=candidates[Math.floor(Math.random()*candidates.length)];
     recentWords.push(key(w));
@@ -572,7 +535,7 @@ function pickWord(){
 
 function spawnBlock(){
     const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
-    if(state.isPaused||state.lives<=0||state.roundHits>=limit) return;
+    if(state.isPaused||softPaused||state.lives<=0||state.roundHits>=limit) return;
     if(currentBlock) return;
 
     const w=pickWord();
@@ -581,7 +544,6 @@ function spawnBlock(){
 
     document.getElementById('block-counter').innerText=`${state.roundHits+1}/${inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH}`;
 
-    // Reset and place target
     const targetEl=document.getElementById('falling-target');
     targetEl.style.transition='none';
     targetEl.style.transform='translateX(-50%)';
@@ -593,19 +555,15 @@ function spawnBlock(){
 
     currentBlock={data:w, top:-70};
 
-    // Pre-create audio so it starts buffering immediately
     const rate=inChallenge?challengeRate:(state.audioRate??1.0);
     if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
     const a=new Audio(buildAudioPath(w));
     a.playbackRate=rate; currentAudio=a;
 
-    // Calculate timer duration based on fall speed
     const speed=inChallenge?getChallengeFallSpeed(challengeBlock):BASE_FALL_SPEED;
     const arenaH=document.getElementById('play-field').offsetHeight||500;
     const duration=((arenaH+70)/speed)*(1000/60);
 
-    // ── SYNC: timer and animation both start the instant audio plays ──
-    // load() before play() fixes Chrome not auto-playing the very first word
     a.load();
     a.onerror=()=>{ console.warn('Missing:',buildAudioPath(w)); startTimer(duration); animate(); };
     a.play()
@@ -615,7 +573,7 @@ function spawnBlock(){
 
 // ─── ANIMATE ─────────────────────────────────────────────────────────────
 function animate(){
-    if(state.isPaused||!currentBlock) return;
+    if(state.isPaused||softPaused||!currentBlock) return;
     const speed=inChallenge?getChallengeFallSpeed(challengeBlock):BASE_FALL_SPEED;
     currentBlock.top+=speed;
     let xOffset=0;
@@ -628,21 +586,185 @@ function animate(){
     else animationId=requestAnimationFrame(animate);
 }
 
-// ─── INPUT ────────────────────────────────────────────────────────────────
-window.addEventListener('pointerdown',e=>{
-    if(state.isPaused||!currentBlock) return;
-    if(e.target.closest('.overlay')) return;
-    if(e.target.closest('#help-btn')) return;
-    if(e.target.closest('#pause-btn')) return;
-    if(e.target.closest('#speaker-btn')) return;
-    if(e.target.closest('#currency-display')) return;
-    if(e.target.closest('#lives-display')) return;
-    if(e.target.closest('#lightning-hud')) return;
-    if(e.target.closest('#dev-panel')) return;
-    if(e.target.closest('#stall-header')) return;
-    if(e.target.closest('#speaker-row')) return;
-    if(e.target.closest('#fox-intro')) return;
-    resolve(e.clientX<window.innerWidth/2?"L":"R");
+// ─── INPUT — ANSWER ZONE BUTTONS (Step 3) ────────────────────────────────
+// Answer is now delivered through the two full-width bottom tap zones.
+// The old full-screen pointerdown listener is kept only for soft-pause interactions.
+
+function handleAnswerTap(side){
+    // Must not be in a menu, must not be soft-paused, must have a block
+    if(state.isPaused) return;
+    if(softPaused) return;       // answer zones shouldn't be reachable but guard anyway
+    if(!currentBlock) return;
+    resolve(side);
+}
+
+// ─── SOFT-PAUSE (Step 4) ──────────────────────────────────────────────────
+// Soft-pause is triggered by tapping the play field (not an answer button,
+// not a control). It freezes the falling block and dims the field.
+// Disabled entirely during Boss challenge.
+
+function enterSoftPause(){
+    if(inChallenge) return;           // disabled during boss
+    if(state.isPaused) return;        // hard-paused already
+    if(!currentBlock && state.roundHits >= (inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH)) return;
+    softPaused = true;
+    cancelAnimationFrame(animationId);
+    stopTimer();
+    if(currentAudio) currentAudio.pause();
+    playClickSound('on');
+    // Apply the dim overlay to the play field
+    document.getElementById('play-field').classList.add('soft-paused');
+    // Show the soft-pause hint bar
+    document.getElementById('soft-pause-hint').classList.remove('hidden');
+    // Make all bricks in the stacks interactive
+    activateBricksForReview();
+}
+
+function exitSoftPause(andResume){
+    if(!softPaused) return;
+    softPaused = false;
+    // Clear any pending double-tap timer
+    if(softPauseTapTimer){ clearTimeout(softPauseTapTimer); softPauseTapTimer=null; }
+    softPauseLastBrick = null;
+    // Deactivate brick interactivity & reset any flipped bricks
+    deactivateBricksAfterReview();
+    document.getElementById('play-field').classList.remove('soft-paused');
+    document.getElementById('soft-pause-hint').classList.add('hidden');
+    playClickSound('off');
+    if(andResume){
+        // Resume: replay audio for current block and restart animation
+        if(currentBlock){
+            const rate=inChallenge?challengeRate:(state.audioRate??1.0);
+            if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+            const a=new Audio(buildAudioPath(currentBlock.data));
+            a.playbackRate=rate; currentAudio=a;
+            a.onerror=()=>{ animate(); };
+            a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
+        } else {
+            // No block in flight — spawn the next one
+            const limit=inChallenge?CHALLENGE_LENGTH:ROUND_LENGTH;
+            if(state.roundHits < limit) setTimeout(spawnBlock, 200);
+        }
+    }
+}
+
+function activateBricksForReview(){
+    // Find all bricks in both stacks and attach review tap handlers
+    document.querySelectorAll('#left-stack .brick, #right-stack .brick').forEach(brick=>{
+        brick.classList.add('review-mode');
+        // Store original word text before any flipping happens
+        if(!brick.dataset.word) brick.dataset.word = brick.innerText;
+        brick.addEventListener('pointerdown', brickReviewPointerDown, {capture:true});
+    });
+}
+
+function deactivateBricksAfterReview(){
+    document.querySelectorAll('#left-stack .brick, #right-stack .brick').forEach(brick=>{
+        brick.classList.remove('review-mode', 'brick-flipped');
+        // Restore English text if it was flipped
+        if(brick.dataset.word) brick.innerText = brick.dataset.word;
+        brick.removeEventListener('pointerdown', brickReviewPointerDown, {capture:true});
+    });
+}
+
+function brickReviewPointerDown(e){
+    e.stopPropagation(); // prevent the play-field handler from seeing this
+    if(!softPaused) return;
+    const brick = e.currentTarget;
+    // Double-tap detection: if this brick was the last one tapped and timer is running
+    if(softPauseLastBrick === brick && softPauseTapTimer){
+        // DOUBLE TAP — flip the brick between English and Japanese
+        clearTimeout(softPauseTapTimer); softPauseTapTimer=null;
+        softPauseLastBrick = null;
+        flipBrick(brick);
+    } else {
+        // SINGLE TAP — replay that word's audio
+        // Set up double-tap window
+        if(softPauseTapTimer){ clearTimeout(softPauseTapTimer); softPauseTapTimer=null; }
+        softPauseLastBrick = brick;
+        // Replay the word audio for this brick
+        replayBrickAudio(brick);
+        softPauseTapTimer = setTimeout(()=>{
+            softPauseTapTimer = null;
+            softPauseLastBrick = null;
+        }, 320); // 320ms double-tap window
+    }
+}
+
+function replayBrickAudio(brick){
+    // Find the word data matching this brick's word text
+    const wordText = brick.dataset.word || brick.innerText;
+    const pool = levels[state.curLevel].words;
+    // Match by word text (there may be duplicates across sounds; pick first match)
+    const wdata = pool.find(w => w.word === wordText);
+    if(!wdata) return;
+    const rate = state.audioRate ?? 1.0;
+    const savedLevel = state.curLevel;
+    if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+    const path = `audio/${levels[savedLevel].folder}/${wdata.sound}_${wdata.position}_${wdata.word}_${state.gender==='male'?'male':'female'}.mp3`;
+    const a = new Audio(path);
+    a.playbackRate = rate; currentAudio = a;
+    a.onerror = ()=>console.warn('Missing brick audio:', path);
+    a.play().catch(err=>console.warn(err));
+    // Brief glow pulse on the brick to indicate playback
+    brick.classList.add('brick-playing');
+    setTimeout(()=>brick.classList.remove('brick-playing'), 600);
+}
+
+function flipBrick(brick){
+    const wordText = brick.dataset.word || brick.innerText;
+    const pool = levels[state.curLevel].words;
+    const wdata = pool.find(w => w.word === wordText);
+    if(!wdata || !wdata.ja) return;
+    // Toggle between English and Japanese
+    if(!brick.classList.contains('brick-flipped')){
+        brick.classList.add('brick-flipped');
+        brick.innerText = wdata.ja;
+    } else {
+        brick.classList.remove('brick-flipped');
+        brick.innerText = brick.dataset.word;
+    }
+}
+
+// ─── PLAY-FIELD POINTER HANDLER (soft-pause trigger) ─────────────────────
+// Tapping the play field while active:
+//   - If not soft-paused: enter soft-pause
+//   - If soft-paused: exit soft-pause and resume
+//   - If boss challenge: nothing (soft-pause is disabled)
+// Answer zones are separate elements and stop propagation.
+document.addEventListener('DOMContentLoaded', ()=>{
+    const playField = document.getElementById('play-field');
+    if(playField){
+        playField.addEventListener('pointerdown', e=>{
+            // Ignore if any overlay is visible
+            if(e.target.closest('.overlay')) return;
+            if(e.target.closest('#help-btn')) return;
+            if(e.target.closest('#pause-btn')) return;
+            if(e.target.closest('#speaker-btn')) return;
+            if(e.target.closest('#currency-display')) return;
+            if(e.target.closest('#lives-display')) return;
+            if(e.target.closest('#lightning-hud')) return;
+            if(e.target.closest('#dev-panel')) return;
+            if(e.target.closest('#stall-header')) return;
+            if(e.target.closest('#speaker-row')) return;
+            if(e.target.closest('#center-control-bar')) return;
+            if(e.target.closest('#fox-intro')) return;
+            // Bricks handle their own events in review mode
+            if(softPaused && e.target.closest('.brick')) return;
+            // Answer zones stop propagation themselves; guard here too
+            if(e.target.closest('#answer-zone-l') || e.target.closest('#answer-zone-r')) return;
+
+            if(inChallenge) return; // soft-pause disabled during boss
+
+            if(softPaused){
+                // Tapping empty space in soft-pause resumes
+                exitSoftPause(true);
+            } else if(!state.isPaused && currentBlock){
+                // Enter soft-pause only when a block is actively falling
+                enterSoftPause();
+            }
+        });
+    }
 });
 
 // ─── RESOLVE ──────────────────────────────────────────────────────────────
@@ -655,13 +777,21 @@ function resolve(choice){
     const ok=!missed&&choice===correct;
     const side=missed?correct:choice;
 
-    // Target fly-off — clone the target so it animates while the original resets
+    // Animate answer zone tap feedback
+    const tapZone = document.getElementById(side==='L'?'answer-zone-l':'answer-zone-r');
+    if(tapZone){
+        tapZone.classList.remove('az-correct', 'az-wrong');
+        void tapZone.offsetWidth; // reflow
+        tapZone.classList.add(ok?'az-correct':'az-wrong');
+        setTimeout(()=>{ tapZone.classList.remove('az-correct','az-wrong'); }, 450);
+    }
+
+    // Target fly-off
     const targetEl=document.getElementById('falling-target');
     const ghost=document.createElement('div');
     ghost.style.cssText=`position:absolute;font-size:58px;line-height:1;z-index:21;pointer-events:none;top:${targetEl.style.top};left:${targetEl.style.left};transform:translateX(-50%);transition:transform 0.38s ease-in,opacity 0.38s ease-in,filter 0.2s;`;
     ghost.innerText=targetEl.innerText;
     document.getElementById('play-field').appendChild(ghost);
-    // Trigger fly animation on next frame
     requestAnimationFrame(()=>{
         const flyX=side==='L'?-180:180;
         const flyColor=ok?'#2ecc71':'#e74c3c';
@@ -671,13 +801,20 @@ function resolve(choice){
     });
     setTimeout(()=>ghost.remove(), 420);
 
-    // Flash
+    // Lane flash
     const flashEl=document.getElementById(side==='L'?'flash-l':'flash-r');
     flashEl.className=''; void flashEl.offsetWidth;
     flashEl.className=ok?'do-flash-green':'do-flash-red';
 
-    // Brick — placed in the lane-half div for correct positioning
-    const brick=document.createElement('div'); brick.className='brick'; brick.innerText=w.word;
+    // ── STEP 2: Brick carries word data (word + ja) ──────────────────────
+    // dataset.word = English word, dataset.ja = Japanese translation
+    const brick=document.createElement('div');
+    brick.className='brick';
+    brick.innerText=w.word;
+    brick.dataset.word = w.word;
+    brick.dataset.ja   = w.ja || '';   // Japanese translation from levels_revised.js
+    brick.dataset.sound = w.sound;
+    brick.dataset.position = w.position;
     brick.style.background=ok?'var(--l-color)':'var(--r-color)';
     document.getElementById(side==='L'?'left-stack':'right-stack').appendChild(brick);
 
@@ -699,8 +836,9 @@ function resolve(choice){
             cleanup();
             document.getElementById('lightning-hud').classList.add('hidden');
             document.getElementById('pause-btn').classList.remove('visible');
-            inChallenge = false; 
-            setArenaBg(0); 
+            showAnswerZones(false);
+            inChallenge = false;
+            setArenaBg(0);
             updateUI();
             return showMenu('game-over');
         }
@@ -713,11 +851,11 @@ function resolve(choice){
         if(comboBannerTimer){ clearTimeout(comboBannerTimer); comboBannerTimer=null; }
         addCoins(50);
         updateStreak();
+        showAnswerZones(false);
         const pct=roundTotal>0?recordAccuracy(roundCorrect,roundTotal):null;
         if(inChallenge){
             document.getElementById('lightning-hud').classList.add('hidden');
             inChallenge=false; setArenaBg(0);
-            // Award perfect badge if no hearts lost
             if(perfectLightning){
                 const badge={emoji:"⚡🏅",level:state.curLevel,isPerfect:true};
                 if(!state.inventory.some(i=>i.isPerfect&&i.level===state.curLevel)){
@@ -725,9 +863,6 @@ function resolve(choice){
                 }
             }
             setTimeout(()=>showLightningClear(pct),400);
-        } else if(state.curLevel===FINAL_LEVEL){
-            // On final level, practice round shows CLEAR not congrats
-            setTimeout(()=>showRoundWin(pct),500);
         } else {
             setTimeout(()=>showRoundWin(pct),500);
         }
@@ -739,11 +874,12 @@ function cleanup(){
     if(t){ t.style.transition='none'; t.style.top='-200px'; t.style.opacity='1'; t.style.transform='translateX(-50%)'; t.style.filter='none'; }
     currentBlock=null; cancelAnimationFrame(animationId); stopTimer();
 }
+
 function togglePause(){
+    if(softPaused) exitSoftPause(false); // exit soft-pause before hard-pausing
     const pauseMenu=document.getElementById('pause-menu');
     const pauseBtn=document.getElementById('pause-btn');
     if(!pauseMenu.classList.contains('hidden')){
-        // Menu is open — bounce it out, then resume
         pauseMenu.classList.add('bouncing-out');
         setTimeout(()=>{
             pauseMenu.classList.add('hidden');
@@ -763,12 +899,11 @@ function togglePause(){
             }
         }, 260);
     } else {
-        // Open the pause menu
         state.isPaused=true; cancelAnimationFrame(animationId); stopTimer();
         if(currentAudio) currentAudio.pause();
         document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
         pauseMenu.classList.remove('hidden');
-        pauseBtn.classList.add('visible'); // stays visible as the toggle target
+        pauseBtn.classList.add('visible');
         updateUI();
     }
 }
@@ -779,6 +914,7 @@ function pauseExitToMenu(){
         pauseMenu.classList.add('hidden');
         pauseMenu.classList.remove('bouncing-out');
         document.getElementById('pause-btn').classList.remove('visible');
+        showAnswerZones(false);
         showMenu('main-menu');
     }, 260);
 }
@@ -802,13 +938,13 @@ function setSpeed(s){ state.audioRate=s; updateUI(); }
 // ─── ROUND WIN ────────────────────────────────────────────────────────────
 function showRoundWin(pct){
     const best=state.bestAccuracy[getAccuracyKey()]||0;
-    let coins=`💰 +${roundCoinsEarned} coins!`;
+    let coinsHtml=`💰 +${roundCoinsEarned} coins!`;
     if(pct!=null){
-        coins+=`<br><span style="font-size:15px;color:#aaa;">Accuracy: ${pct}%`;
-        if(pct>=best&&pct>0) coins+=` ⭐ BEST!`;
-        coins+=`</span>`;
+        coinsHtml+=`<br><span style="font-size:15px;color:#aaa;">Accuracy: ${pct}%`;
+        if(pct>=best&&pct>0) coinsHtml+=` ⭐ BEST!`;
+        coinsHtml+=`</span>`;
     }
-    document.getElementById('round-win-coins').innerHTML=coins;
+    document.getElementById('round-win-coins').innerHTML=coinsHtml;
     document.getElementById('fox-round-msg').innerText=getFoxResultMsg(pct, false);
     showMenu('round-win');
 }
