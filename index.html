@@ -4,908 +4,267 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v3.0.0</title>
-    <style>
-        :root {
-            --bg-color: #0f0f0f;
-            --l-color: #2ecc71;
-            --r-color: #e67e22;
-            --ui-bg: rgba(30, 39, 46, 0.4);
-            --accent: #f1c40f;
-            --text-color: #ffffff;
-            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            --font-retro: 'Courier New', Courier, monospace;
-        }
-
-        body, html {
-            margin: 0; padding: 0; height: 100%; overflow: hidden;
-            background-color: var(--bg-color);
-            font-family: var(--font-main);
-            color: var(--text-color); user-select: none;
-            touch-action: none;
-        }
-
-        #currency-display {
-            position: fixed; top: 20px; right: 20px;
-            font-size: 24px; color: var(--accent);
-            z-index: 500; font-weight: 900;
-            background: rgba(0,0,0,0.7); padding: 8px 15px;
-            border-radius: 20px; border: 2px solid var(--accent);
-        }
-        #lives-display {
-            position: fixed; top: 20px; left: 50%;
-            transform: translateX(-50%); font-size: 26px;
-            z-index: 500;
-        }
-
-        #game-container {
-            position: relative; width: 100vw; height: 100vh;
-            display: flex; overflow: hidden;
-        }
-
-        .bg-half { flex: 1; height: 100%; opacity: 0.12; pointer-events: none; }
-        #l-bg { background-color: var(--l-color); border-right: 1px solid #333; }
-        #r-bg { background-color: var(--r-color); }
-
-        .lane-label {
-            position: absolute; bottom: 100px; font-size: 120px; font-weight: 900;
-            color: var(--accent); opacity: 0.2; z-index: 2; pointer-events: none;
-        }
-        #l-label { left: 10%; }
-        #r-label { right: 10%; }
-
-        .side-stack {
-            position: absolute; bottom: 80px; width: 160px; height: auto;
-            display: flex; flex-direction: column-reverse; z-index: 10;
-            padding: 10px; box-sizing: border-box; pointer-events: none;
-        }
-        #left-stack { left: 0; align-items: flex-start; }
-        #right-stack { right: 0; align-items: flex-end; }
-
-        .brick {
-            width: 130px; height: 35px; margin-bottom: 4px;
-            border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: bold; color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-            animation: slideIn 0.2s ease-out; flex-shrink: 0;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .block {
-            position: absolute;
-            width: 120px; height: 120px;
-            background-color: #34495e; border: 4px solid var(--accent);
-            border-radius: 24px; display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 48px; z-index: 20;
-            box-shadow: 0 12px 35px rgba(0,0,0,0.8); cursor: pointer;
-        }
-
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            z-index: 300; text-align: center; padding: 20px; box-sizing: border-box;
-        }
-
-        #shopkeeper-area {
-            background: #000; border: 3px solid #fff; border-radius: 10px;
-            width: 100%; min-height: 120px; margin-bottom: 15px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 10px; box-sizing: border-box;
-            font-family: var(--font-retro);
-        }
-
-        .item-card {
-            background: transparent;
-            display: flex; flex-direction: column; align-items: center;
-            padding: 10px;
-        }
-        .item-card div { font-size: 55px; margin-bottom: 5px; }
-
-        .book-sticker {
-            font-size: 70px;
-            filter: drop-shadow(0 0 12px rgba(241, 196, 15, 0.7));
-            transition: transform 0.3s;
-        }
-
-        button {
-            padding: 12px 20px; font-size: 16px; border-radius: 40px;
-            border: none; background: #3498db; color: white; cursor: pointer;
-            font-weight: bold; font-family: var(--font-main); margin: 6px;
-            transition: transform 0.1s;
-        }
-        button:active { transform: scale(0.95); }
-        button:disabled { background: #444; color: #888; transform: none; }
-        .active-yellow { background: var(--accent) !important; color: #000 !important; }
-
-        /* Gender selector panel */
-        #gender-panel {
-            width: 100%; max-width: 320px;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 16px;
-            padding: 14px 16px;
-            box-sizing: border-box;
-            margin: 10px 0 4px;
-        }
-        #gender-panel label {
-            display: block;
-            font-size: 11px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.5);
-            margin-bottom: 8px;
-        }
-        #gender-panel .gender-row {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-        }
-        #gender-panel button {
-            width: 120px;
-            background: #444;
-            margin: 0;
-        }
-
-        .tower-item {
-            background: #222; width: 85%; margin: 6px; padding: 15px;
-            border-radius: 12px; border: 2px solid #444; transition: 0.3s;
-        }
-
-        .hidden { display: none !important; }
-
-        @keyframes goldSparkle {
-            0% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.3); filter: brightness(1.5) drop-shadow(0 0 20px #f1c40f); }
-            100% { transform: scale(1); filter: brightness(1); }
-        }
-        .purchased-anim { animation: goldSparkle 0.6s ease; }
-
-        /* Zelda Key Ceremony */
-        #key-ceremony {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            z-index: 900; font-family: var(--font-retro);
-            color: var(--accent);
-        }
-        #key-ceremony .ceremony-sprite {
-            font-size: 80px;
-            animation: holdUp 0.6s ease-out forwards;
-        }
-        #key-ceremony .ceremony-key {
-            font-size: 60px;
-            position: relative; top: -30px; left: 20px;
-            animation: keyAppear 0.4s 0.5s ease-out both;
-        }
-        #key-ceremony .ceremony-text {
-            font-size: 18px; margin-top: 30px;
-            text-align: center; line-height: 2;
-            animation: fadeIn 0.5s 1s ease-out both;
-            text-transform: uppercase; letter-spacing: 2px;
-        }
-        #key-ceremony .ceremony-border {
-            border: 4px solid var(--accent);
-            padding: 40px 30px; border-radius: 8px;
-            display: flex; flex-direction: column; align-items: center;
-        }
-        @keyframes holdUp {
-            from { transform: translateY(40px); opacity: 0; }
-            to   { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes keyAppear {
-            from { transform: scale(0) rotate(-30deg); opacity: 0; }
-            to   { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
-    </style>
+    <title>Phonetic Flow v5.5.0</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="currency-display">💰 0</div>
+<button id="help-btn" class="hidden" onpointerdown="event.stopPropagation()" onclick="showHelp()" title="How to play">？</button>
+<div id="currency-display">⭐ 0</div>
 <div id="lives-display">❤️❤️❤️</div>
 
-<div id="game-container">
-    <div id="l-bg" class="bg-half"></div>
-    <div id="r-bg" class="bg-half"></div>
-    <div id="l-label" class="lane-label">L</div>
-    <div id="r-label" class="lane-label">R</div>
-    <div id="left-stack" class="side-stack"></div>
-    <div id="right-stack" class="side-stack"></div>
+<div id="dev-panel" class="hidden">
+    <span>⚠️ DEV</span>
+    <div class="dev-actions" id="dev-level-btns"></div>
+    <button onclick="devUnlockAll()" style="border-color:#f1c40f;color:#f1c40f;">UNLOCK ALL</button>
+    <button onclick="devAddCoins()" style="border-color:#2ecc71;color:#2ecc71;">+500 ⭐</button>
+    <button onclick="devResetSave()" style="border-color:#e74c3c;color:#e74c3c;">RESET SAVE</button>
+    <button onclick="document.getElementById('dev-panel').classList.add('hidden')" style="margin-left:auto;">✕</button>
 </div>
 
-<!-- MAIN MENU -->
-<div id="main-menu" class="overlay">
-    <h1 style="color: var(--accent); font-size: 42px; margin-bottom: 4px;">PHONETIC FLOW</h1>
-    <p id="level-display-name" style="color: #aaa; margin-bottom: 16px; font-weight: bold;"></p>
+<div id="game-container">
+    <div id="stall-header">
+        <span class="lantern">🏮</span><span class="lantern">🏮</span><span class="lantern">🏮</span>
+        <span class="lantern">🏮</span><span class="lantern">🏮</span><span class="lantern">🏮</span>
+        <span class="lantern">🏮</span><span class="lantern">🏮</span><span class="lantern">🏮</span>
+    </div>
 
-    <!-- Gender selector panel -->
-    <div id="gender-panel">
-        <label>🎙️ Voice</label>
-        <div class="gender-row">
-            <button id="btn-mike" onclick="setGender('male')" class="active-yellow">🎙️ Mike</button>
-            <button id="btn-jenny" onclick="setGender('female')">🎙️ Jenny</button>
+    <!-- ── STEP 3: Center control bar (speaker + counter + pause) ── -->
+    <div id="center-control-bar" onpointerdown="event.stopPropagation()">
+        <button id="speaker-btn" onclick="replayCurrent()">🔊</button>
+        <div id="block-counter">— / —</div>
+        <button id="pause-btn" onclick="togglePause()">⏸</button>
+    </div>
+
+    <div id="play-field">
+        <div class="lane-half" id="lane-l">
+            <div class="lane-letter" id="l-label"></div>
+            <div id="left-stack" class="side-stack"></div>
+        </div>
+        <div id="flash-l"></div>
+        <div id="flash-r"></div>
+        <div id="falling-target"></div>
+        <div class="lane-half" id="lane-r">
+            <div class="lane-letter" id="r-label"></div>
+            <div id="right-stack" class="side-stack"></div>
+        </div>
+        <div id="lightning-hud" class="hidden">👻 <span id="lhud-block">1</span>/15 &nbsp;|&nbsp; <span id="lhud-speed">1.0</span>x</div>
+        <div id="fox-intro" class="hidden">
+            <div class="fox-emoji">🦊</div>
+            <div class="fox-msg" id="fox-msg"></div>
+        </div>
+
+        <!-- ── STEP 4: Soft-pause hint overlay ── -->
+        <div id="soft-pause-hint" class="hidden" onpointerdown="event.stopPropagation()">
+            <span>👆 Tap a word to hear it &nbsp;·&nbsp; Double-tap to see Japanese</span>
+            <span class="sp-resume">Tap empty space to resume</span>
         </div>
     </div>
 
-    <button onclick="startGame()" style="background: var(--l-color); width: 220px; font-size: 20px; margin-top: 14px;">START</button>
-    <button id="btn-world-map" onclick="showMenu('level-select')" style="width: 220px;" class="hidden">WORLD MAP</button>
-    <button onclick="showMenu('shop-menu')" style="width: 220px;">STICKER SHOP</button>
-    <button onclick="showMenu('sticker-book')" style="width: 220px;">MY BOOK</button>
+    <!-- ── STEP 3: Answer zones — full-width, side by side at the bottom ── -->
+    <div id="answer-zones" class="hidden">
+        <div id="answer-zone-l" class="answer-zone"
+             onpointerdown="event.stopPropagation()"
+             onclick="handleAnswerTap('L')">
+            <span class="az-label"></span>
+        </div>
+        <div id="answer-zone-r" class="answer-zone"
+             onpointerdown="event.stopPropagation()"
+             onclick="handleAnswerTap('R')">
+            <span class="az-label"></span>
+        </div>
+    </div>
 </div>
 
-<!-- LEVEL SELECT -->
+<div id="main-menu" class="overlay">
+    <div style="font-size:72px;line-height:1;margin-bottom:6px;animation:foxDrop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;">🦊</div>
+    <div id="streak-banner" class="hidden" style="font-size:18px;font-family:var(--font-retro);color:var(--accent);margin-bottom:10px;letter-spacing:2px;font-weight:900;text-shadow:0 0 16px var(--accent),0 0 32px var(--accent);"></div>
+    <h1 onclick="devTitleTap()" style="color:var(--accent);font-size:42px;margin:0 0 4px 0;cursor:default;">PHONETIC FLOW</h1>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
+        <span style="font-size:22px;font-weight:900;color:rgba(255,255,255,0.7);font-family:'Hiragino Sans','Yu Gothic',sans-serif;line-height:1;">声</span>
+        <button id="btn-mike" onclick="setGender('male')" class="active-yellow" style="margin:0;padding:10px 18px;font-size:14px;">🐦‍⬛ Boy</button>
+        <button id="btn-jenny" onclick="setGender('female')" style="margin:0;padding:10px 18px;font-size:14px;">🐦 Girl</button>
+    </div>
+    <button id="btn-start-single" onclick="startGame()">"CH vs TS" <span style="font-size:1.25em;font-weight:900;">GO!</span></button>
+    <div id="start-btn-group" class="hidden">
+        <button id="btn-practice" onclick="startGame()">"CH vs TS" <span style="font-size:1.25em;font-weight:900;">GO!</span></button>
+        <button id="btn-challenge" onclick="startChallenge()">👻 BOSS</button>
+    </div>
+    <button id="btn-world-map" onclick="showMenu('level-select')" style="width:220px;background:#8e44ad;" class="hidden">🗺 WORLD MAP</button>
+    <button onclick="showMenu('shop-menu')" style="width:220px;background:#e67e22;">🛍 STICKER SHOP</button>
+    <button onclick="showMenu('sticker-book')" style="width:220px;background:#2980b9;">📖 MY BOOK</button>
+    <button onclick="showHelp()" style="width:220px;background:#555;">？ HOW TO PLAY</button>
+</div>
+
 <div id="level-select" class="overlay hidden">
-    <h2 style="color: var(--accent)">ASCENDING TOWER</h2>
-    <div id="tower-list" style="display: flex; flex-direction: column-reverse; width: 100%; align-items: center;"></div>
-    <button onclick="showMenu('main-menu')" style="background: #444; width: 200px; margin-top: 20px;">BACK</button>
+    <h2 style="color:var(--accent)">ASCENDING TOWER</h2>
+    <div id="tower-list" style="display:flex;flex-direction:column-reverse;width:100%;align-items:center;overflow-y:auto;max-height:60vh;"></div>
+    <button onclick="showMenu('main-menu')" style="background:#444;width:200px;margin-top:20px;flex-shrink:0;">BACK</button>
 </div>
 
-<!-- SHOP -->
 <div id="shop-menu" class="overlay hidden">
     <div id="shopkeeper-area">
-        <div style="font-size: 50px;">🧙‍♂️</div>
-        <div id="shopkeeper-text" style="font-weight: bold; text-transform: uppercase;"></div>
+        <div style="font-size:50px;">🦊</div>
+        <div id="shopkeeper-text"></div>
     </div>
-    <div id="shop-items-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; overflow-y: auto;"></div>
-    <div id="trade-ui" class="hidden">
-        <div id="trade-options" style="display:flex; flex-wrap:wrap; justify-content:center;"></div>
-    </div>
-    <button onclick="showMenu('main-menu')" style="background: #2980b9; width: 100%; margin-top: 15px;">BACK</button>
+    <div id="shop-items-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;overflow-y:auto;"></div>
+    <button onclick="showMenu('main-menu')" style="background:#2980b9;width:100%;margin-top:15px;">BACK</button>
 </div>
 
-<!-- STICKER BOOK -->
-<div id="sticker-book" class="overlay hidden" style="display: flex; flex-direction: column;">
-    <h2 style="margin-top: 40px; color: var(--accent); flex-shrink: 0;">COLLECTION</h2>
-    <div id="book-display" style="
-        flex-grow: 1; overflow-y: auto; width: 100%; padding: 20px; box-sizing: border-box;
-        display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-        justify-items: center; align-content: start;
-    "></div>
-    <button onclick="showMenu('main-menu')" style="background: #444; width: 200px; margin: 20px 0; flex-shrink: 0;">BACK</button>
+<div id="sticker-book" class="overlay hidden" style="display:flex;flex-direction:column;">
+    <h2 style="margin-top:40px;color:var(--accent);flex-shrink:0;">COLLECTION</h2>
+    <div id="book-display" style="flex-grow:1;overflow-y:auto;width:100%;padding:20px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;justify-items:center;align-content:start;"></div>
+    <button onclick="showMenu('main-menu')" style="background:#444;width:200px;margin:20px 0;flex-shrink:0;">BACK</button>
 </div>
 
-<!-- PAUSE MENU -->
-<div id="pause-menu" class="overlay hidden">
-    <div style="background: rgba(30, 39, 46, 0.95); padding: 30px; border-radius: 24px; border: 2px solid var(--accent); width: 85%;">
-        <h2 style="color: var(--accent);">PAUSED</h2>
-        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px;">
-            <p style="margin: 0 0 10px 0; font-weight: bold;">NEED A LIFE?</p>
-            <button onclick="buyHeart()" style="background: #e74c3c; width: 150px;">❤️ BUY (💰75)</button>
+<div id="pause-menu" class="overlay hidden" onclick="if(event.target===this)togglePause()">
+    <div class="pmenu-inner">
+        <h2 style="color:var(--accent);margin:0 0 20px 0;letter-spacing:3px;">PAUSED</h2>
+
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+            <div style="font-size:48px;line-height:1;flex-shrink:0;">🦊</div>
+            <div style="flex:1;">
+                <div style="font-size:12px;color:rgba(255,255,255,0.6);font-family:var(--font-retro);margin-bottom:7px;">Need a Heart?</div>
+                <button onclick="buyHeart()" style="background:#e74c3c;width:100%;margin:0;padding:10px 12px;font-size:14px;">❤️ Buy ⭐75</button>
+            </div>
         </div>
-        <div style="display: flex; justify-content: space-around; margin-bottom: 25px;">
-            <button id="speed-0.7" onclick="setSpeed(0.7)" style="font-size: 25px; background: #444;">🐢</button>
-            <button id="speed-1.0" onclick="setSpeed(1.0)" style="font-size: 25px; background: #444;">🧑</button>
-            <button id="speed-1.3" onclick="setSpeed(1.3)" style="font-size: 25px; background: #444;">⚡</button>
+
+        <div style="margin-bottom:20px;">
+            <div style="font-size:13px;font-weight:900;letter-spacing:2px;color:rgba(255,255,255,0.8);margin-bottom:9px;text-align:center;font-family:var(--font-retro);">VOICE SPEED</div>
+            <div style="display:flex;justify-content:space-around;">
+                <button id="speed-0.5" onclick="setSpeed(0.5)" style="font-size:24px;background:#444;margin:0;">🐢</button>
+                <button id="speed-1.0" onclick="setSpeed(1.0)" style="font-size:24px;background:#444;margin:0;">🧑</button>
+                <button id="speed-1.6" onclick="setSpeed(1.6)" style="font-size:24px;background:#444;margin:0;">⚡</button>
+            </div>
         </div>
-        <button onclick="closeMenus()" style="background: var(--l-color); width: 100%; margin-bottom: 10px;">RESUME</button>
-        <button onclick="showMenu('main-menu')" style="background: #444; width: 100%;">EXIT TO MENU</button>
+
+        <button onclick="pauseExitToMenu()" style="background:#555;width:100%;margin:0;letter-spacing:1px;">EXIT TO MENU</button>
     </div>
 </div>
 
-<!-- ROUND WIN -->
 <div id="round-win" class="overlay hidden">
-    <h1 style="color: var(--l-color);">CLEAR!</h1>
-    <p>Floor Bonus: 💰 +50</p>
+    <div style="font-size:80px;line-height:1;margin-bottom:8px;animation:foxResultPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;">🦊</div>
+    <div id="fox-round-msg" style="font-size:16px;color:#fff;font-family:var(--font-retro);text-align:center;margin:0 0 16px 0;line-height:1.7;padding:0 20px;"></div>
+    <h1 style="color:var(--l-color);margin:0 0 4px 0;">CLEAR!</h1>
+    <div id="round-win-coins"></div>
     <button onclick="showMenu('main-menu')">CONTINUE</button>
 </div>
 
-<!-- GAME OVER -->
 <div id="game-over" class="overlay hidden">
-    <h1 style="color: var(--r-color);">GAME OVER</h1>
+    <h1 style="color:var(--r-color);">GAME OVER</h1>
     <button onclick="startGame()">RETRY</button>
-    <button onclick="showMenu('main-menu')" style="background: #444;">EXIT</button>
+    <button onclick="showMenu('main-menu')" style="background:#444;">EXIT</button>
 </div>
 
-<!-- KEY CEREMONY (hidden until triggered) -->
-<div id="key-ceremony" class="hidden">
-    <div class="ceremony-border">
-        <div style="display:flex; align-items:flex-start;">
+<div id="lightning-countdown" class="hidden">
+    <div id="lcd-content"></div>
+    <div class="lcd-label">GET READY</div>
+</div>
+
+<div id="lightning-clear" class="hidden" onclick="dismissLightningClear()">
+    <div class="lc-inner">
+        <h1>BOSS CHALLENGE CLEARED!</h1>
+        <div class="lc-boss-row">
+            <span class="lc-fox-bounce">🦊</span>
+            <span class="lc-ghost-flyoff">👻</span>
+        </div>
+        <div id="lc-fox-msg" style="font-size:14px;color:#fff;font-family:var(--font-retro);text-align:center;line-height:1.7;margin-bottom:8px;padding:0 10px;"></div>
+        <div style="font-size:32px;margin:6px 0;">🗝️</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:1px;">KEY UNLOCKED!</div>
+        <div id="lc-accuracy" class="hidden" style="font-size:14px;color:var(--accent);margin-top:8px;letter-spacing:1px;"></div>
+        <div class="lc-sub">TAP TO CONTINUE</div>
+    </div>
+</div>
+
+<div id="key-ceremony" class="hidden" onclick="dismissKeyCeremony()">
+    <div class="ceremony-border" style="cursor:pointer;">
+        <div style="display:flex;align-items:flex-start;">
             <div class="ceremony-sprite">🧍</div>
             <div class="ceremony-key">🗝️</div>
         </div>
         <div class="ceremony-text" id="ceremony-text"></div>
+        <div style="font-size:11px;opacity:0.4;margin-top:16px;font-family:var(--font-retro);letter-spacing:1px;">TAP TO CONTINUE</div>
     </div>
 </div>
 
-<script>
-    // =============================================
-    // DATA
-    // =============================================
-    const levels = {
-        1: { name: "L vs R", folder: "L_vs_R", sounds: ["L","R"],
-             words: [
-                {sound:"L", position:"initial", word:"lake"},
-                {sound:"L", position:"initial", word:"leaf"},
-                {sound:"L", position:"initial", word:"low"},
-                {sound:"R", position:"initial", word:"rain"},
-                {sound:"R", position:"initial", word:"road"},
-                {sound:"R", position:"initial", word:"rice"},
-                {sound:"L", position:"medial",  word:"alive"},
-                {sound:"L", position:"medial",  word:"balloon"},
-                {sound:"L", position:"medial",  word:"below"},
-                {sound:"R", position:"medial",  word:"arena"},
-                {sound:"R", position:"medial",  word:"carrot"},
-                {sound:"R", position:"medial",  word:"story"},
-                {sound:"L", position:"final",   word:"bell"},
-                {sound:"L", position:"final",   word:"feel"},
-                {sound:"L", position:"final",   word:"tall"},
-                {sound:"R", position:"final",   word:"star"},
-                {sound:"R", position:"final",   word:"door"},
-                {sound:"R", position:"final",   word:"far"},
-             ],
-             stickers: [
-                {emoji:"☁️", price:50},{emoji:"🌱", price:100},
-                {emoji:"🌲", price:200},{emoji:"🦅", price:300},{emoji:"💎", price:500}
-             ]},
-        2: { name: "V vs B", folder: "V_vs_B", sounds: ["V","B"],
-             words: [
-                {sound:"V", position:"initial", word:"van"},
-                {sound:"V", position:"initial", word:"vine"},
-                {sound:"V", position:"initial", word:"vote"},
-                {sound:"B", position:"initial", word:"ban"},
-                {sound:"B", position:"initial", word:"bone"},
-                {sound:"B", position:"initial", word:"boat"},
-                {sound:"V", position:"medial",  word:"clever"},
-                {sound:"V", position:"medial",  word:"oven"},
-                {sound:"V", position:"medial",  word:"river"},
-                {sound:"B", position:"medial",  word:"table"},
-                {sound:"B", position:"medial",  word:"robot"},
-                {sound:"B", position:"medial",  word:"cabin"},
-                {sound:"V", position:"final",   word:"cave"},
-                {sound:"V", position:"final",   word:"live"},
-                {sound:"V", position:"final",   word:"stove"},
-                {sound:"B", position:"final",   word:"cab"},
-                {sound:"B", position:"final",   word:"robe"},
-                {sound:"B", position:"final",   word:"tube"},
-             ],
-             stickers: [
-                {emoji:"💧", price:50},{emoji:"🐚", price:100},
-                {emoji:"🦀", price:200},{emoji:"🦈", price:300},{emoji:"🔱", price:500}
-             ]},
-        3: { name: "S vs TH", folder: "S_vs_TH_voiceless", sounds: ["S","TH"],
-             words: [
-                {sound:"S",  position:"initial", word:"sea"},
-                {sound:"S",  position:"initial", word:"sin"},
-                {sound:"S",  position:"initial", word:"soap"},
-                {sound:"TH", position:"initial", word:"thin"},
-                {sound:"TH", position:"initial", word:"think"},
-                {sound:"TH", position:"initial", word:"three"},
-                {sound:"S",  position:"medial",  word:"basin"},
-                {sound:"S",  position:"medial",  word:"frosty"},
-                {sound:"S",  position:"medial",  word:"lesson"},
-                {sound:"TH", position:"medial",  word:"author"},
-                {sound:"TH", position:"medial",  word:"nothing"},
-                {sound:"TH", position:"medial",  word:"method"},
-                {sound:"S",  position:"final",   word:"base"},
-                {sound:"S",  position:"final",   word:"peace"},
-                {sound:"S",  position:"final",   word:"bus"},
-                {sound:"TH", position:"final",   word:"bath"},
-                {sound:"TH", position:"final",   word:"math"},
-                {sound:"TH", position:"final",   word:"teeth"},
-             ],
-             stickers: [
-                {emoji:"🌬️", price:50},{emoji:"🍃", price:100},
-                {emoji:"🌀", price:200},{emoji:"⚡", price:300},{emoji:"🌊", price:500}
-             ]},
-        4: { name: "F vs P", folder: "F_vs_P", sounds: ["F","P"],
-             words: [
-                {sound:"F", position:"initial", word:"fan"},
-                {sound:"F", position:"initial", word:"feel"},
-                {sound:"F", position:"initial", word:"photo"},
-                {sound:"P", position:"initial", word:"pan"},
-                {sound:"P", position:"initial", word:"peel"},
-                {sound:"P", position:"initial", word:"pot"},
-                {sound:"F", position:"medial",  word:"after"},
-                {sound:"F", position:"medial",  word:"offer"},
-                {sound:"F", position:"medial",  word:"sofa"},
-                {sound:"P", position:"medial",  word:"paper"},
-                {sound:"P", position:"medial",  word:"open"},
-                {sound:"P", position:"medial",  word:"topic"},
-                {sound:"F", position:"final",   word:"leaf"},
-                {sound:"F", position:"final",   word:"roof"},
-                {sound:"F", position:"final",   word:"safe"},
-                {sound:"P", position:"final",   word:"leap"},
-                {sound:"P", position:"final",   word:"rope"},
-                {sound:"P", position:"final",   word:"tape"},
-             ],
-             stickers: [
-                {emoji:"🍂", price:50},{emoji:"🦊", price:100},
-                {emoji:"🍁", price:200},{emoji:"🦋", price:300},{emoji:"🌸", price:500}
-             ]},
-        5: { name: "S vs SH", folder: "S_vs_SH", sounds: ["S","SH"],
-             words: [
-                {sound:"S",  position:"initial", word:"sea"},
-                {sound:"S",  position:"initial", word:"sail"},
-                {sound:"S",  position:"initial", word:"song"},
-                {sound:"SH", position:"initial", word:"she"},
-                {sound:"SH", position:"initial", word:"shake"},
-                {sound:"SH", position:"initial", word:"show"},
-                {sound:"S",  position:"medial",  word:"basin"},
-                {sound:"S",  position:"medial",  word:"lesson"},
-                {sound:"S",  position:"medial",  word:"basic"},
-                {sound:"SH", position:"medial",  word:"nation"},
-                {sound:"SH", position:"medial",  word:"fashion"},
-                {sound:"SH", position:"medial",  word:"fishing"},
-                {sound:"S",  position:"final",   word:"bus"},
-                {sound:"S",  position:"final",   word:"face"},
-                {sound:"S",  position:"final",   word:"nice"},
-                {sound:"SH", position:"final",   word:"bush"},
-                {sound:"SH", position:"final",   word:"fish"},
-                {sound:"SH", position:"final",   word:"rush"},
-             ],
-             stickers: [
-                {emoji:"🌙", price:50},{emoji:"⭐", price:100},
-                {emoji:"🌟", price:200},{emoji:"🌠", price:300},{emoji:"🌌", price:500}
-             ]},
-        6: { name: "Z vs TH (voiced)", folder: "Z_vs_TH_voiced", sounds: ["Z","TH"],
-             words: [
-                {sound:"Z",  position:"initial", word:"zoo"},
-                {sound:"Z",  position:"initial", word:"zone"},
-                {sound:"Z",  position:"initial", word:"zero"},
-                {sound:"TH", position:"initial", word:"the"},
-                {sound:"TH", position:"initial", word:"this"},
-                {sound:"TH", position:"initial", word:"those"},
-                {sound:"Z",  position:"medial",  word:"frozen"},
-                {sound:"Z",  position:"medial",  word:"razor"},
-                {sound:"Z",  position:"medial",  word:"season"},
-                {sound:"TH", position:"medial",  word:"father"},
-                {sound:"TH", position:"medial",  word:"mother"},
-                {sound:"TH", position:"medial",  word:"other"},
-                {sound:"Z",  position:"final",   word:"bees"},
-                {sound:"Z",  position:"final",   word:"nose"},
-                {sound:"Z",  position:"final",   word:"phase"},
-                {sound:"TH", position:"final",   word:"bathe"},
-                {sound:"TH", position:"final",   word:"breathe"},
-                {sound:"TH", position:"final",   word:"soothe"},
-             ],
-             stickers: [
-                {emoji:"🐝", price:50},{emoji:"🦎", price:100},
-                {emoji:"🐍", price:200},{emoji:"🦁", price:300},{emoji:"🔥", price:500}
-             ]},
-        7: { name: "CH vs TS", folder: "CH_vs_TS", sounds: ["CH","TS"],
-             words: [
-                {sound:"CH", position:"initial", word:"chain"},
-                {sound:"CH", position:"initial", word:"chip"},
-                {sound:"CH", position:"initial", word:"choose"},
-                {sound:"CH", position:"medial",  word:"teacher"},
-                {sound:"CH", position:"medial",  word:"kitchen"},
-                {sound:"CH", position:"medial",  word:"nature"},
-                {sound:"CH", position:"final",   word:"beach"},
-                {sound:"CH", position:"final",   word:"catch"},
-                {sound:"CH", position:"final",   word:"coach"},
-                {sound:"TS", position:"final",   word:"boats"},
-                {sound:"TS", position:"final",   word:"cats"},
-                {sound:"TS", position:"final",   word:"roots"},
-             ],
-             stickers: [
-                {emoji:"🎵", price:50},{emoji:"🎸", price:100},
-                {emoji:"🎺", price:200},{emoji:"🎻", price:300},{emoji:"🎹", price:500}
-             ]},
-        8: { name: "N vs NG", folder: "N_vs_NG", sounds: ["N","NG"],
-             words: [
-                {sound:"N",  position:"initial", word:"nail"},
-                {sound:"N",  position:"initial", word:"night"},
-                {sound:"N",  position:"initial", word:"nose"},
-                {sound:"N",  position:"medial",  word:"animal"},
-                {sound:"N",  position:"medial",  word:"dinner"},
-                {sound:"N",  position:"medial",  word:"money"},
-                {sound:"NG", position:"medial",  word:"anger"},
-                {sound:"NG", position:"medial",  word:"finger"},
-                {sound:"NG", position:"medial",  word:"longer"},
-                {sound:"N",  position:"final",   word:"bone"},
-                {sound:"N",  position:"final",   word:"moon"},
-                {sound:"N",  position:"final",   word:"train"},
-                {sound:"NG", position:"final",   word:"king"},
-                {sound:"NG", position:"final",   word:"long"},
-                {sound:"NG", position:"final",   word:"song"},
-             ],
-             stickers: [
-                {emoji:"🌿", price:50},{emoji:"🍀", price:100},
-                {emoji:"🌺", price:200},{emoji:"🦚", price:300},{emoji:"🌈", price:500}
-             ]},
-        9: { name: "L vs R Blends", folder: "L_blends_vs_R_blends", sounds: ["L_blend","R_blend"],
-             words: [
-                {sound:"L_blend_bl", position:"initial", word:"blade"},
-                {sound:"L_blend_bl", position:"initial", word:"blow"},
-                {sound:"L_blend_bl", position:"initial", word:"blue"},
-                {sound:"L_blend_cl", position:"initial", word:"clay"},
-                {sound:"L_blend_cl", position:"initial", word:"clean"},
-                {sound:"L_blend_cl", position:"initial", word:"climb"},
-                {sound:"L_blend_fl", position:"initial", word:"flag"},
-                {sound:"L_blend_fl", position:"initial", word:"flat"},
-                {sound:"L_blend_fl", position:"initial", word:"flow"},
-                {sound:"L_blend_gl", position:"initial", word:"glad"},
-                {sound:"L_blend_gl", position:"initial", word:"glow"},
-                {sound:"L_blend_gl", position:"initial", word:"glue"},
-                {sound:"L_blend_pl", position:"initial", word:"plan"},
-                {sound:"L_blend_pl", position:"initial", word:"play"},
-                {sound:"L_blend_pl", position:"initial", word:"plus"},
-                {sound:"R_blend_br", position:"initial", word:"brain"},
-                {sound:"R_blend_br", position:"initial", word:"bread"},
-                {sound:"R_blend_br", position:"initial", word:"broke"},
-                {sound:"R_blend_cr", position:"initial", word:"crab"},
-                {sound:"R_blend_cr", position:"initial", word:"crime"},
-                {sound:"R_blend_cr", position:"initial", word:"cross"},
-                {sound:"R_blend_fr", position:"initial", word:"frame"},
-                {sound:"R_blend_fr", position:"initial", word:"free"},
-                {sound:"R_blend_fr", position:"initial", word:"frog"},
-                {sound:"R_blend_gr", position:"initial", word:"grab"},
-                {sound:"R_blend_gr", position:"initial", word:"green"},
-                {sound:"R_blend_gr", position:"initial", word:"grow"},
-                {sound:"R_blend_pr", position:"initial", word:"price"},
-                {sound:"R_blend_pr", position:"initial", word:"proud"},
-                {sound:"R_blend_pr", position:"initial", word:"prove"},
-             ],
-             stickers: [
-                {emoji:"🌊", price:50},{emoji:"🏄", price:100},
-                {emoji:"🐬", price:200},{emoji:"🦅", price:300},{emoji:"🏆", price:500}
-             ]},
-    };
+<div id="congrats-screen" class="hidden">
+    <canvas class="confetti-canvas" id="confetti-canvas"></canvas>
+    <div class="congrats-inner">
+        <div class="trophy-row">🏆</div>
+        <h1>CONGRATULATIONS!</h1>
+        <div class="congrats-sub">おめでとうございます！<br>You have mastered all 9 floors.<br>Your phonetic skills are complete!</div>
+        <div class="star-row">⭐⭐⭐</div>
+        <button onclick="dismissCongrats()">わかった！ / RETURN</button>
+    </div>
+</div>
 
-    // =============================================
-    // STATE
-    // =============================================
-    let state = {
-        curLevel: 1, maxLevel: 1, speed: 1.0, lives: 3,
-        coins: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0},
-        invest: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0},
-        inventory: [], roundHits: 0, isPaused: true,
-        gender: "male"
-    };
+<div id="help-screen" class="hidden">
+    <div class="help-inner">
+        <div class="help-key">🦊</div>
+        <h2>How to Play</h2>
+        <div class="help-body">
+            <div class="help-row">
+                <div class="icon">🐦‍⬛🐦</div>
+                <div class="text">
+                    <span class="jp">まず声を選ぼう</span>
+                    <span class="en">Choose a voice.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">▶️</div>
+                <div class="text">
+                    <span class="jp">GO！を押してスタート！単語を聞いて、下の左か右のボタンをタップしよう</span>
+                    <span class="en">Hit Go! to start. Listen to the word and tap the LEFT or RIGHT button at the bottom.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">🔊</div>
+                <div class="text">
+                    <span class="jp">スピーカーをタップするともう一度聞けるよ</span>
+                    <span class="en">Tap the speaker to hear the word again.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">⏸</div>
+                <div class="text">
+                    <span class="jp">ポーズボタンでゲームを止めたり、ハートを買ったり、声のスピードを変えたりできるよ</span>
+                    <span class="en">Tap pause to stop the game, buy a heart, or change the voice speed.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">✋</div>
+                <div class="text">
+                    <span class="jp">画面の真ん中をタップすると一時停止！積まれた単語をタップして聞き直したり、ダブルタップで日本語に切り替えたりできるよ</span>
+                    <span class="en">Tap the play field to soft-pause. Tap any word brick to hear it again. Double-tap to see the Japanese!</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">✅</div>
+                <div class="text">
+                    <span class="jp">10問正解でフロアクリア！</span>
+                    <span class="en">Get 10 correct answers to clear the floor.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">❤️</div>
+                <div class="text">
+                    <span class="jp">間違えるとハートを失う。3つ全部なくなるとゲームオーバー！3連続正解でコンボボーナス！</span>
+                    <span class="en">A wrong answer costs a heart. Lose all 3 and it's game over! Get 3+ in a row for a combo bonus!</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">👻</div>
+                <div class="text">
+                    <span class="jp">ショップで300コイン使うとボスラウンド解放！ボスを倒すと次のラウンドを開く魔法の鍵をゲット！！</span>
+                    <span class="en">Spend 300 coins in the shop to unlock the Boss Round! Defeat the Boss to get a magic key!!</span>
+                </div>
+            </div>
+        </div>
+        <button class="got-it-btn" onclick="dismissHelp()">わかった！ / GOT IT!</button>
+    </div>
+</div>
 
-    let currentBlock = null;
-    let animationId = null;
-    let currentAudio = null;
-    let typeInterval = null;
-
-    // =============================================
-    // AUDIO ENGINE
-    // =============================================
-    function buildAudioPath(wordObj) {
-        const lvl = levels[state.curLevel];
-        const gender = state.gender === 'male' ? 'male' : 'female';
-        return `audio/${lvl.folder}/${wordObj.sound}_${wordObj.position}_${wordObj.word}_${gender}.mp3`;
-    }
-
-    function playAudio(wordObj, callback) {
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio.onended = null;
-            currentAudio = null;
-        }
-        const path = buildAudioPath(wordObj);
-        const audio = new Audio(path);
-        currentAudio = audio;
-        audio.onended = () => { if (callback) callback(); };
-        audio.onerror = () => {
-            console.warn('Audio not found:', path);
-            if (callback) callback();
-        };
-        audio.play().catch(err => console.warn('Playback error:', err));
-    }
-
-    // =============================================
-    // GENDER SELECTOR
-    // =============================================
-    function setGender(g) {
-        state.gender = g;
-        document.getElementById('btn-mike').classList.toggle('active-yellow', g === 'male');
-        document.getElementById('btn-jenny').classList.toggle('active-yellow', g === 'female');
-        saveGame();
-    }
-
-    // =============================================
-    // SAVE / LOAD
-    // =============================================
-    function saveGame() { localStorage.setItem('phoneticFlowSave', JSON.stringify(state)); }
-    function loadGame() {
-        const saved = localStorage.getItem('phoneticFlowSave');
-        if (saved) { state = { ...state, ...JSON.parse(saved) }; }
-        setGender(state.gender);
-        updateUI();
-    }
-
-    // =============================================
-    // UI UTILITIES
-    // =============================================
-    function typeWriter(text) {
-        clearInterval(typeInterval);
-        const el = document.getElementById('shopkeeper-text');
-        el.innerHTML = ""; let i = 0;
-        typeInterval = setInterval(() => {
-            el.innerHTML += text.charAt(i); i++;
-            if (i >= text.length) clearInterval(typeInterval);
-        }, 40);
-    }
-
-    function showMenu(id) {
-        state.isPaused = true;
-        cancelAnimationFrame(animationId);
-        if (currentAudio) { currentAudio.pause(); }
-        document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-        if (id === 'shop-menu') renderShop();
-        if (id === 'level-select') renderTower();
-        if (id === 'sticker-book') renderBook();
-        updateUI();
-    }
-
-    function updateUI() {
-        document.getElementById('currency-display').innerText = `💰 ${state.coins[state.curLevel]}`;
-        document.getElementById('lives-display').innerText = "❤️".repeat(Math.max(0, state.lives));
-        document.getElementById('level-display-name').innerText = levels[state.curLevel].name;
-        if (state.maxLevel >= 2) document.getElementById('btn-world-map').classList.remove('hidden');
-
-        document.querySelectorAll('#pause-menu button').forEach(b => b.classList.remove('active-yellow'));
-        const btn = document.getElementById(`speed-${state.speed.toFixed(1)}`);
-        if (btn) btn.classList.add('active-yellow');
-        saveGame();
-    }
-
-    // =============================================
-    // SHOP LOGIC
-    // =============================================
-    function buyHeart() {
-        const cost = 75;
-        if (state.coins[state.curLevel] >= cost) {
-            state.coins[state.curLevel] -= cost;
-            state.lives++;
-            updateUI();
-            typeWriter("A FRESH HEART! STAY STRONG.");
-        } else {
-            typeWriter("NOT ENOUGH COINS FOR A HEART!");
-        }
-    }
-
-    function buyItem(emoji, price, idx) {
-        if (state.coins[state.curLevel] >= price) {
-            const card = document.getElementById(`shop-item-${idx}`);
-            if (card) card.classList.add('purchased-anim');
-            state.coins[state.curLevel] -= price;
-            state.invest[state.curLevel] += price;
-            state.inventory.push({emoji, level: state.curLevel});
-            setTimeout(() => { renderShop(); updateUI(); }, 600);
-        } else {
-            typeWriter("NOT ENOUGH COINS! PLAY MORE!");
-        }
-    }
-
-    function renderShop() {
-        const inv = state.invest[state.curLevel];
-        const grid = document.getElementById('shop-items-grid');
-        const trade = document.getElementById('trade-ui');
-        grid.innerHTML = ""; grid.classList.remove('hidden'); trade.classList.add('hidden');
-
-        if (inv >= 500 && !hasKey(state.curLevel)) {
-            typeWriter("YOU HAVE PROVEN YOURSELF. OFFER A RARE STICKER TO RECEIVE THE KEY!");
-            grid.classList.add('hidden'); trade.classList.remove('hidden');
-            const opts = document.getElementById('trade-options'); opts.innerHTML = "";
-            const unique = [...new Set(
-                state.inventory
-                    .filter(i => i.level === state.curLevel)
-                    .map(i => i.emoji)
-            )];
-            unique.forEach(emo => {
-                const b = document.createElement('button');
-                b.innerText = emo; b.style.fontSize = "30px";
-                b.onclick = () => processTrade(emo);
-                opts.appendChild(b);
-            });
-        } else {
-            typeWriter("WELCOME! FLOOR " + state.curLevel + " SHOP. BUY STICKERS!");
-
-            const heartCard = document.createElement('div');
-            heartCard.className = "item-card";
-            heartCard.innerHTML = `<div>❤️</div><button onclick="buyHeart()">💰75</button>`;
-            grid.appendChild(heartCard);
-
-            levels[state.curLevel].stickers.forEach((item, idx) => {
-                const count = state.inventory.filter(i => i.emoji === item.emoji).length;
-                const stockText = count === 0 ? "2X" : (count === 1 ? "1X" : "SOLD");
-                const card = document.createElement('div');
-                card.className = "item-card"; card.id = `shop-item-${idx}`;
-                card.innerHTML = `<div>${item.emoji}</div>
-                                  <button onclick="buyItem('${item.emoji}', ${item.price}, ${idx})" ${count >= 2 ? 'disabled' : ''}>
-                                  ${stockText}: 💰${item.price}</button>`;
-                grid.appendChild(card);
-            });
-        }
-    }
-
-    function processTrade(emoji) {
-        const stickerRef = levels[state.curLevel].stickers.find(s => s.emoji === emoji);
-        if (!stickerRef || stickerRef.price <= 200) {
-            typeWriter("NO. THAT IS TOO COMMON. I NEED SOMETHING RARER.");
-            return;
-        }
-        // Remove one of the traded sticker from inventory
-        const idx = state.inventory.findIndex(i => i.emoji === emoji && i.level === state.curLevel);
-        state.inventory.splice(idx, 1);
-        // Add key to inventory
-        state.inventory.push({emoji: "🗝️", level: state.curLevel, isKey: true});
-        state.maxLevel = Math.max(state.maxLevel, state.curLevel + 1);
-        saveGame();
-        showMenu('main-menu');
-        showKeyCeremony(state.curLevel);
-    }
-
-    function hasKey(lvl) {
-        return state.inventory.some(i => i.level === lvl && i.isKey);
-    }
-
-    // =============================================
-    // KEY CEREMONY
-    // =============================================
-    function showKeyCeremony(lvl) {
-        const ceremony = document.getElementById('key-ceremony');
-        document.getElementById('ceremony-text').innerHTML =
-            `YOU GOT THE KEY!<br>Floor ${lvl + 1} is now open.`;
-        ceremony.classList.remove('hidden');
-        setTimeout(() => {
-            ceremony.classList.add('hidden');
-        }, 4000);
-    }
-
-    // =============================================
-    // GAMEPLAY
-    // =============================================
-    function startGame() {
-        cleanup();
-        state.lives = 3; state.roundHits = 0;
-        document.getElementById('left-stack').innerHTML = "";
-        document.getElementById('right-stack').innerHTML = "";
-        closeMenus();
-    }
-
-    function spawnBlock() {
-        if (state.isPaused || state.lives <= 0 || state.roundHits >= 15) return;
-        const pool = levels[state.curLevel].words;
-        const wordObj = pool[Math.floor(Math.random() * pool.length)];
-        if (currentBlock) return;
-
-        const el = document.createElement('div');
-        el.className = 'block';
-        el.innerText = "🔊";
-        el.style.left = "calc(50% - 60px)";
-        el.style.top = "0px";
-        el.addEventListener('pointerdown', (e) => {
-            e.stopPropagation();
-            showMenu('pause-menu');
-        });
-        document.getElementById('game-container').appendChild(el);
-        currentBlock = { element: el, data: wordObj, top: 0 };
-        playAudio(wordObj);
-        animate();
-    }
-
-    function animate() {
-        if (state.isPaused || !currentBlock) return;
-        currentBlock.top += (2.2 * state.speed);
-        currentBlock.element.style.top = currentBlock.top + "px";
-        if (currentBlock.top > window.innerHeight - 120) {
-            resolve(null); // missed — lose a life
-        } else {
-            animationId = requestAnimationFrame(animate);
-        }
-    }
-
-    window.addEventListener('pointerdown', (e) => {
-        if (state.isPaused || !currentBlock || e.target.closest('.block')) return;
-        resolve(e.clientX < window.innerWidth / 2 ? "L" : "R");
-    });
-
-    function resolve(choice) {
-        if (!currentBlock) return;
-
-        const lvl = levels[state.curLevel];
-        const wordObj = currentBlock.data;
-
-        // Determine which side (L or R) this sound belongs to
-        const isLeftSound = wordObj.sound.startsWith(lvl.sounds[0]);
-        const correctSide = isLeftSound ? "L" : "R";
-        const isMissed = choice === null;
-        const isCorrect = !isMissed && choice === correctSide;
-
-        // Create brick showing the word
-        const brick = document.createElement('div');
-        brick.className = 'brick';
-        brick.innerText = wordObj.word;
-        brick.style.background = isCorrect ? 'var(--l-color)' : 'var(--r-color)';
-
-        // Missed blocks go to the correct side; wrong taps go to the tapped side
-        const stackSide = isMissed ? correctSide : choice;
-        const stackId = stackSide === 'L' ? 'left-stack' : 'right-stack';
-        document.getElementById(stackId).appendChild(brick);
-
-        if (isCorrect) {
-            state.roundHits++;
-            state.coins[state.curLevel] += 10;
-        } else {
-            state.lives--;
-            if (state.lives <= 0) {
-                cleanup();
-                updateUI();
-                return showMenu('game-over');
-            }
-        }
-
-        cleanup();
-        updateUI();
-
-        if (state.roundHits >= 15) {
-            state.coins[state.curLevel] += 50;
-            setTimeout(() => showMenu('round-win'), 500);
-        } else {
-            setTimeout(spawnBlock, 400);
-        }
-    }
-
-    function cleanup() {
-        if (currentBlock) currentBlock.element.remove();
-        currentBlock = null;
-        cancelAnimationFrame(animationId);
-    }
-
-    function closeMenus() {
-        document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
-        state.isPaused = false;
-        if (!currentBlock && state.roundHits < 15) {
-            spawnBlock();
-        } else if (currentBlock) {
-            playAudio(currentBlock.data);
-            animate();
-        }
-    }
-
-    function setSpeed(s) { state.speed = s; updateUI(); }
-
-    // =============================================
-    // TOWER & BOOK
-    // =============================================
-    function renderTower() {
-        const list = document.getElementById('tower-list'); list.innerHTML = "";
-        for (let i = 1; i <= 9; i++) {
-            if (!levels[i]) continue;
-            const div = document.createElement('div');
-            const isLocked = i > state.maxLevel;
-            div.className = "tower-item";
-            if (i === state.curLevel) {
-                div.style.borderColor = "var(--accent)";
-                div.style.boxShadow = "0 0 15px var(--accent)";
-            }
-            div.style.opacity = isLocked ? "0.4" : "1";
-            const keyBadge = hasKey(i) ? `<span style="float:right">🗝️</span>` : '';
-            const lockIcon = isLocked ? '🔒' : '';
-            div.innerHTML = `Floor ${i}: ${levels[i].name} ${lockIcon}${keyBadge}`;
-            if (!isLocked) div.onclick = () => { state.curLevel = i; updateUI(); renderTower(); };
-            list.appendChild(div);
-        }
-    }
-
-    function renderBook() {
-        const b = document.getElementById('book-display');
-        b.innerHTML = "";
-        if (state.inventory.length === 0) { b.innerHTML = "<p>BOOK IS EMPTY</p>"; return; }
-        state.inventory.forEach(item => {
-            const d = document.createElement('div');
-            d.className = "book-sticker";
-            d.innerText = item.emoji;
-            if (item.isKey) d.style.filter = "drop-shadow(0 0 20px #f1c40f)";
-            b.appendChild(d);
-        });
-    }
-
-    // =============================================
-    // INIT
-    // =============================================
-    loadGame();
-</script>
+<script src="levels_revised.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
