@@ -173,9 +173,10 @@ function showMenu(id){
     document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
     document.getElementById('pause-btn').classList.remove('visible');
-    // Hide answer buttons when in a menu
-    document.getElementById('answer-zone-l').classList.add('hidden');
-    document.getElementById('answer-zone-r').classList.add('hidden');
+    // Hide answer zones when in any menu
+    showAnswerZones(false);
+    // Hide help button when in menus (it has its own button inside each overlay)
+    document.getElementById('help-btn').classList.add('hidden');
     if(id==='shop-menu') renderShop();
     if(id==='level-select') renderTower();
     if(id==='sticker-book') renderBook();
@@ -214,14 +215,13 @@ function setGender(g){
     state.gender=g;
     document.getElementById('btn-mike').classList.toggle('active-yellow',g==='male');
     document.getElementById('btn-jenny').classList.toggle('active-yellow',g==='female');
-    if(window.speechSynthesis){
-        window.speechSynthesis.cancel();
-        const u=new SpeechSynthesisUtterance('Hello!'); u.lang='en-US';
-        const voices=window.speechSynthesis.getVoices();
-        const match=voices.find(v=>g==='female'?/female|woman|girl|zira|samantha|karen|victoria/i.test(v.name):/male|man|david|alex|daniel/i.test(v.name));
-        if(match) u.voice=match; u.pitch=g==='female'?1.2:0.9;
-        window.speechSynthesis.speak(u);
-    }
+    // Play the pre-recorded greeting file for the selected voice
+    const greetingPath = `audio/greeting_${g==='male'?'male':'female'}.mp3`;
+    if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+    const a = new Audio(greetingPath);
+    a.playbackRate = state.audioRate || 1.0;
+    a.onerror = ()=>console.warn('Missing greeting file:', greetingPath);
+    a.play().catch(e=>console.warn('Greeting play failed:', e));
     saveGame();
 }
 
@@ -286,18 +286,45 @@ function showHeartBreak(correctSide){
 
 // ─── HELP ─────────────────────────────────────────────────────────────────
 function showHelp(){
+    const wasPlaying = !state.isPaused;
     state.isPaused=true; cancelAnimationFrame(animationId); stopTimer();
     if(currentAudio) currentAudio.pause();
-    const anyOverlay=[...document.querySelectorAll('.overlay')].some(el=>!el.classList.contains('hidden'));
-    if(!anyOverlay) document.getElementById('main-menu').classList.remove('hidden');
+    // Only show main-menu behind help if no game is in progress
+    const gameInProgress = (state.roundHits > 0) || currentBlock;
+    if(!gameInProgress){
+        document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
+        document.getElementById('main-menu').classList.remove('hidden');
+    }
     document.getElementById('help-screen').classList.remove('hidden');
+    document.getElementById('help-btn').classList.add('hidden');
     document.getElementById('pause-btn').classList.remove('visible');
 }
 function dismissHelp(){
     document.getElementById('help-screen').classList.add('hidden');
     state.seenHelp=true; saveGame();
-    const anyVisible=[...document.querySelectorAll('.overlay')].some(el=>!el.classList.contains('hidden'));
-    if(!anyVisible) closeMenus();
+    // If a game is in progress, resume it and show help-btn
+    const gameInProgress = (state.roundHits > 0) || currentBlock;
+    if(gameInProgress){
+        document.getElementById('help-btn').classList.remove('hidden');
+        document.getElementById('pause-btn').classList.add('visible');
+        // Resume: restart animation/audio for current block
+        state.isPaused = false;
+        if(currentBlock){
+            const rate = inChallenge ? challengeRate : (state.audioRate ?? 1.0);
+            if(currentAudio){ currentAudio.pause(); currentAudio.onended=null; currentAudio=null; }
+            const a = new Audio(buildAudioPath(currentBlock.data));
+            a.playbackRate = rate; currentAudio = a;
+            a.onerror = ()=>{ animate(); };
+            a.play().then(()=>{ animate(); }).catch(()=>{ animate(); });
+        }
+    } else {
+        // No game in progress — stay on main menu, help-btn stays hidden
+        document.getElementById('help-btn').classList.add('hidden');
+        const anyVisible=[...document.querySelectorAll('.overlay')].some(el=>!el.classList.contains('hidden'));
+        if(!anyVisible){
+            document.getElementById('main-menu').classList.remove('hidden');
+        }
+    }
 }
 
 // ─── REPLAY CURRENT ───────────────────────────────────────────────────────
@@ -367,15 +394,10 @@ function dismissKeyCeremony(){
 function livesForRoundStart(){ state.lives=Math.max(state.lives,3); }
 
 function showAnswerZones(show){
-    const azl = document.getElementById('answer-zone-l');
-    const azr = document.getElementById('answer-zone-r');
-    if(show){
-        azl.classList.remove('hidden');
-        azr.classList.remove('hidden');
-    } else {
-        azl.classList.add('hidden');
-        azr.classList.add('hidden');
-    }
+    const wrap = document.getElementById('answer-zones');
+    if(!wrap) return;
+    if(show){ wrap.classList.remove('hidden'); }
+    else    { wrap.classList.add('hidden');    }
 }
 
 function startGame(){
@@ -393,6 +415,7 @@ function startGame(){
     document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
     state.isPaused=false;
     document.getElementById('pause-btn').classList.add('visible');
+    document.getElementById('help-btn').classList.remove('hidden');
     showAnswerZones(true);
     updateUI();
     showFoxIntro(()=>{ spawnBlock(); });
@@ -410,6 +433,7 @@ function startChallenge(){
     preloadAudio(); updateUI();
     document.querySelectorAll('.overlay').forEach(el=>el.classList.add('hidden'));
     document.getElementById('pause-btn').classList.add('visible');
+    document.getElementById('help-btn').classList.remove('hidden');
     showAnswerZones(true);
     runCountdown(3,()=>{
         state.isPaused=false;
@@ -836,6 +860,7 @@ function resolve(choice){
             cleanup();
             document.getElementById('lightning-hud').classList.add('hidden');
             document.getElementById('pause-btn').classList.remove('visible');
+            document.getElementById('help-btn').classList.add('hidden');
             showAnswerZones(false);
             inChallenge = false;
             setArenaBg(0);
@@ -914,6 +939,7 @@ function pauseExitToMenu(){
         pauseMenu.classList.add('hidden');
         pauseMenu.classList.remove('bouncing-out');
         document.getElementById('pause-btn').classList.remove('visible');
+        document.getElementById('help-btn').classList.add('hidden');
         showAnswerZones(false);
         showMenu('main-menu');
     }, 260);
