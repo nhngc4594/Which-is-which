@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>Phonetic Flow v5.4.0</title>
+    <title>Phonetic Flow v5.5.0</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <button id="help-btn" onpointerdown="event.stopPropagation()" onclick="showHelp()" title="How to play">？</button>
-<button id="pause-btn" onpointerdown="event.stopPropagation()" onclick="togglePause()">⏸</button>
 <div id="currency-display">⭐ 0</div>
 <div id="lives-display">❤️❤️❤️</div>
 
@@ -29,10 +28,14 @@
         <span class="lantern">🏮</span><span class="lantern">🏮</span><span class="lantern">🏮</span>
         <span class="lantern">🏮</span><span class="lantern">🏮</span><span class="lantern">🏮</span>
     </div>
-    <div id="speaker-row">
-        <button id="speaker-btn" onpointerdown="event.stopPropagation()" onclick="replayCurrent()">🔊</button>
+
+    <!-- ── STEP 3: Center control bar (speaker + counter + pause) ── -->
+    <div id="center-control-bar" onpointerdown="event.stopPropagation()">
+        <button id="speaker-btn" onclick="replayCurrent()">🔊</button>
         <div id="block-counter">— / —</div>
+        <button id="pause-btn" onclick="togglePause()">⏸</button>
     </div>
+
     <div id="play-field">
         <div class="lane-half" id="lane-l">
             <div class="lane-letter" id="l-label"></div>
@@ -50,8 +53,40 @@
             <div class="fox-emoji">🦊</div>
             <div class="fox-msg" id="fox-msg"></div>
         </div>
+
+        <!-- ── STEP 4: Soft-pause hint overlay ── -->
+        <div id="soft-pause-hint" class="hidden" onpointerdown="event.stopPropagation()">
+            <span>👆 Tap a word to hear it &nbsp;·&nbsp; Double-tap to see Japanese</span>
+            <span class="sp-resume">Tap empty space to resume</span>
+        </div>
+    </div>
+
+    <!-- ── STEP 3: Answer zones — full-width, side by side at the bottom ── -->
+    <div id="answer-zones" class="hidden">
+        <div id="answer-zone-l" class="answer-zone"
+             onpointerdown="event.stopPropagation()"
+             onclick="handleAnswerTap('L')">
+            <span class="az-label"></span>
+        </div>
+        <div id="answer-zone-r" class="answer-zone"
+             onpointerdown="event.stopPropagation()"
+             onclick="handleAnswerTap('R')">
+            <span class="az-label"></span>
+        </div>
     </div>
 </div>
+
+<!-- helper to show/hide the answer-zones wrapper (both zones together) -->
+<script>
+// Patch showAnswerZones to toggle the wrapper div instead of individual zones
+// (overrides the version in app.js which toggles them individually)
+function showAnswerZones(show){
+    const wrap = document.getElementById('answer-zones');
+    if(!wrap) return;
+    if(show){ wrap.classList.remove('hidden'); }
+    else    { wrap.classList.add('hidden');    }
+}
+</script>
 
 <div id="main-menu" class="overlay">
     <div style="font-size:72px;line-height:1;margin-bottom:6px;animation:foxDrop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;">🦊</div>
@@ -189,8 +224,8 @@
             <div class="help-row">
                 <div class="icon">▶️</div>
                 <div class="text">
-                    <span class="jp">GO！を押してスタート！単語を聞いて、左か右をタップして聞こえた音を選ぼう</span>
-                    <span class="en">Hit Go! to start. Listen to the word and choose which sound you heard by tapping left or right.</span>
+                    <span class="jp">GO！を押してスタート！単語を聞いて、下の左か右のボタンをタップしよう</span>
+                    <span class="en">Hit Go! to start. Listen to the word and tap the LEFT or RIGHT button at the bottom.</span>
                 </div>
             </div>
             <div class="help-row">
@@ -205,6 +240,13 @@
                 <div class="text">
                     <span class="jp">ポーズボタンでゲームを止めたり、ハートを買ったり、声のスピードを変えたりできるよ</span>
                     <span class="en">Tap pause to stop the game, buy a heart, or change the voice speed.</span>
+                </div>
+            </div>
+            <div class="help-row">
+                <div class="icon">✋</div>
+                <div class="text">
+                    <span class="jp">画面の真ん中をタップすると一時停止！積まれた単語をタップして聞き直したり、ダブルタップで日本語に切り替えたりできるよ</span>
+                    <span class="en">Tap the play field to soft-pause. Tap any word brick to hear it again. Double-tap to see the Japanese!</span>
                 </div>
             </div>
             <div class="help-row">
@@ -225,14 +267,7 @@
                 <div class="icon">👻</div>
                 <div class="text">
                     <span class="jp">ショップで300コイン使うとボスラウンド解放！ボスを倒すと次のラウンドを開く魔法の鍵をゲット！！</span>
-                    <span class="en">Spend 300 coins in the shop to unlock the Boss Round! Defeat the Boss to get a magic key that opens the next round!!</span>
-                </div>
-            </div>
-            <div class="help-row">
-                <div class="icon">🗝️</div>
-                <div class="text">
-                    <span class="jp">続けて聴く力を鍛えてゲームをクリアしよう！！</span>
-                    <span class="en">Keep going to build strong listening skills and win the game!!</span>
+                    <span class="en">Spend 300 coins in the shop to unlock the Boss Round! Defeat the Boss to get a magic key!!</span>
                 </div>
             </div>
         </div>
@@ -240,6 +275,7 @@
     </div>
 </div>
 
+<script src="levels_revised.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
